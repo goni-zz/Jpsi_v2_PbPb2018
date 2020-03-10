@@ -164,7 +164,7 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
   //else if(ptLow==10&&ptHigh==30) ctauCut=0.0985;
   //else if(ptLow==0&&ptHigh==30)  ctauCut=0.1485;//All
   //PR
-  if(ptLow==3&&ptHigh==6.5&&yLow==1.6&&yHigh==2.4) ctauCut=0.0495;
+  if(ptLow==3.0&&ptHigh==6.5) ctauCut=0.0495;
   else if(ptLow==6.5&&ptHigh==8) ctauCut=0.0395;
   else if(ptLow==8&&ptHigh==10)  ctauCut=0.0325;
   else if(ptLow==10&&ptHigh==30) ctauCut=0.0245;
@@ -483,7 +483,7 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
 
     float pos_x = 0.43;
     float pos_x_mass = 0.73;
-    float pos_y = 0.65;
+    float pos_y = 0.75;
     float pos_y_diff = 0.071;
     int text_color = 1;
     float text_size = 16;
@@ -511,6 +511,7 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
     drawText(Form("p_{T}^{#mu} > %.1f GeV/c", SiMuPtCut ), pos_x_mass,pos_y-pos_y_diff*2,text_color,text_size);
     drawText("|#eta^{#mu}| < 2.4", pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
     drawText(Form("Centrality %d-%d%s",cLow/2,cHigh/2,perc.Data()),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);
+    drawText(Form("L_{J/psi} < %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
     pad2->SetTopMargin(0);
     pad2->SetBottomMargin(0.17);
     pad2->SetLeftMargin(0.19);
@@ -529,7 +530,7 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
     pad1->Draw();
     pad2->Draw();
     //gSystem->mkdir(Form("figs/q_vector",sample.Data()),1);
-    c_mass_v2->SaveAs(Form("figs/q_vector/v2Mass_%s.pdf", kineLabel.Data()));
+    c_mass_v2->SaveAs(Form("figs/v2mass_hist/v2Mass_%s.pdf", kineLabel.Data()));
 
     TCanvas* c_decayL = new TCanvas("c_decayL","",600,600);
     c_decayL->SetLogy();
@@ -555,6 +556,7 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
     drawText(Form("p_{T}^{#mu} > %.1f GeV/c", SiMuPtCut ), pos_x_mass,pos_y-pos_y_diff*2,text_color,text_size);
     drawText("|#eta^{#mu}| < 2.4", pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
     drawText(Form("Centrality %d-%d%s",cLow/2,cHigh/2,perc.Data()),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);
+    drawText(Form("L_{J/psi} < %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
     //CMS_lumi_v2mass(c_mass,iPeriod,iPos,0);
     CMS_lumi_v2mass(c_mass,iPeriod,iPos);
     c_mass->Update();

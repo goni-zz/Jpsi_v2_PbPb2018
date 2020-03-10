@@ -15,15 +15,13 @@
 #include <iostream>
 #include <fstream>
 #include <TMath.h>
-
 #include <Fit/Fitter.h>
 #include <Fit/BinData.h>
 #include <Fit/Chi2FCN.h>
 #include <Math/WrappedMultiTF1.h>
 #include <HFitInterface.h>
-
 #include "../commonUtility.h"
-#include "../cutsAndBinUpsilonV2.h"
+#include "../cutsAndBin.h"
 #include "../HiEvtPlaneList.h"
 #include "../Style.h"
 #include "../tdrstyle.C"
@@ -298,7 +296,7 @@ Double_t pol3bkg(Double_t* x, Double_t* par)
 }
 //}}}
 
-void doSimultaneousV2MassFit_pt630_cent1060_test(int cLow = 20, int cHigh = 120,
+void doSimultaneousV2MassFit_pt36_cent1060_test(int cLow = 20, int cHigh = 120,
     float ptLow =  3, float ptHigh = 6.5,
     float yLow = 1.6, float yHigh = 2.4,
     float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, int ibkg_vn_sel = fpol2)
@@ -378,8 +376,8 @@ void doSimultaneousV2MassFit_pt630_cent1060_test(int cLow = 20, int cHigh = 120,
   //}}}
 
   //Get fitting parameter{{{
-  Double_t N1_ = 900.00;
-  Double_t Nbkg_ = 800.00;
+  Double_t N1_ = 7000.00;
+  Double_t Nbkg_ = 8000.00;
   Double_t mean_ = pdgMass.JPsi;
   Double_t sigma_ = 4.1827e-02;
   //Double_t alpha_ = 1.526;
