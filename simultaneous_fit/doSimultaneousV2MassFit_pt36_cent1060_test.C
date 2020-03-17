@@ -31,10 +31,12 @@
 
 using namespace std;
 
-const int nParmM = 13;
-const int nParmV = 18;
-Int_t iparmass[nParmM] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-Int_t iparvn[nParmV] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+const int nParmM = 9;
+const int nParmV = 13;
+//Int_t iparmass[nParmM] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+Int_t iparmass[nParmM] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+//Int_t iparvn[nParmV] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+Int_t iparvn[nParmV] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
 struct GlobalChi2_width
 {
@@ -56,6 +58,19 @@ struct GlobalChi2_width
 //totalYield{{{
 Double_t TotalYield(Double_t* x, Double_t* par)
 {
+  //Double_t N1 = par[0]; //Number of Jpsi yield
+  //Double_t Nbkg = par[1]; //Nuber of Bkg
+  //Double_t mean = par[2]; //Crystall Ball mean
+  //Double_t sigma = par[3]; //Crystall Ball sigma
+  //Double_t alpha = par[4]; //crystall ball alpha
+  //Double_t n = par[5]; //Crystall ball n
+  //Double_t ratio = par[6]; //For fraction of Double Crystall ball
+  //Double_t frac = par[7]; //Crystall ball f
+  //Double_t Bkgmean = par[8]; //Background fit: exp*erf
+  //Double_t Bkgsigma = par[9];
+  //Double_t Bkgp0 = par[10];
+  //Double_t sigma1_2 = sigma*ratio; //
+
   Double_t N1 = par[0]; //Number of Jpsi yield
   Double_t Nbkg = par[1]; //Nuber of Bkg
   Double_t mean = par[2]; //Crystall Ball mean
@@ -64,10 +79,9 @@ Double_t TotalYield(Double_t* x, Double_t* par)
   Double_t n = par[5]; //Crystall ball n
   Double_t ratio = par[6]; //For fraction of Double Crystall ball
   Double_t frac = par[7]; //Crystall ball f
-  Double_t Bkgmean = par[8]; //Background fit: exp*erf
-  Double_t Bkgsigma = par[9];
-  Double_t Bkgp0 = par[10];
+  Double_t Bkgp0 = par[8];
   Double_t sigma1_2 = sigma*ratio; //
+
 
   //t2 > t1
   Double_t JPsi_t1 = (x[0]-mean)/sigma;
@@ -103,7 +117,8 @@ Double_t TotalYield(Double_t* x, Double_t* par)
   }
 
   return N1*(frac*JPsi_1 + (1-frac)*JPsi_2)
-    + Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
+    //+ Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
+    + Nbkg*(TMath::Exp(-x[0]/Bkgp0));
 }
 
 //totalYieldSig{{{
@@ -157,6 +172,21 @@ Double_t TotalYieldSig(Double_t* x, Double_t* par)
 //totalvn pol2 bkg Jpsi{{{
 Double_t Totalvnpol2JPsi(Double_t* x, Double_t* par)
 {
+  //Double_t N1 = par[0];
+  //Double_t Nbkg = par[1];
+  //Double_t mean = par[2];
+  //Double_t sigma = par[3];
+  //Double_t alpha = par[4];
+  //Double_t n = par[5];
+  //Double_t ratio = par[6];
+  //Double_t frac = par[7];
+  //Double_t Bkgmean = par[8];
+  //Double_t Bkgsigma = par[9];
+  //Double_t Bkgp0 = par[10];
+  //Double_t c = par[11];
+  //Double_t c1 = par[12];
+  //Double_t c2 = par[13];
+  //Double_t c3 = par[14];
   Double_t N1 = par[0];
   Double_t Nbkg = par[1];
   Double_t mean = par[2];
@@ -165,13 +195,12 @@ Double_t Totalvnpol2JPsi(Double_t* x, Double_t* par)
   Double_t n = par[5];
   Double_t ratio = par[6];
   Double_t frac = par[7];
-  Double_t Bkgmean = par[8];
-  Double_t Bkgsigma = par[9];
-  Double_t Bkgp0 = par[10];
-  Double_t c = par[11];
-  Double_t c1 = par[12];
-  Double_t c2 = par[13];
-  Double_t c3 = par[14];
+  Double_t Bkgp0 = par[8];
+  Double_t c = par[9];
+  Double_t c1 = par[10];
+  Double_t c2 = par[11];
+  Double_t c3 = par[12];
+
   Double_t sigma1S_2 = sigma*ratio;
 
   //t2 > t1
@@ -206,7 +235,8 @@ Double_t Totalvnpol2JPsi(Double_t* x, Double_t* par)
   }
   Double_t SigM = N1*(frac*JPsi_1 + (1-frac)*JPsi_2);
   Double_t SigM1s = N1*(JPsi_1);
-  Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
+  //Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
+  Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0));
 
   return c*(SigM1s/(SigM+BkgM)) + (1 - SigM/(SigM+BkgM))*(c3 + c2*x[0] + c1*x[0]*x[0]);
 
@@ -266,7 +296,8 @@ Double_t Totalvnpol3JPsi(Double_t* x, Double_t* par)
   }
   
   Double_t SigM = N1*(frac*JPsi_1 + (1-frac)*JPsi_2);
-  Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
+  //Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
+  Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0)/2.);
 
   return c*(SigM/(SigM+BkgM)) + (1 - SigM/(SigM+BkgM))*(c4 + c3*x[0] + c2*x[0]*x[0] + c1*x[0]*x[0]*x[0]);
 
@@ -386,19 +417,36 @@ void doSimultaneousV2MassFit_pt36_cent1060_test(int cLow = 20, int cHigh = 120,
   //Double_t n_ = 2.2;
   Double_t ratio_ = 0.6050;
   Double_t frac_ = 0.67;
-  Double_t Bkgmean_ = 7.99882;
-  Double_t Bkgsigma_ = 1.12746;
+  //Double_t Bkgmean_ = 7.99882;
+  //Double_t Bkgsigma_ = 1.12746;
   Double_t Bkgp0_ = 4.32817;
   Double_t c_ = 0.03;
   Double_t c1_ = 0.00142884;
   Double_t c2_ = -0.0484097;
   Double_t c3_ = 0.5;
-  Double_t c4_ = -0.11964;
+  //Double_t c4_ = -0.11964;
   //}}}
 
 
   Double_t par0[nParmV];
 
+  //par0[0] = N1_;
+  //par0[1] = Nbkg_;
+  //par0[2] = mean_;
+  //par0[3] = sigma_;
+  //par0[4] = alpha_;
+  //par0[5] = n_;
+  //par0[6] = ratio_;
+  //par0[7] = frac_;
+  //par0[8] = Bkgmean_;
+  //par0[9] = Bkgsigma_;
+  //par0[10] = Bkgp0_;
+  //par0[11] = c_;
+  //par0[12] = c1_;
+  //par0[13] = c2_;
+  //par0[14] = c3_;
+  //par0[15] = c4_;
+  //}}}
   par0[0] = N1_;
   par0[1] = Nbkg_;
   par0[2] = mean_;
@@ -407,22 +455,23 @@ void doSimultaneousV2MassFit_pt36_cent1060_test(int cLow = 20, int cHigh = 120,
   par0[5] = n_;
   par0[6] = ratio_;
   par0[7] = frac_;
-  par0[8] = Bkgmean_;
-  par0[9] = Bkgsigma_;
-  par0[10] = Bkgp0_;
-  par0[11] = c_;
-  par0[12] = c1_;
-  par0[13] = c2_;
-  par0[14] = c3_;
-  par0[15] = c4_;
-  //}}}
+  par0[8] = Bkgp0_;
+  par0[9] = c_;
+  par0[10] = c1_;
+  par0[11] = c2_;
+  par0[12] = c3_;
+  //par0[13] = c4_;
+
 
   //combined function condition{{{
   //Double_t parLimitLow[nParmV]  = {     0,        0, mean_ -0.02, 0.01, 1.301, 1.351, 0, 0,  0,   0,  0, -0.2, -5, -5, -4, -4};
   //Double_t parLimitHigh[nParmV] = {N1_*10, Nbkg_*10, mean_ +0.02, 0.08, 4.8, 4.8, 1, 1, 25,  15, 25,  0.2,  5,  5,  4,  4};
-  Double_t parLimitLow[nParmV]  = {      0,         0, mean_ -0.02,  0.01,   1.2,   1.2, 0, 0,       0,        0,     0,    0, -5, -5, -4, -4};
-  Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   9.8,   9.8, 1, 1,      25,       25,    25,  0.3,  5,  5,  4,  4};
+  //Double_t parLimitLow[nParmV]  = {      0,         0, mean_ -0.02,  0.01,   1.2,   1.2, 0, 0,       0,        0,     0,    0, -5, -5, -4, -4};
+  //Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   9.8,   9.8, 1, 1,      25,       25,    25,  0.3,  5,  5,  4,  4};
   //                                    N1,      NBkg,   Jpsi mass, sigma, alpha,     n, x, f, Bkgmean, Bkgsigma, Bkgp0,    c, c1, c2, c3, c4;
+  Double_t parLimitLow[nParmV]  = {      0,     0, mean_ -0.02,  0.01,   1.2,   1.2, 0, 0,     0,    0, -5, -5, -4};
+  Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   9.8,   9.8, 1, 1,    25,  0.3,  5,  5,  4};
+  //                                    N1,  NBkg,   Jpsi mass, sigma, alpha,     n, x, f, Bkgp0,    c, c1, c2, c3,;
   fitter.Config().SetParamsSettings(nParmV_, par0);
   for(int ipar = 0; ipar<nParmV_; ipar++){
     fitter.Config().ParSettings(ipar).SetLimits(parLimitLow[ipar],parLimitHigh[ipar]);
@@ -440,11 +489,14 @@ void doSimultaneousV2MassFit_pt36_cent1060_test(int cLow = 20, int cHigh = 120,
   fmass_total->SetRange(massrange().first, massrange().second);
   g_mass->GetListOfFunctions()->Add(fmass_total);
 
-  TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*( TMath::Exp(-x/[3])*(TMath::Erf((x-[1])/(TMath::Sqrt(2)*[2]))+1)/2. )", massLow, massHigh);
+  //TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*( TMath::Exp(-x/[3])*(TMath::Erf((x-[1])/(TMath::Sqrt(2)*[2]))+1)/2. )", massLow, massHigh);
+  TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*(TMath::Exp(-x/[1]))", massLow, massHigh);
   fyield_bkg->FixParameter(0, fmass_total->GetParameter(1));
-  fyield_bkg->FixParameter(1, fmass_total->GetParameter(8));//Bkgmean
-  fyield_bkg->FixParameter(2, fmass_total->GetParameter(9));//Bkgsigma
-  fyield_bkg->FixParameter(3, fmass_total->GetParameter(10));//Bkgp0
+  fyield_bkg->FixParameter(1, fmass_total->GetParameter(8));
+  //fyield_bkg->FixParameter(0, fmass_total->GetParameter(1));
+  //fyield_bkg->FixParameter(1, fmass_total->GetParameter(8));//Bkgmean
+  //fyield_bkg->FixParameter(2, fmass_total->GetParameter(9));//Bkgsigma
+  //fyield_bkg->FixParameter(3, fmass_total->GetParameter(10));//Bkgp0
 
   g_mass->GetListOfFunctions()->Add(fyield_bkg);
   //}}}
@@ -467,9 +519,12 @@ void doSimultaneousV2MassFit_pt36_cent1060_test(int cLow = 20, int cHigh = 120,
   TF1* fvn_bkg;
   if(ibkg_vn_sel == fpol2){
     fvn_bkg = new TF1("fvn_bkg",pol2bkg, massLow, massHigh, nParBkg);
-    fvn_bkg->FixParameter(0, fvn_simul->GetParameter(12));
-    fvn_bkg->FixParameter(1, fvn_simul->GetParameter(13));
-    fvn_bkg->FixParameter(2, fvn_simul->GetParameter(14));
+    //fvn_bkg->FixParameter(0, fvn_simul->GetParameter(12));
+    //fvn_bkg->FixParameter(1, fvn_simul->GetParameter(13));
+    //fvn_bkg->FixParameter(2, fvn_simul->GetParameter(14));
+    fvn_bkg->FixParameter(0, fvn_simul->GetParameter(10));
+    fvn_bkg->FixParameter(1, fvn_simul->GetParameter(11));
+    fvn_bkg->FixParameter(2, fvn_simul->GetParameter(12));
   }
   else if(ibkg_vn_sel == fpol3){
     fvn_bkg = new TF1("fvn_bkg",pol3bkg, massLow, massHigh, nParBkg);
@@ -488,8 +543,8 @@ void doSimultaneousV2MassFit_pt36_cent1060_test(int cLow = 20, int cHigh = 120,
   h_v2_SplusB->GetListOfFunctions()->Add(fvn_simul);
   h_v2_SplusB->GetListOfFunctions()->Add(fvn_bkg);
 
-  v2 = fvn_simul->GetParameter(11);
-  v2e = fvn_simul->GetParError(11);
+  v2 = fvn_simul->GetParameter(9);
+  v2e = fvn_simul->GetParError(9);
 
   // Drawing 
   fyield_bkg->SetLineColor(kBlue);
