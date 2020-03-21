@@ -19,6 +19,7 @@
 #include <TInterpreter.h>
 #include <TGraphAsymmErrors.h>
 #include <TGraphErrors.h>
+#include "cutsAndBin.h"
 
 
 void makeMultiPanelCanvas(TCanvas*& canv, const Int_t columns, 
@@ -127,7 +128,10 @@ Double_t CrystalBallPlusPol2(Double_t *x, Double_t *par)
 */
 // fitMTH == 0, fitting
 // fitMTH == 1, counting
-void plot_MassFit_v2(){
+void plot_MassFit_v2(int cLow = 20, int cHigh = 120,
+float ptLow = 3, float ptHigh = 6.5,
+float yLow = 1.6, float yHigh = 2.4,
+float ctauCut = 0.0495, float SiMuPtCut = 0){
     int fitMTH = 0;
     gROOT->Macro("~/rootlogon.C");
 
@@ -141,10 +145,12 @@ void plot_MassFit_v2(){
     gStyle->SetTitleXOffset(1.0);
     gStyle->SetTitleYOffset(1.0);
 
+	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, SiMuPtCut, cLow, cHigh) ;
+
 	TFile *f1 = new TFile("/work2/Oniatree/JPsi/skimmed_file/OniaFlowSkim_JpsiTrig_DBAllPD_AddEP_200309.root","READ");
 	TH1F *h1 = new TH1F("h1",";mass;",100,2.3,3.8);
 	TTree *tree = (TTree *)f1->Get("mmepevt");
-	tree->Draw("mass>>h1","fabs(y)>1.6&&fabs(y)<2.4&&pt>3.0&&pt<6.5&&cBin>20&&cBin<120&&ctau3D>0.0495","PE");
+	tree->Draw("mass>>h1",Form("fabs(y)>%0.2f && fabs(y)<%0.2f && pt>%0.2f && pt<%0.2f && cBin>%d && cBin<%d && ctau3D>%0.4f",yLow,yHigh,ptLow,ptHigh,cLow,cHigh,ctauCut),"PE");
 
 /*
     TFile *fIn = new TFile("./Hist_Jpsi.root","READ");
@@ -185,13 +191,13 @@ void plot_MassFit_v2(){
     lt1->DrawLatex(0.2,0.78,Form("Mean : %0.2f #pm %0.4f",yields[4],yields[6]));
     lt1->DrawLatex(0.2,0.74,Form("#sigma : %0.3f MeV/c^{2}",1000*yields[5]));
     lt1->DrawLatex(0.2,0.70,Form("#chi^{2}/ndof : %0.2f / %0.2f",yields[2], yields[3]));
-	lt1->DrawLatex(0.2,0.66,"3 < p_{T}^{#mu#mu} < 6.5 GeV/c");
-	lt1->DrawLatex(0.2,0.62,"1.6 < |y^{#mu#mu}| < 2.4");
-	lt1->DrawLatex(0.2,0.58,Form("Centrality 10-60%s",perc.Data()));
-	lt1->DrawLatex(0.2,0.54,"L_{J/#psi}>0.0495");
+	lt1->DrawLatex(0.2,0.66,Form("%.2f < p_{T}^{#mu#mu} < %.2f GeV/c",ptLow,ptHigh));
+	lt1->DrawLatex(0.2,0.62,Form("%.2f < |y^{#mu#mu}| < %.2f",yLow,yHigh));
+	lt1->DrawLatex(0.2,0.58,Form("Centrality %d-%d%s",cLow/2,cHigh/2,perc.Data()));
+	lt1->DrawLatex(0.2,0.54,Form("L_{J/#psi}>%0.4f",ctauCut));
     lt1->SetTextSize(0.04);
-    c1->SaveAs("mass_Jpsi.png");
-    c1->SaveAs("mass_Jpsi.pdf");
+    c1->SaveAs(Form("mass_Jpsi_%s.png",kineLabel.Data()));
+    c1->SaveAs(Form("mass_Jpsi_%s.pdf",kineLabel.Data()));
 
 
 }
