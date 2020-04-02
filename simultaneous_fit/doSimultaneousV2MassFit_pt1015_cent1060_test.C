@@ -327,8 +327,8 @@ Double_t pol3bkg(Double_t* x, Double_t* par)
 }
 //}}}
 
-void doSimultaneousV2MassFit_pt68_cent1060_test(int cLow = 20, int cHigh = 120,
-    float ptLow =  6.5, float ptHigh = 8,
+void doSimultaneousV2MassFit_pt1015_cent1060_test(int cLow = 20, int cHigh = 120,
+    float ptLow =  10, float ptHigh = 15,
     float yLow = 1.6, float yHigh = 2.4,
     float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, int ibkg_vn_sel = fpol2)
 {
@@ -407,23 +407,23 @@ void doSimultaneousV2MassFit_pt68_cent1060_test(int cLow = 20, int cHigh = 120,
   //}}}
 
   //Get fitting parameter{{{
-  Double_t N1_ = 700.00;
-  Double_t Nbkg_ = 2000.00;
+  Double_t N1_ = 350.00;
+  Double_t Nbkg_ = 800.00;
   Double_t mean_ = pdgMass.JPsi;
-  Double_t sigma_ = 6.6827e-02;
+  Double_t sigma_ = 5.6827e-02;
   //Double_t alpha_ = 1.526;
-  Double_t alpha_ = 1.926;
-  Double_t n_ = 1.7;
+  Double_t alpha_ = 1.26;
+  Double_t n_ = 3.1;
   //Double_t n_ = 2.2;
-  Double_t ratio_ = 0.7750;
-  Double_t frac_ = 0.7;
+  Double_t ratio_ = 0.6931;
+  Double_t frac_ = 0.3;
   //Double_t Bkgmean_ = 7.99882;
   //Double_t Bkgsigma_ = 1.12746;
-  Double_t Bkgp0_ = 3.22817;
-  Double_t c_ = 0.04;
-  Double_t c1_ = 0.00442884;
-  Double_t c2_ = -0.0484097;
-  Double_t c3_ = 0.05;
+  Double_t Bkgp0_ = 0.22817;
+  Double_t c_ = 0.07;
+  Double_t c1_ = 0.00842884;
+  Double_t c2_ = -0.0884097;
+  Double_t c3_ = 0.1;
   //Double_t c4_ = -0.11964;
   //}}}
 
@@ -469,8 +469,8 @@ void doSimultaneousV2MassFit_pt68_cent1060_test(int cLow = 20, int cHigh = 120,
   //Double_t parLimitLow[nParmV]  = {      0,         0, mean_ -0.02,  0.01,   1.2,   1.2, 0, 0,       0,        0,     0,    0, -5, -5, -4, -4};
   //Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   9.8,   9.8, 1, 1,      25,       25,    25,  0.3,  5,  5,  4,  4};
   //                                    N1,      NBkg,   Jpsi mass, sigma, alpha,     n, x, f, Bkgmean, Bkgsigma, Bkgp0,    c, c1, c2, c3, c4;
-  Double_t parLimitLow[nParmV]  = {      0,     0, mean_ -0.02,  0.01,   0.1,   0.1, 0 ,0.,     0,    0, -5, -5, -4};
-  Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   9.8,   9.9, 1, 1,    25,  0.3,  5,  5,  4};
+  Double_t parLimitLow[nParmV]  = {      0,     0, mean_ -0.02,  0.012,   0,   0.1, 0 ,0.,   0.1,    0, -5, -5, -4};
+  Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.07,    3,   5.6, 1, 1,    6,  0.3,  5,  5,  4};
   //                                    N1,  NBkg,   Jpsi mass, sigma, alpha,     n, x, f, Bkgp0,    c, c1, c2, c3,;
   fitter.Config().SetParamsSettings(nParmV_, par0);
   for(int ipar = 0; ipar<nParmV_; ipar++){
@@ -483,7 +483,6 @@ void doSimultaneousV2MassFit_pt68_cent1060_test(int cLow = 20, int cHigh = 120,
   fitter.FitFCN(nParmV_, globalChi2, 0, datamass.Size()+datavn.Size(), true);
   ROOT::Fit::FitResult result = fitter.Result();
   result.Print(std::cout);
-
 
   cout << "****************************************" << endl;
   cout << "	" << "	Upper Limit" << "	" << "Lower Limit" << endl;
@@ -638,7 +637,7 @@ void doSimultaneousV2MassFit_pt68_cent1060_test(int cLow = 20, int cHigh = 120,
   leg1->Draw("same");
   //fyield_sig->Draw("same");
   if(ptLow==0) drawText(Form("p_{T}^{#mu#mu} < %.f GeV/c",ptHigh ),pos_x_mass,pos_y,text_color,text_size);
-  else if(ptLow!=0) drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",ptLow, ptHigh ),pos_x_mass,pos_y,text_color,text_size);
+  else if(ptLow!=0) drawText(Form("%.f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),pos_x_mass,pos_y,text_color,text_size);
   if(yLow==0) drawText(Form("|y^{#mu#mu}| < %.1f",yHigh ), pos_x_mass,pos_y-pos_y_diff,text_color,text_size);
   else if(yLow!=0) drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh ), pos_x_mass,pos_y-pos_y_diff,text_color,text_size);
   drawText(Form("p_{T}^{#mu} > %.1f GeV/c", SiMuPtCut ), pos_x_mass,pos_y-pos_y_diff*2,text_color,text_size);

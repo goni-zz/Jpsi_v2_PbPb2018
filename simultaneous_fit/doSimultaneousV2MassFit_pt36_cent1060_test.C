@@ -410,7 +410,7 @@ void doSimultaneousV2MassFit_pt36_cent1060_test(int cLow = 20, int cHigh = 120,
   Double_t N1_ = 3000.00;
   Double_t Nbkg_ = 1000.00;
   Double_t mean_ = pdgMass.JPsi;
-  Double_t sigma_ = 5.1827e-02;
+  Double_t sigma_ = 8.1827e-02;
   //Double_t alpha_ = 1.526;
   Double_t alpha_ = 4.926;
   Double_t n_ = 1.7;

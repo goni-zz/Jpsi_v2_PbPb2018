@@ -327,8 +327,8 @@ Double_t pol3bkg(Double_t* x, Double_t* par)
 }
 //}}}
 
-void doSimultaneousV2MassFit_pt68_cent1060_test(int cLow = 20, int cHigh = 120,
-    float ptLow =  6.5, float ptHigh = 8,
+void doSimultaneousV2MassFit_pt46_cent1060_test(int cLow = 20, int cHigh = 120,
+    float ptLow =  4, float ptHigh = 6.5,
     float yLow = 1.6, float yHigh = 2.4,
     float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, int ibkg_vn_sel = fpol2)
 {
@@ -410,16 +410,16 @@ void doSimultaneousV2MassFit_pt68_cent1060_test(int cLow = 20, int cHigh = 120,
   Double_t N1_ = 700.00;
   Double_t Nbkg_ = 2000.00;
   Double_t mean_ = pdgMass.JPsi;
-  Double_t sigma_ = 6.6827e-02;
+  Double_t sigma_ = 3.6827e-02;
   //Double_t alpha_ = 1.526;
-  Double_t alpha_ = 1.926;
-  Double_t n_ = 1.7;
+  Double_t alpha_ = 2.926;
+  Double_t n_ = 5.7;
   //Double_t n_ = 2.2;
   Double_t ratio_ = 0.7750;
   Double_t frac_ = 0.7;
   //Double_t Bkgmean_ = 7.99882;
   //Double_t Bkgsigma_ = 1.12746;
-  Double_t Bkgp0_ = 3.22817;
+  Double_t Bkgp0_ = 2.42817;
   Double_t c_ = 0.04;
   Double_t c1_ = 0.00442884;
   Double_t c2_ = -0.0484097;
@@ -470,7 +470,7 @@ void doSimultaneousV2MassFit_pt68_cent1060_test(int cLow = 20, int cHigh = 120,
   //Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   9.8,   9.8, 1, 1,      25,       25,    25,  0.3,  5,  5,  4,  4};
   //                                    N1,      NBkg,   Jpsi mass, sigma, alpha,     n, x, f, Bkgmean, Bkgsigma, Bkgp0,    c, c1, c2, c3, c4;
   Double_t parLimitLow[nParmV]  = {      0,     0, mean_ -0.02,  0.01,   0.1,   0.1, 0 ,0.,     0,    0, -5, -5, -4};
-  Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   9.8,   9.9, 1, 1,    25,  0.3,  5,  5,  4};
+  Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   9.8,   9.8, 1, 1,    25,  0.3,  5,  5,  4};
   //                                    N1,  NBkg,   Jpsi mass, sigma, alpha,     n, x, f, Bkgp0,    c, c1, c2, c3,;
   fitter.Config().SetParamsSettings(nParmV_, par0);
   for(int ipar = 0; ipar<nParmV_; ipar++){
