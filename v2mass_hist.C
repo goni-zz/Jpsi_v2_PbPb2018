@@ -25,7 +25,7 @@ void GetHistSqrt(TH1D* h1 =0, TH1D* h2=0);
 void GetHistBkg(TH1D* h1 =0, TH1D* h2=0);
 
 void v2mass_hist(int cLow = 20, int cHigh = 120,
-    float ptLow =  3, float ptHigh = 6.5, 
+    float ptLow = 3, float ptHigh = 4,
     float yLow = 1.6, float yHigh = 2.4,
     float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, bool fAccW = false, bool fEffW = false, bool isMC = false, int dtype = 1)
 {
@@ -49,7 +49,7 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
 
   TChain *tree = new TChain("mmepevt");
   if(!isMC){
-    TString f1 = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaFlowSkim_JpsiTrig_AllPD_isMC0_HFNom_AddEP_200217.root";
+    TString f1 = "./skimmedFiles/OniaFlowSkim_JpsiTrig_DBAllPD_AddEP_200309.root";
     //TString f1 = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaFlowSkim_JpsiTrig_DBPD_isMC0_HFNom_AddEP_200217.root";
     //TString f2 = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaFlowSkim_JpsiTrig_DBPeriPD_isMC0_HFNom_AddEP_Peri_200217.root";
     tree->Add(f1.Data());
@@ -164,11 +164,15 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
   //else if(ptLow==10&&ptHigh==30) ctauCut=0.0985;
   //else if(ptLow==0&&ptHigh==30)  ctauCut=0.1485;//All
   //PR
-  if(ptLow==3.0&&ptHigh==6.5) ctauCut=0.0495;
-  else if(ptLow==6.5&&ptHigh==8) ctauCut=0.0395;
-  else if(ptLow==8&&ptHigh==10)  ctauCut=0.0325;
-  else if(ptLow==10&&ptHigh==30) ctauCut=0.0245;
-  else if(ptLow==0&&ptHigh==30)  ctauCut=0.0315;//All
+  if(ptLow==3.0&&ptHigh==6.5) ctauCut=0.0975;
+  else if(ptLow==3&&ptHigh==4) ctauCut=0.1235;
+  else if(ptLow==4&&ptHigh==6.5) ctauCut=0.0935;
+  else if(ptLow==6.5&&ptHigh==8) ctauCut=0.0785;
+  else if(ptLow==8&&ptHigh==10)  ctauCut=0.0685;
+  else if(ptLow==10&&ptHigh==30) ctauCut=0.0535;
+  else if(ptLow==10&&ptHigh==15) ctauCut=0.0585;
+  else if(ptLow==15&&ptHigh==30) ctauCut=0.0455;
+  else if(ptLow==0&&ptHigh==30)  ctauCut=0.0765;//All
   cout<<"pt["<<ptLow<<" - "<<ptHigh<<" GeV/c], "<<"ctau cut: "<<ctauCut<<endl;
 
   const int nMassBin = 12;
@@ -279,8 +283,8 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
       else if(!dimusign) {dimusignPass = (recoQQsign[j] == 0) ? false : true;}
       if(dimusignPass == false) continue; // dimuon charge selection
       if( (mass[j]<massLow) || (mass[j]>massHigh) ) continue; // dimuon mass range
-      //if(pt[j]>ptLow&&pt[j]<ptHigh&&abs(y[j])<yHigh&&abs(y[j])>yLow&&pt1[j]>SiMuPtCut&&pt2[j]>SiMuPtCut&&abs(eta1[j])<2.4&&abs(eta2[j])<2.4&&ctau3D[j]>ctauCut){
-      if(pt[j]>ptLow&&pt[j]<ptHigh&&abs(y[j])<yHigh&&abs(y[j])>yLow&&pt1[j]>SiMuPtCut&&pt2[j]>SiMuPtCut&&abs(eta1[j])<2.4&&abs(eta2[j])<2.4&&ctau3D[j]<ctauCut){
+      if(pt[j]>ptLow&&pt[j]<ptHigh&&abs(y[j])<yHigh&&abs(y[j])>yLow&&pt1[j]>SiMuPtCut&&pt2[j]>SiMuPtCut&&abs(eta1[j])<2.4&&abs(eta2[j])<2.4&&ctau3D[j]>ctauCut){
+      //if(pt[j]>ptLow&&pt[j]<ptHigh&&abs(y[j])<yHigh&&abs(y[j])>yLow&&pt1[j]>SiMuPtCut&&pt2[j]>SiMuPtCut&&abs(eta1[j])<2.4&&abs(eta2[j])<2.4&&ctau3D[j]<ctauCut){
         nDimuPass++;
       }
     }
@@ -296,8 +300,8 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
 
       //if(mass[j]<massLow || mass[j]>massHigh ) continue; // dimuon mass range
       if(mass[j]<massLow || mass[j]>massHigh) continue; // dimuon mass range
-      //if(pt[j]>ptLow&&pt[j]<ptHigh&&abs(y[j])<yHigh&&abs(y[j])>yLow&&pt1[j]>SiMuPtCut&&pt2[j]>SiMuPtCut&&abs(eta1[j])<2.4&&abs(eta2[j])<2.4&&ctau3D[j]>ctauCut){
-      if(pt[j]>ptLow&&pt[j]<ptHigh&&abs(y[j])<yHigh&&abs(y[j])>yLow&&pt1[j]>SiMuPtCut&&pt2[j]>SiMuPtCut&&abs(eta1[j])<2.4&&abs(eta2[j])<2.4&&ctau3D[j]<ctauCut){
+      if(pt[j]>ptLow&&pt[j]<ptHigh&&abs(y[j])<yHigh&&abs(y[j])>yLow&&pt1[j]>SiMuPtCut&&pt2[j]>SiMuPtCut&&abs(eta1[j])<2.4&&abs(eta2[j])<2.4&&ctau3D[j]>ctauCut){
+      //if(pt[j]>ptLow&&pt[j]<ptHigh&&abs(y[j])<yHigh&&abs(y[j])>yLow&&pt1[j]>SiMuPtCut&&pt2[j]>SiMuPtCut&&abs(eta1[j])<2.4&&abs(eta2[j])<2.4&&ctau3D[j]<ctauCut){
         //nonprompt check
         for(int imbin=0; imbin<nMassBin; imbin++){
           if(mass[j]>=massBin[imbin] && mass[j]<massBin[imbin+1]){
@@ -364,7 +368,7 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
     //    lcut = new TLine(h_decayL->GetBinCenter(bins), 0, h_decayL->GetBinCenter(bins), 1);
     //}
 
-    int nMassFrameBin = 120;
+    int nMassFrameBin = 100;
     RooWorkspace *ws = new RooWorkspace("workspace");
     ws->import(*dataSet);
     ws->data("dataset")->Print();
@@ -511,7 +515,8 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
     drawText(Form("p_{T}^{#mu} > %.1f GeV/c", SiMuPtCut ), pos_x_mass,pos_y-pos_y_diff*2,text_color,text_size);
     drawText("|#eta^{#mu}| < 2.4", pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
     drawText(Form("Centrality %d-%d%s",cLow/2,cHigh/2,perc.Data()),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);
-    drawText(Form("L_{J/psi} < %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
+//    drawText(Form("L_{J/psi} < %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
+    drawText(Form("L_{J/psi} > %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
     pad2->SetTopMargin(0);
     pad2->SetBottomMargin(0.17);
     pad2->SetLeftMargin(0.19);
@@ -556,7 +561,8 @@ void v2mass_hist(int cLow = 20, int cHigh = 120,
     drawText(Form("p_{T}^{#mu} > %.1f GeV/c", SiMuPtCut ), pos_x_mass,pos_y-pos_y_diff*2,text_color,text_size);
     drawText("|#eta^{#mu}| < 2.4", pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
     drawText(Form("Centrality %d-%d%s",cLow/2,cHigh/2,perc.Data()),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);
-    drawText(Form("L_{J/psi} < %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
+ //   drawText(Form("L_{J/psi} < %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
+    drawText(Form("L_{J/psi} > %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
     //CMS_lumi_v2mass(c_mass,iPeriod,iPos,0);
     CMS_lumi_v2mass(c_mass,iPeriod,iPos);
     c_mass->Update();
