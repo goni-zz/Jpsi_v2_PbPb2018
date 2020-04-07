@@ -344,18 +344,18 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
       }
 
 	  ///// Acceptance Cut /////
-	  bool AccCut_1 = (
-	  	  ( (TMath::Abs(eta1) <= 1.2) && (pt1 >=3.5) ) ||
-        ( (TMath::Abs(eta1) > 1.2)  && (TMath::Abs(eta1) <= 2.1) && (pt1 >= 5.37-1.89*(TMath::Abs(eta1))) ) ||
-        ( (TMath::Abs(eta1) > 2.1)  && (TMath::Abs(eta1) <= 2.4) && (pt1 >= 1.5) ) 
+	  bool muplAcc = (
+	  	  ( (TMath::Abs(mupl_Reco->Eta()) <= 1.2) && (mupl_Reco->Pt() >=3.5) ) ||
+        ( (TMath::Abs(mupl_Reco->Eta()) > 1.2)  && (TMath::Abs(mupl_Reco->Eta()) <= 2.1) && (mupl_Reco->Pt() >= 5.37-1.89*(TMath::Abs(mupl_Reco->Eta()))) ) ||
+        ( (TMath::Abs(mupl_Reco->Eta()) > 2.1)  && (TMath::Abs(mupl_Reco->Eta()) <= 2.4) && (mupl_Reco->Pt() >= 1.5) ) 
 		) ;
-	  bool AccCut_2 = (
-	  	  ( (TMath::Abs(eta2) <= 1.2) && (pt2 >=3.5) ) ||
-        ( (TMath::Abs(eta2) > 1.2)  && (TMath::Abs(eta2) <= 2.1) && (pt2 >= 5.37-1.89*(TMath::Abs(eta2))) ) ||
-        ( (TMath::Abs(eta2) > 2.1)  && (TMath::Abs(eta2) <= 2.4) && (pt2 >= 1.5) ) 
+	  bool mumiAcc = (
+	  	  ( (TMath::Abs(mumi_Reco->Eta()) <= 1.2) && (mumi_Reco->Pt() >=3.5) ) ||
+        ( (TMath::Abs(mumi_Reco->Eta()) > 1.2)  && (TMath::Abs(mumi_Reco->Eta()) <= 2.1) && (mumi_Reco->Pt() >= 5.37-1.89*(TMath::Abs(mumi_Reco->Eta()))) ) ||
+        ( (TMath::Abs(mumi_Reco->Eta()) > 2.1)  && (TMath::Abs(mumi_Reco->Eta()) <= 2.4) && (mumi_Reco->Pt() >= 1.5) ) 
 	  );
       
-	  if ( !(AccCut_1 && AccCut_2) )
+	  if ( !(muplAcc && mumiAcc) )
 		  continue ;
 
       bool passMuonTypePl = true;
