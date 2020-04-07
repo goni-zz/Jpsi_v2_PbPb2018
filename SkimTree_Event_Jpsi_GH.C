@@ -342,7 +342,22 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
         if(Reco_mu_whichGen[Reco_QQ_mupl_idx[irqq]] == -1) continue;
         if(Reco_mu_whichGen[Reco_QQ_mumi_idx[irqq]] == -1) continue;
       }
+
+	  ///// Acceptance Cut /////
+	  bool AccCut_1 = (
+	  	  ( (TMath::Abs(eta1) <= 1.2) && (pt1 >=3.5) ) ||
+        ( (TMath::Abs(eta1) > 1.2)  && (TMath::Abs(eta1) <= 2.1) && (pt1 >= 5.37-1.89*(TMath::Abs(eta1))) ) ||
+        ( (TMath::Abs(eta1) > 2.1)  && (TMath::Abs(eta1) <= 2.4) && (pt1 >= 1.5) ) 
+		) ;
+	  bool AccCut_2 = (
+	  	  ( (TMath::Abs(eta2) <= 1.2) && (pt2 >=3.5) ) ||
+        ( (TMath::Abs(eta2) > 1.2)  && (TMath::Abs(eta2) <= 2.1) && (pt2 >= 5.37-1.89*(TMath::Abs(eta2))) ) ||
+        ( (TMath::Abs(eta2) > 2.1)  && (TMath::Abs(eta2) <= 2.4) && (pt2 >= 1.5) ) 
+	  );
       
+	  if ( !(AccCut_1 && AccCut_2) )
+		  continue ;
+
       bool passMuonTypePl = true;
       passMuonTypePl = passMuonTypePl && (Reco_mu_SelectionType[Reco_QQ_mupl_idx[irqq]]&((int)pow(2,1)));
       passMuonTypePl = passMuonTypePl && (Reco_mu_SelectionType[Reco_QQ_mupl_idx[irqq]]&((int)pow(2,3)));
