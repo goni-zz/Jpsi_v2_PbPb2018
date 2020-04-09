@@ -20,8 +20,8 @@ using namespace std;
 
 void GetHistSqrt(TH1D* h1 =0, TH1D* h2=0);
 
-void psuedo_proper_decay_length(int cLow = 20, int cHigh = 120,
-    float ptLow =  3, float ptHigh = 6.5, 
+void psuedo_proper_decay_length(int cLow = 120, int cHigh = 180,
+    float ptLow =  3, float ptHigh = 30, 
     float yLow = 1.6, float yHigh = 2.4,
     float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, int PRMC=0, bool dimusign=true, bool fAccW = false, bool fEffW = false)
 {
@@ -40,24 +40,33 @@ void psuedo_proper_decay_length(int cLow = 20, int cHigh = 120,
   TTree *treePRMC;
   TTree *treeNPMC;
 
-  fData  = new TFile("/Users/goni/Downloads/ONIATREESKIMFILE/OniaFlowSkim_JpsiTrig_AllPD_isMC0_HFNom_AddEP_200217.root");
-  fPRMC  = new TFile("/Users/goni/Downloads/ONIATREESKIMFILE/OniaFlowSkim_Jpsi_MC_Prompt_RECO.root");
-  fNPMC  = new TFile("/Users/goni/Downloads/ONIATREESKIMFILE/OniaFlowSkim_Jpsi_MC_NonPrompt_RECO.root");
+  fData  = new TFile("../skimmedFiles/OniaFlowSkim_JpsiTrig_AllPD_isMC0_HFNom_AddEP_200217.root");
+  fPRMC  = new TFile("../skimmedFiles/OniaFlowSkim_Jpsi_MC_Prompt_RECO.root");
+  fNPMC  = new TFile("../skimmedFiles/OniaFlowSkim_Jpsi_MC_NonPrompt_RECO.root");
 
   TCut mCut;
   TCut ptCut;
   TCut yCut;
   TCut cCut;
   TCut sglMuCut;
+  TCut accCut;
+  TCut dimuSign;
+  TCut quality;
+  quality = ("fabs(vz)<15");
+  dimuSign = ("recoQQsign==0");
   mCut = ("mass>=2.6&&mass<=3.5");
-  ptCut = Form("pt>%1.f&&pt<%.1f",ptLow,ptHigh);
-  yCut  = Form("abs(y)>%.1f&&abs(y)<%.1f",yLow,yHigh);
+  ptCut = Form("pt>%1.f&&pt<%.1f", ptLow, ptHigh);
+  yCut  = Form("abs(y)>%.1f&&abs(y)<%.1f", yLow, yHigh);
   cCut  = Form("cBin>=%d&&cBin<=%d",cLow,cHigh);
-  sglMuCut = Form("pt1>%.f&&pt2>%.f&&abs(eta1)>%.1f&&abs(eta2)<%.1f",SiMuPtCut, SiMuPtCut, yLow, yHigh);
+  sglMuCut = Form("abs(eta1)>%.1f&&abs(eta1)<%.1f&&abs(eta2)>%.1f&&abs(eta2)<%.1f", yLow, yHigh, yLow, yHigh);
+  accCut= ("( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || \
+      ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || \
+      ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) )");
 
   cout<<kineLabel<<endl;
   TCut totalCut ="";
-  totalCut = mCut&&ptCut&&yCut&&cCut&&sglMuCut;
+  totalCut = quality&&dimuSign&&mCut&&ptCut&&yCut&&cCut&&sglMuCut&&accCut;
+  //totalCut = quality&&dimuSign&&mCut&&ptCut&&yCut&&cCut&&sglMuCut;
   cout<<totalCut<<endl;
   //if(forPR==0)consider="PR_eff";
   //else if(forPR==1)consider="NP_eff";
@@ -98,7 +107,7 @@ void psuedo_proper_decay_length(int cLow = 20, int cHigh = 120,
       h_deffPRMC->SetBinContent(bins,h_decayPRMC->Integral(0,bins)/h_decayPRMC->GetEntries());
       h_deffNPMC->SetBinContent(bins,1-(h_decayNPMC->Integral(0,bins)/h_decayNPMC->GetEntries()));
 
-      if(h_decayPRMC->Integral(0,bins)<(0.98*totalPRMC)||h_decayPRMC->Integral(0,bins)>(totalPRMC*0.999)) continue;
+      if(h_decayPRMC->Integral(0,bins)<(0.899*totalPRMC)||h_decayPRMC->Integral(0,bins)>(totalPRMC*0.9099)) continue;
       cout<<bins<<"th bin"<<", ljpsi: "<<h_decayPRMC->GetBinCenter(bins)<<", PR eff: "<<h_decayPRMC->Integral(0,bins)/h_decayPRMC->GetEntries()*100<<"%"<<endl;
       lcutv = new TLine(h_decayPRMC->GetBinCenter(bins), 0, h_decayPRMC->GetBinCenter(bins), 1);
       lcuth = new TLine(xmin, h_decayPRMC->Integral(0,bins)/h_decayPRMC->GetEntries(), h_decayPRMC->GetBinCenter(bins), h_decayPRMC->Integral(0,bins)/h_decayPRMC->GetEntries());
@@ -116,11 +125,14 @@ void psuedo_proper_decay_length(int cLow = 20, int cHigh = 120,
     }
   }
 
-  TCut ctauCut = Form("ctau3D>=%.4f", lcutv->GetX1());
+  TCut ctauCut;
+  if(PRMC==0){ctauCut = Form("ctau3D<=%.4f", lcutv->GetX1());}
+  else if(PRMC==1){ctauCut = Form("ctau3D>=%.4f", lcutv->GetX1());}
   cout<<"LJpsi cut: "<<lcutv->GetX1()<<endl;
   treeData->Draw("mass>>h_mass",totalCut,"EP");
   treeData->Draw("mass>>h_massCut",totalCut&&ctauCut,"EP");
-  cout<<"How many Jpsi??"<<h_massCut->GetEntries()<<endl;
+  cout<<"How many Jpsi w/o Cut??"<<h_mass->GetEntries()<<endl;
+  cout<<"How many Jpsi w/ Cut??"<<h_massCut->GetEntries()<<endl;
 
   //gSystem->mkdir("Outputs/decayL",1);
 
@@ -165,7 +177,7 @@ void psuedo_proper_decay_length(int cLow = 20, int cHigh = 120,
   h_deffNPMC->SetLineColor(kRed+2);
   jumSun(xmin,1,xmax,1,1,1);
   lcutv->Draw("same");
-  if(ptLow!=0) drawText(Form("%.f < p_{T}^{#mu#mu} < %.f GeV/c",(float)ptLow, ptHigh ),pos_x_mass,pos_y,text_color,text_size);
+  if(ptLow!=0) drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",(float)ptLow, ptHigh ),pos_x_mass,pos_y,text_color,text_size);
   if(yLow==0) drawText(Form("|y^{#mu#mu}| < %.1f",yHigh ), pos_x_mass,pos_y-pos_y_diff*0.5,text_color,text_size);
   else if(yLow!=0) drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh ), pos_x_mass,pos_y-pos_y_diff,text_color,text_size);
   //drawText(Form("p_{T}^{#mu} > %.1f GeV/c", SiMuPtCut ), pos_x_mass,pos_y-pos_y_diff*1,text_color,text_size);
@@ -191,6 +203,7 @@ void psuedo_proper_decay_length(int cLow = 20, int cHigh = 120,
       h_deffPRMC->Write();
       h_deffNPMC->Write();
       h_mass->Write();
+      h_massCut->Write();
 
       }
 void GetHistSqrt(TH1D* h1, TH1D* h2){
