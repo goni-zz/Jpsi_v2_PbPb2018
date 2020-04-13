@@ -50,15 +50,13 @@ void draw_V2_pt(){
     hist_v2->GetYaxis()->CenterTitle();
     hist_v2->GetYaxis()->SetTitleOffset(1.2);
     hist_v2->GetXaxis()->SetTitleOffset(1.);
-    hist_v2->GetYaxis()->SetTitle("v_{2}^{J/#psi}");
-    hist_v2->GetXaxis()->SetTitle("p_{T}^{J/#psi} (GeV/c)");
-    hist_v2->SetMinimum(-0.05);
-    hist_v2->SetMaximum(0.15);
+    hist_v2->GetYaxis()->SetTitle("v_{2}(s)");
+    hist_v2->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hist_v2->GetXaxis()->SetRangeUser(0,30);
-    hist_v2->GetYaxis()->SetRangeUser(-0.05,0.15);
+    hist_v2->GetYaxis()->SetRangeUser(-0.06,0.25);
     hist_v2->Draw("PE");
 
-    TF1 *line = new TF1("line","0",-0.5,30);
+    TF1 *line = new TF1("line","0",-3,30);
     line->SetLineWidth(1);
     line->SetLineStyle(7);
     line->SetLineColor(kBlack);
@@ -67,12 +65,12 @@ void draw_V2_pt(){
 
 
     TString perc = "%";
-    leg = new TLegend(0.74, 0.70, 0.925, 0.77);
+    leg = new TLegend(0.68, 0.70, 0.925, 0.77);
     SetLegendStyle(leg);
-    leg->SetTextSize(0.044);
-    leg->AddEntry(hist_v2,"J/#psi","pe");
+    leg->SetTextSize(0.034);
+    leg->AddEntry(hist_v2,"Non Prompt J/#psi","pe");
     leg->Draw("same");
-    globtex->DrawLatex(0.23, sz_init, "1.6 < |y| < 2.4");
+    globtex->DrawLatex(0.23, sz_init, "1.6 < |y| < 2.4 ,SP");
     globtex->DrawLatex(0.23, sz_init-sz_step, Form("Cent. 10-60%s",perc.Data()));
     CMS_lumi_square(c1,iPeriod,iPos);
     c1->Update();

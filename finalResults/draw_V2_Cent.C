@@ -1,9 +1,9 @@
 #include <iostream>
-#include "Style.h"
-#include "commonUtility.h"
-#include "cutsAndBin.h"
-#include "CMS_lumi_square.C"
-#include "tdrstyle.C"
+#include "../Style.h"
+#include "../commonUtility.h"
+#include "../cutsAndBin.h"
+#include "../CMS_lumi_square.C"
+#include "../tdrstyle.C"
 
 void draw_V2_Cent(){
 	setTDRStyle();
@@ -45,15 +45,15 @@ void draw_V2_Cent(){
 	hist_v2->SetMarkerColor(kBlue+2);
 	hist_v2->SetLineColor(kBlue+2);
     hist_v2->GetXaxis()->SetRangeUser(0,90);
-    hist_v2->GetYaxis()->SetRangeUser(-0.05,0.15);
+    hist_v2->GetYaxis()->SetRangeUser(-0.06,0.25);
     hist_v2->GetXaxis()->CenterTitle();
     hist_v2->GetYaxis()->CenterTitle();
     hist_v2->GetYaxis()->SetTitleOffset(1.2);
     hist_v2->GetXaxis()->SetTitleOffset(1.);
-    hist_v2->GetYaxis()->SetTitle("v_{2}^{J/#psi}");
+    hist_v2->GetYaxis()->SetTitle("v_{2}(s)");
     hist_v2->GetXaxis()->SetTitle("Centrality (%)");
-    hist_v2->SetMinimum(-0.05);
-    hist_v2->SetMaximum(0.15);
+    hist_v2->SetMinimum(-0.06);
+    hist_v2->SetMaximum(0.25);
     hist_v2->Draw("PE");
 
     TF1 *line = new TF1("line","0",0,100);
@@ -65,12 +65,12 @@ void draw_V2_Cent(){
 
 
     TString perc = "%";
-    leg = new TLegend(0.74, 0.70, 0.925, 0.77);
+    leg = new TLegend(0.68, 0.70, 0.925, 0.77);
     SetLegendStyle(leg);
     leg->SetTextSize(0.034);
     leg->AddEntry(hist_v2,"Non Prompt J/#psi","pe");
     leg->Draw("same");
-    globtex->DrawLatex(0.23, sz_init, "1.6 < |y| < 2.4");
+    globtex->DrawLatex(0.23, sz_init, "1.6 < |y| < 2.4, (SP)");
     globtex->DrawLatex(0.23, sz_init-sz_step, "3 < p_{T} < 50");
     CMS_lumi_square(c1,iPeriod,iPos);
     c1->Update();
