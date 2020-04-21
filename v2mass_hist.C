@@ -205,6 +205,13 @@ void v2mass_hist(int cLow = 0, int cHigh = 200,
     else if(ptLow==15&&ptHigh==30) ctauCut=0.0455;
     else if(ptLow==15&&ptHigh==50) ctauCut=0.0455;
     else if(ptLow==0&&ptHigh==30)  ctauCut=0.0765;}//All
+  //crosscheck+tnp+genweight
+  //  else if(PR==1){
+  //  else if(ptLow==3&&ptHigh==4.5) ctauCut=;
+  //  else if(ptLow==4.5&&ptHigh==6.5) ctauCut=;
+  //  else if(ptLow==6.5&&ptHigh==9) ctauCut=;
+  //  else if(ptLow==9&&ptHigh==12)  ctauCut=;
+  //  else if(ptLow==12&&ptHigh==30) ctauCut=;}
   cout<<"pt["<<ptLow<<" - "<<ptHigh<<" GeV/c], "<<"ctau cut: "<<ctauCut<<endl;
 
   const int nMassBin = 12;
