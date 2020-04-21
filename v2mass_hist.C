@@ -24,8 +24,8 @@ using namespace hi;
 void GetHistSqrt(TH1D* h1 =0, TH1D* h2=0);
 void GetHistBkg(TH1D* h1 =0, TH1D* h2=0);
 
-void v2mass_hist(int cLow = 120, int cHigh = 180,
-    float ptLow = 3, float ptHigh = 30,
+void v2mass_hist(int cLow = 0, int cHigh = 200,
+    float ptLow =  3, float ptHigh =  10,
     float yLow = 1.6, float yHigh = 2.4,
     float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, bool fAccW = false, bool fEffW = false, bool isMC = false, int dtype = 1, int PR=0)
 {
@@ -48,6 +48,7 @@ void v2mass_hist(int cLow = 120, int cHigh = 180,
 
   if(PR==0) bCont="Prompt";
   else if(PR==1) bCont="NonPrompt";
+  else if(PR==2) bCont="Inclusive";
 
   cout<<"Data type: "<<dtype<<endl;
 
@@ -164,12 +165,15 @@ void v2mass_hist(int cLow = 120, int cHigh = 180,
   //PR
   if(PR==0){
     if(ptLow==3&&ptHigh==4)        ctauCut=0.0625;
+    if(ptLow==3&&ptHigh==4.5)      ctauCut=0.0595;
     else if(ptLow==4&&ptHigh==5)   ctauCut=0.0525;
+    else if(ptLow==4.5&&ptHigh==6.5)   ctauCut=0.0485;
     else if(ptLow==5&&ptHigh==6.5) ctauCut=0.0455;
     else if(ptLow==6.5&&ptHigh==8) ctauCut=0.0405;
     else if(ptLow==6.5&&ptHigh==9) ctauCut=0.0395;
     else if(ptLow==8&&ptHigh==12)  ctauCut=0.0335;
     else if(ptLow==8&&ptHigh==15)  ctauCut=0.0315;
+    else if(ptLow==9&&ptHigh==12)  ctauCut=0.0325;
     else if(ptLow==9&&ptHigh==15)  ctauCut=0.0305;
     else if(ptLow==12&&ptHigh==20) ctauCut=0.0265;
     else if(ptLow==12&&ptHigh==30) ctauCut=0.0255;
@@ -178,18 +182,28 @@ void v2mass_hist(int cLow = 120, int cHigh = 180,
     else if(cLow==0&&cHigh==20)    ctauCut=0.0385;
     else if(cLow==20&&cHigh==40)   ctauCut=0.0375;
     else if(cLow==40&&cHigh==60)   ctauCut=0.0375;
+    else if(cLow==60&&cHigh==80)   ctauCut=0.0375;
     else if(cLow==60&&cHigh==120)  ctauCut=0.0375;
+    else if(cLow==80&&cHigh==100)  ctauCut=0.0365;
+    else if(cLow==100&&cHigh==180) ctauCut=0.0365;
     else if(cLow==120&&cHigh==180) ctauCut=0.0365;}//All
   //NP
   else if(PR==1){
-    if(ptLow==3.0&&ptHigh==6.5) ctauCut=0.0975;
-    else if(ptLow==3&&ptHigh==4) ctauCut=0.1235;
+    if(ptLow==3.0&&ptHigh==6.5)    ctauCut=0.0975;
+    else if(ptLow==3&&ptHigh==4)   ctauCut=0.1235;
+    else if(ptLow==3&&ptHigh==4.5) ctauCut=0.1155;
     else if(ptLow==4&&ptHigh==6.5) ctauCut=0.0935;
+    else if(ptLow==4.5&&ptHigh==6) ctauCut=0.0965;
+    else if(ptLow==4.5&&ptHigh==6.5) ctauCut=0.0935;
     else if(ptLow==6.5&&ptHigh==8) ctauCut=0.0785;
-    else if(ptLow==8&&ptHigh==10)  ctauCut=0.0685;
-    else if(ptLow==10&&ptHigh==30) ctauCut=0.0535;
+    else if(ptLow==6.5&&ptHigh==9) ctauCut=0.0755;
+    else if(ptLow==8&&ptHigh==12)  ctauCut=0.0655;
+    else if(ptLow==9&&ptHigh==12)  ctauCut=0.0635;
+    else if(ptLow==9&&ptHigh==15)  ctauCut=0.0605;
+    else if(ptLow==12&&ptHigh==30) ctauCut=0.0505;
     else if(ptLow==10&&ptHigh==15) ctauCut=0.0585;
     else if(ptLow==15&&ptHigh==30) ctauCut=0.0455;
+    else if(ptLow==15&&ptHigh==50) ctauCut=0.0455;
     else if(ptLow==0&&ptHigh==30)  ctauCut=0.0765;}//All
   cout<<"pt["<<ptLow<<" - "<<ptHigh<<" GeV/c], "<<"ctau cut: "<<ctauCut<<endl;
 
@@ -283,15 +297,17 @@ void v2mass_hist(int cLow = 120, int cHigh = 180,
   //Begin Loop
   for(int i=0; i<nEvt; i++){
     tree->GetEntry(i);
-
+    if(!(cBin>=cLow||cBin<=cHigh)) continue;
+    if(!fabs(vz)>=15) continue;
     // Fill Dimuon Loop
     for(int j=0; j<nDimu; j++){
-      if(cBin>=cLow&&cBin<=cHigh&&pt[j]>ptLow&&pt[j]<ptHigh&&recoQQsign[j]==0&&fabs(vz)<15&&mass[j]>=massLow&&mass[j]<=massHigh&&abs(y[j])>yLow&&abs(y[j])<yHigh&&
-          abs(eta1[j])>1.6&&abs(eta1[j])<2.4&&abs(eta2[j])>1.6&&abs(eta2[j])<2.4&&
+      if(pt[j]>ptLow&&pt[j]<ptHigh&&recoQQsign[j]==0&&mass[j]>=massLow&&mass[j]<=massHigh&&abs(y[j])>yLow&&abs(y[j])<yHigh&&
+          //abs(eta1[j])>1.6&&abs(eta1[j])<2.4&&abs(eta2[j])>1.6&&abs(eta2[j])<2.4&&
           ( ((abs(eta1[j]) <= 1.2) && (pt1[j] >=3.5)) || ((abs(eta2[j]) <= 1.2) && (pt2[j] >=3.5)) ||
-          ((abs(eta1[j]) > 1.2) && (abs(eta1[j]) <= 2.1) && (pt1[j] >= 5.47-1.89*(abs(eta1[j])))) || ((abs(eta2[j]) > 1.2)  && (abs(eta2[j]) <= 2.1) && (pt2[j] >= 5.47-1.89*(abs(eta2[j])))) ||
-          ((abs(eta1[j]) > 2.1) && (abs(eta1[j]) <= 2.4) && (pt1[j] >= 1.5)) || ((abs(eta2[j]) > 2.1)  && (abs(eta2[j]) <= 2.4) && (pt2[j] >= 1.5)) ) && 
-          ctau3D[j]<=ctauCut){
+            ((abs(eta1[j]) > 1.2) && (abs(eta1[j]) <= 2.1) && (pt1[j] >= 5.47-1.89*(abs(eta1[j])))) || ((abs(eta2[j]) > 1.2)  && (abs(eta2[j]) <= 2.1) && (pt2[j] >= 5.47-1.89*(abs(eta2[j])))) ||
+            ((abs(eta1[j]) > 2.1) && (abs(eta1[j]) <= 2.4) && (pt1[j] >= 1.5)) || ((abs(eta2[j]) > 2.1)  && (abs(eta2[j]) <= 2.4) && (pt2[j] >= 1.5)) )
+        ){
+          //ctau3D[j]<=ctauCut){
         h_mass->Fill(mass[j]);
         h_decayL->Fill(ctau3D[j]);
         massVar->setVal((double)mass[j]);
@@ -334,7 +350,7 @@ void v2mass_hist(int cLow = 120, int cHigh = 180,
           h_v2_2[2]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j]);
           h_v2_3[2]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j]);
           h_v2_4[2]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j]);
-          h_ljpsi[2]->Fill(ctau3D[j]*mass[j]/P[j]);
+          h_ljpsi[2]->Fill(ctau3D[j]);
         }
       }
     }
