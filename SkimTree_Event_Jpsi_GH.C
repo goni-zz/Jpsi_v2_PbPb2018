@@ -11,7 +11,7 @@ double getAccWeight(TH1D* h = 0, double pt = 0);
 double getEffWeight(TH1D* h = 0, double pt = 0);
 
 
-void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi, int hiHFBinEdge = 0, int PDtype = 1) 
+void SkimTree_Event_Jpsi_GH(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi, int hiHFBinEdge = 0, int PDtype = 1) 
 {
 
   using namespace std;
@@ -25,12 +25,13 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
   //TString fname1 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/MinBias/HIMinimumBias_Run2018_Upsilon_PromptReco_v1.root";
   TString fnameData1 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/PromptAOD_v1_Oniatree_addvn_part*.root";
   TString fnameData2 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/PromptAOD_v2_Oniatree_addvn_part*.root";
-  TString fnameDataReReco = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/ReReco/AOD/DoubleMuon/ReReco_Oniatree_addvn_part*.root";
+  TString fnameDataReReco = "/work2/Oniatree/ReReco/DoubleMuon/ReReco_Oniatree_addvn_part*.root";
   TString fnameDataReRecoPeri = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/ReReco/AOD/DoubleMuonPsiPeri/ReReco_Oniatree_addvn_part*.root";
   //TString fnameMC = "/eos/cms/store/group/phys_heavyions/gbak/2018PbPbMC/JPsi/OniatreeMC_BToJpsi_pThat-2_TuneCP5-EvtGen_HydjetDrumMB_5p02TeV_pythia8.root";
   //TString fnameMC = "/eos/cms/store/group/phys_heavyions/gbak/2018PbPbMC/JPsi/OniatreeMC_JPsi_pThat2_TunedCP5_HydjetDrumMB_5p02TeV_Pythia8_part*.root";
-  TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_JpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; (Jpsi_GENONLY)
+//  TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_JpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; (Jpsi_GENONLY)
   //TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_BJpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; (BJpsi_GENONLY)
+  TString fnameMC = "/work2/Oniatree/JPsi/OniatreeMC_JPsi_pThat2_TunedCP5_HydjetDrumMB_5p02TeV_Pythia8_part*.root";
 
 
   TString fPD;
@@ -166,14 +167,12 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
   
   Int_t Reco_mu_whichGen[maxBranchSize];
   TBranch *b_Reco_mu_whichGen;
-  /*
   Float_t Gen_weight;
   TBranch *b_Gen_weight;
   if(isMC){
     mytree->SetBranchAddress("Reco_mu_whichGen",Reco_mu_whichGen, &b_Reco_mu_whichGen);
     mytree->SetBranchAddress("Gen_weight",&Gen_weight, &b_Gen_weight);
   }
-*/
 
   TChain *eptree = new TChain("tree");
   if(!isMC){
@@ -203,8 +202,8 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
   double tnp_trig_weight_mupl = -1;
   double tnp_trig_weight_mumi = -1;
 
-  int kL2filter = 38;
-  int kL3filter = 39;
+  int kL2filter = 16;
+  int kL3filter = 17;
 
   int count =0;
   int counttnp =0;
@@ -213,7 +212,8 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
   if(hiHFBinEdge==1) fCentSelHF = "HFUp";
   else if(hiHFBinEdge==-1) fCentSelHF = "HFDown";
   TFile* newfile;
-  newfile = new TFile(Form("OniaFlowSkim_%sTrig_%sPD_isMC%d_%s_200109.root",fTrigName[trigIndx].Data(),fPD.Data(),isMC,fCentSelHF.Data()),"recreate");
+  //newfile = new TFile(Form("OniaFlowSkim_%sTrig_%sPD_isMC%d_%s_200109.root",fTrigName[trigIndx].Data(),fPD.Data(),isMC,fCentSelHF.Data()),"recreate");
+  newfile = new TFile(Form("OniaFlowSkim_%sTrig_JPsi_isMC%d_%s_200421.root",fTrigName[trigIndx].Data(),isMC,fCentSelHF.Data()),"recreate");
 
   const static int nMaxDimu = 1000;
   int evt;
@@ -334,7 +334,7 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
       mumi_Reco = (TLorentzVector*) Reco_mu_4mom->At(Reco_QQ_mumi_idx[irqq]);
       
       weight = 1.;
-      //if(isMC) weight = findNcoll(Centrality) * Gen_weight;
+      if(isMC) weight = findNcoll(Centrality) * Gen_weight;
 
       if(!( (Reco_QQ_trig[irqq]&((ULong64_t)pow(2, kTrigSel))) == ((ULong64_t)pow(2, kTrigSel)) ) ) continue;
      
@@ -346,12 +346,12 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
 	  ///// Acceptance Cut /////
 	  bool muplAcc = (
 	  	  ( (TMath::Abs(mupl_Reco->Eta()) <= 1.2) && (mupl_Reco->Pt() >=3.5) ) ||
-        ( (TMath::Abs(mupl_Reco->Eta()) > 1.2)  && (TMath::Abs(mupl_Reco->Eta()) <= 2.1) && (mupl_Reco->Pt() >= 5.37-1.89*(TMath::Abs(mupl_Reco->Eta()))) ) ||
+        ( (TMath::Abs(mupl_Reco->Eta()) > 1.2)  && (TMath::Abs(mupl_Reco->Eta()) <= 2.1) && (mupl_Reco->Pt() >= 5.47-1.89*(TMath::Abs(mupl_Reco->Eta()))) ) ||
         ( (TMath::Abs(mupl_Reco->Eta()) > 2.1)  && (TMath::Abs(mupl_Reco->Eta()) <= 2.4) && (mupl_Reco->Pt() >= 1.5) ) 
 		) ;
 	  bool mumiAcc = (
 	  	  ( (TMath::Abs(mumi_Reco->Eta()) <= 1.2) && (mumi_Reco->Pt() >=3.5) ) ||
-        ( (TMath::Abs(mumi_Reco->Eta()) > 1.2)  && (TMath::Abs(mumi_Reco->Eta()) <= 2.1) && (mumi_Reco->Pt() >= 5.37-1.89*(TMath::Abs(mumi_Reco->Eta()))) ) ||
+        ( (TMath::Abs(mumi_Reco->Eta()) > 1.2)  && (TMath::Abs(mumi_Reco->Eta()) <= 2.1) && (mumi_Reco->Pt() >= 5.47-1.89*(TMath::Abs(mumi_Reco->Eta()))) ) ||
         ( (TMath::Abs(mumi_Reco->Eta()) > 2.1)  && (TMath::Abs(mumi_Reco->Eta()) <= 2.4) && (mumi_Reco->Pt() >= 1.5) ) 
 	  );
       
@@ -391,7 +391,6 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
       recoQQsign[irqq] = Reco_QQ_sign[irqq];     
  
       count++;     
-	  /*
       if(isMC){
        tnp_weight = 1;
        tnp_trig_weight_mupl = -1;
@@ -415,16 +414,16 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
        bool mupl_isL3 = (mupl_L2Filter && mupl_L3Filter) ? true : false;
        bool mumi_isL2 = (mumi_L2Filter && !mumi_L3Filter) ? true : false;
        bool mumi_isL3 = (mumi_L2Filter && mumi_L3Filter) ? true : false;
-       bool SelDone = true;
+       bool SelDone = false;
 
        if( mupl_isL2 && mumi_isL3){
-         tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 2, 0);
-         tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 3, 0);
+         tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 0, 0);
+         tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 1, 0);
          SelDone = true;
        }
        else if( mupl_isL3 && mumi_isL2){
-         tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 3, 0);
-         tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 2, 0);
+         tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 1, 0);
+         tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 0, 0);
          SelDone = true;
        }
        else if( mupl_isL3 && mumi_isL3){
@@ -432,21 +431,21 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
          int l = rand() % (2); 
          //pick up what will be L2
          if(t[l]==-1){
-           tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 2, 0);
-           tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 3, 0);
+           tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 0, 0);
+           tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 1, 0);
          }
          else if(t[l]==1){
-           tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 3, 0);
-           tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 2, 0);
+           tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 1, 0);
+           tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 0, 0);
          }
          else {cout << "ERROR :: No random selection done !!!!" << endl; continue;}
          SelDone = true;
        }    
-       if(SelDone == false || (tnp_trig_weight_mupl == -1 || tnp_trig_weight_mumi == -1)){cout << "ERROR :: No muon filter combination selected !!!!" << endl; continue;}
+       if(SelDone == false || (tnp_trig_weight_mupl == -1 || tnp_trig_weight_mumi == -1))//{cout << "ERROR :: No muon filter combination selected !!!!" << endl; continue;}
+	   { continue; }
        tnp_weight = tnp_weight * tnp_trig_weight_mupl * tnp_trig_weight_mumi;
        counttnp++;
       }
-*/
 
       // Fill the output tree
       if ( JP_Reco->Eta() < 0 )  {  
