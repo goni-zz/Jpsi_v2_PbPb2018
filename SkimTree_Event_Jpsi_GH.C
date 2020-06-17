@@ -11,7 +11,7 @@ double getAccWeight(TH1D* h = 0, double pt = 0);
 double getEffWeight(TH1D* h = 0, double pt = 0);
 
 
-void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi, int hiHFBinEdge = 0, int PDtype = 1) 
+void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = false, int kTrigSel = kTrigJpsi, int hiHFBinEdge = 0, int PDtype = 1) 
 {
 
   using namespace std;
@@ -25,12 +25,13 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
   //TString fname1 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/MinBias/HIMinimumBias_Run2018_Upsilon_PromptReco_v1.root";
   TString fnameData1 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/PromptAOD_v1_Oniatree_addvn_part*.root";
   TString fnameData2 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/PromptAOD_v2_Oniatree_addvn_part*.root";
-  TString fnameDataReReco = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/ReReco/AOD/DoubleMuon/ReReco_Oniatree_addvn_part*.root";
+  TString fnameDataReReco = "/work2/Oniatree/ReReco/DoubleMuon/ReReco_Oniatree_addvn_part*.root";
   TString fnameDataReRecoPeri = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/ReReco/AOD/DoubleMuonPsiPeri/ReReco_Oniatree_addvn_part*.root";
   //TString fnameMC = "/eos/cms/store/group/phys_heavyions/gbak/2018PbPbMC/JPsi/OniatreeMC_BToJpsi_pThat-2_TuneCP5-EvtGen_HydjetDrumMB_5p02TeV_pythia8.root";
   //TString fnameMC = "/eos/cms/store/group/phys_heavyions/gbak/2018PbPbMC/JPsi/OniatreeMC_JPsi_pThat2_TunedCP5_HydjetDrumMB_5p02TeV_Pythia8_part*.root";
-  TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_JpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; (Jpsi_GENONLY)
-  //TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_BJpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; (BJpsi_GENONLY)
+  //TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_JpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; 
+  //TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_BJpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; 
+  TString fnameMC = "/work2/Oniatree/JPsi/OniatreeMC_JPsi_pThat2_TunedCP5_HydjetDrumMB_5p02TeV_Pythia8_part*.root";
 
 
   TString fPD;
@@ -296,6 +297,13 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
   TLorentzVector* mupl_Reco = new TLorentzVector;
   TLorentzVector* mumi_Reco = new TLorentzVector;
 
+  ////////////////////////////////////////////////////////////////////////
+  ////////////////// RooDataSet 
+  ////////////////////////////////////////////////////////////////////////
+  RooRealVar* Ctau3DErrVar = new RooRealVar("Ctau3DErr","Ctau Error variable",0,350,"");
+  RooArgSet* argSet = new RooArgSet(*Ctau3DErr);
+
+  RooDataSet* dataSet = new RooDataSet("dataSet", "a dataset", argSet);
 
 
   // event loop start
@@ -391,7 +399,6 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
       recoQQsign[irqq] = Reco_QQ_sign[irqq];     
  
       count++;     
-	  /*
       if(isMC){
        tnp_weight = 1;
        tnp_trig_weight_mupl = -1;
@@ -446,7 +453,6 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
        tnp_weight = tnp_weight * tnp_trig_weight_mupl * tnp_trig_weight_mumi;
        counttnp++;
       }
-*/
 
       // Fill the output tree
       if ( JP_Reco->Eta() < 0 )  {  
@@ -486,6 +492,10 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
       qymumi[nDimu] = TMath::Sin(2*phi2[nDimu]);
       ctau3D[nDimu] = Reco_QQ_ctau3D[irqq];
       ctau3DErr[nDimu] = Reco_QQ_ctauErr3D[irqq];
+
+	  Ctau3DErrVar->setVal(ctau3DErr[nDimu]);
+	  dataSet->add( *argSet);
+
       nDimu++;
 
     } // end of dimuon loop
@@ -498,6 +508,7 @@ void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi
   cout << "counttnp " << counttnp << endl;
   newfile->cd();
   mmevttree->Write();
+  dataSet->Write();
   newfile->Close();
   
 } 
