@@ -65,6 +65,11 @@ void CtauErr()
   RooRealVar *invMass=ws->var("mass");
   RooRealVar *sigYield = ws->var("nSig1s");
   RooRealVar *bkgYield = ws->var("nBkg");
+
+  //mass range 별로 Ctau3DErr 가져오는거 필요.
+  //가져온 mass range별로 ctau3DErr을 totalpdf, Jpsi Pdf, background로 정의필요.
+  //그리고 그려보면 됨..
+
   //RooDataSet* dataset = (RooDataSet*)ws->data("dataset")->Clone("TMP_DATA");
   RooDataSet* dataset = (RooDataSet*)ws->data("dataset");
   //RooAbsPdf* pdf = (RooAbsPdf*)(ws->pdf("model")->Clone("pdfMass"));
