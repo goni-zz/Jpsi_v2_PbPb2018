@@ -24,7 +24,7 @@
 using namespace std;
 using namespace RooFit;
 void doFit_Sim_Data( 
-       float ptLow=0, float ptHigh=50, 
+       float ptLow=6.5, float ptHigh=50, 
        float yLow=0., float yHigh=0.6,//Run 1 has p going in -z direction
        int cLow=0, int cHigh=200,
        float muPtCut=0.0,
@@ -33,9 +33,6 @@ void doFit_Sim_Data(
 			) 
 {
 
-  float eta_low = -2.4;
-  float eta_high = 2.4;
-  
   gStyle->SetEndErrorSize(0);
 
   float massLow = 2.6;
@@ -55,31 +52,23 @@ void doFit_Sim_Data(
   int   nCtauBin  = (ctauHigh-ctauLow)*10;
 
   TFile* f1;
-  float yLowLab;
-  float yHighLab;
 
-  //The order is {sigma1s_1,x1s,alpha1s_1,n1s_1,f1s,err_mu,err_sigma,m_lambda}
+  //The order is {sigma_1,x,alpha_1,n_1,f,err_mu,err_sigma,m_lambda}
   double paramsupper[8] = {0.2, 3.0, 3.321, 5.0, 1.0, 15.0, 15.0, 25.0};
   double paramslower[8] = {0.02, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0};
 
   TString kineCut;
+  TString SigCut;
+  TString BkgCut;
 
-  float ptLow_A = 0;
-  float ptHigh_A = 30;
-  float ptLow_B = 0;
-  float ptHigh_B = 30;
-  float ptLow_C = ptLow;
-  float ptHigh_C = ptHigh;
   //Select Data Set
     f1 = new TFile("skimmedFiles/OniaRooDataSet_isMC0_JPsi.root");
-    yLowLab = yLow;
-    yHighLab = yHigh;
-    kineCut = Form("pt>%.2f && pt<%.2f && abs(y)<%.2f && abs(eta1)<%.2f && abs(eta2)<%.2f",ptLow_A, ptHigh_A, yHighLab, eta_high, eta_high );
-    TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) )";//2018 acceptance cut
+    kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f",ptLow, ptHigh, yLow, yHigh);
+    //SigCut = Form("pt>%.2f && pt<%.2f && abs(y)<%.2f && abs(eta1)<%.2f && abs(eta2)<%.2f && mass>2.9&&mass<3.2", ptLow, ptHigh, yHigh, yHigh, yHigh);
+    //BkgCut = Form("pt>%.2f && pt<%.2f && abs(y)<%.2f && abs(eta1)<%.2f && abs(eta2)<%.2f && (mass<2.9||mass>3.2)",ptLow, ptHigh, yHigh, yHigh, yHigh);
+    //TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) )";//2018 acceptance cut
 
-  if (muPtCut>0){
-    kineCut = accCut + kineCut + Form(" && (pt1>%.2f) && (pt2>%.2f) ", (float)muPtCut, (float)muPtCut);
-  }
+  //kineCut = accCut + kineCut;
 
   //import and merge datasets
   RooDataSet *dataset = (RooDataSet*)f1->Get("dataset");
@@ -87,9 +76,11 @@ void doFit_Sim_Data(
   ws->import(*dataset);
   cout << "####################################" << endl;
   RooDataSet *reducedDS_A = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), kineCut.Data() );
+  //RooDataSet *reducedDS_A = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("mass")), *(ws->var("ctau3D")), *(ws->var("pt")), *(ws->var("y"))), SigCut.Data() );
   reducedDS_A->SetName("reducedDS_A");
   ws->import(*reducedDS_A);
   RooDataSet *reducedDS_B = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3D")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), kineCut.Data() );
+  //RooDataSet *reducedDS_B = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3D")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), BkgCut.Data() );
   //RooDataSet *reducedDS_B = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3D")), *(ws->var("pt")), *(ws->var("y"))), kineCut.Data() );
   reducedDS_B->SetName("reducedDS_B");
   ws->import(*reducedDS_B);
@@ -119,62 +110,59 @@ void doFit_Sim_Data(
   c_B->cd();
   RooPlot* myPlot_B = ws->var("ctau3D")->frame(nCtauBin); // bins
   //ws->data("reducedDS_B")->plotOn(myPlot_B,Name("dataHist_B"));
-  RooRealVar mean1s_B("m_{J/#Psi}_B","mean of the signal gaussian mass PDF",pdgMass.JPsi, pdgMass.JPsi -0.1, pdgMass.JPsi + 0.1 ) ;
+  RooRealVar mean_B("m_{J/#Psi}_B","mean of the signal gaussian mass PDF",pdgMass.JPsi, pdgMass.JPsi -0.1, pdgMass.JPsi + 0.1 ) ;
 
   //SIGNAL: initial params
-  double sigma1s_1_init = 0.1;
-  double x1s_init = 0.8;
-  double alpha1s_1_init = 1.5;
-  double n1s_1_init = 2.6;
-  double f1s_init = 0.5;
+  double sigma_1_init = 0.1;
+  double x_init = 0.8;
+  double alpha_1_init = 1.5;
+  double n_1_init = 2.6;
+  double f_init = 0.5;
   if (ICset>1 && ICset<4) {
-    sigma1s_1_init = 0.3;
-    x1s_init = 0.3;
-    alpha1s_1_init = 2.6;
-    n1s_1_init = 3.0;
-    f1s_init = 0.1;
+    sigma_1_init = 0.3;
+    x_init = 0.3;
+    alpha_1_init = 2.6;
+    n_1_init = 3.0;
+    f_init = 0.1;
   }
 
 //A:Mass double CB function
-  RooRealVar    sigma1s_1_A("sigma1s_1_A","width/sigma of the signal gaussian mass PDF",sigma1s_1_init, paramslower[0], paramsupper[0]);
-  RooRealVar   *x1s_A = new RooRealVar("x1s_A","sigma ratio ", x1s_init, paramslower[1], paramsupper[1]);
-  RooFormulaVar sigma1s_2_A("sigma1s_2_A","@0*@1",RooArgList(sigma1s_1_A, *x1s_A) );
-  RooRealVar    alpha1s_1_A("alpha1s_1_A","tail shift", alpha1s_1_init, paramslower[2], paramsupper[2]);
-  RooFormulaVar alpha1s_2_A("alpha1s_2_A","1.0*@0",RooArgList(alpha1s_1_A) );
-  RooRealVar    n1s_1_A("n1s_1_A","power order", n1s_1_init , paramslower[3], paramsupper[3]);
-  RooFormulaVar n1s_2_A("n1s_2_A","1.0*@0",RooArgList(n1s_1_A) );
-  RooRealVar   *bfrac = new RooRealVar("bfrac","b fraction", f1s_init, paramslower[4], paramsupper[4]);
+  RooRealVar    sigma_1_A("sigma_1_A","width/sigma of the signal gaussian mass PDF",sigma_1_init, paramslower[0], paramsupper[0]);
+  RooRealVar   *x_A = new RooRealVar("x_A","sigma ratio ", x_init, paramslower[1], paramsupper[1]);
+  RooFormulaVar sigma_2_A("sigma_2_A","@0*@1",RooArgList(sigma_1_A, *x_A) );
+  RooRealVar    alpha_1_A("alpha_1_A","tail shift", alpha_1_init, paramslower[2], paramsupper[2]);
+  RooFormulaVar alpha_2_A("alpha_2_A","1.0*@0",RooArgList(alpha_1_A) );
+  RooRealVar    n_1_A("n_1_A","power order", n_1_init , paramslower[3], paramsupper[3]);
+  RooFormulaVar n_2_A("n_2_A","1.0*@0",RooArgList(n_1_A) );
+  RooRealVar   *bfrac = new RooRealVar("bfrac","b fraction", f_init, paramslower[4], paramsupper[4]);
   // Set up crystal ball shapes
-  RooCBShape* cb1s_1_A = new RooCBShape("cball1s_1_A", "cystal Ball", *(ws->var("mass")), mean, sigma1s_1_A, alpha1s_1_A, n1s_1_A);
-  RooAddPdf*  cb1s_A;
+  RooCBShape* cb_1_A = new RooCBShape("cball_1_A", "cystal Ball", *(ws->var("mass")), mean, sigma_1_A, alpha_1_A, n_1_A);
+  RooAddPdf*  cb_A;
   //DOUBLE CRYSTAL BALL
-  RooCBShape* cb1s_2_A = new RooCBShape("cball1s_2_A", "cystal Ball", *(ws->var("mass")), mean, sigma1s_2_A, alpha1s_2_A, n1s_2_A);
-  cb1s_A = new RooAddPdf("cb1s_A","Signal 1S",RooArgList(*cb1s_1_A,*cb1s_2_A), RooArgList(*bfrac) );
-  RooRealVar *nSig= new RooRealVar("nSig","inclusive Jpsi signals",0,1000000);
-  RooRealVar *nSigPR= new RooRealVar("nSigPR","prompt Jpsi signals",0,1000000);
-  RooRealVar *nSigNP= new RooRealVar("nSigNP","non-prompt Jpsi signals",0,1000000);
-  cb1s_A = new RooAddPdf("cb1s_A","Signal 1S",RooArgList(*cb1s_1_A,*cb1s_2_A), RooArgList(*bfrac) );
+  RooCBShape* cb_2_A = new RooCBShape("cball_2_A", "cystal Ball", *(ws->var("mass")), mean, sigma_2_A, alpha_2_A, n_2_A);
+  cb_A = new RooAddPdf("cb_A","Signal ",RooArgList(*cb_1_A,*cb_2_A), RooArgList(*bfrac) );
+  RooRealVar *nSig= new RooRealVar("nSig","inclusive Jpsi signals",0,100000);
+  //RooRealVar *nSigPR= new RooRealVar("nSigPR","prompt Jpsi signals",0,100000);
+  //RooRealVar *nSigNP= new RooRealVar("nSigNP","non-prompt Jpsi signals",0,100000);
+  cb_A = new RooAddPdf("cb_A","Signal ",RooArgList(*cb_1_A,*cb_2_A), RooArgList(*bfrac) );
 
 //B:Ctau distribution
-  RooRealVar dt("dt", "dt", ctauLow, ctauHigh);
-  RooRealVar tau("tau", "tau", 1.548);
-  RooTruthModel tm("tm", "truth model", dt);
-  RooDecay decay_tm("decay_tm", "decay", dt, tau, tm, RooDecay::DoubleSided);//PR Jpsi
+  ws->factory("GaussModel::GW_PRRes(Jpsi_Ct,meanPRResW[0.,-0.01,0.01],sigmaPRResW[2.3,1.1,5.5],one[1.0],Jpsi_CtErr)");
+  ws->factory("GaussModel::GN_PRRes(Jpsi_Ct,meanPRResN[0.,-0.01,0.01],sigmaPRResN[0.8,0.6,1.2],one,Jpsi_CtErr)");
+  ws->factory("AddModel::CtPRRes({GW_PRRes,GN_PRRes},{fracRes[0.01,0.001,0.999]})");
 
-  RooRealVar    sigma1s_1_B("sigma1s_1_B","width/sigma of the signal gaussian mass PDF",sigma1s_1_init, paramslower[0], paramsupper[0]);
-  RooRealVar *x1s_B = new RooRealVar("x1s_B","sigma ratio ", x1s_init, paramslower[1], paramsupper[1]);
-  RooFormulaVar sigma1s_2_B("sigma1s_2_B","@0*@1",RooArgList(sigma1s_1_B, *x1s_B) );
-  RooRealVar alpha1s_1_B("alpha1s_1_B","tail shift", alpha1s_1_init, paramslower[2], paramsupper[2]);
-  RooFormulaVar alpha1s_2_B("alpha1s_2_B","1.0*@0",RooArgList(alpha1s_1_B) );
-  RooRealVar n1s_1_B("n1s_1_B","power order", n1s_1_init , paramslower[3], paramsupper[3]);
-  RooFormulaVar n1s_2_B("n1s_2_B","1.0*@0",RooArgList(n1s_1_B) );
+  //RooRealVar dt("dt", "dt", ctauLow, ctauHigh);
+  //RooRealVar tau("tau", "tau", 1.548);
+  //RooTruthModel tm("tm", "truth model", dt);
+  //RooDecay decay_tm("decay_tm", "decay", dt, tau, tm, RooDecay::DoubleSided);//PR Jpsi
 
-  // Set up crystal ball shapes
-  RooCBShape* cb1s_1_B = new RooCBShape("cball1s_1_B", "cystal Ball", *(ws->var("mass")), mean1s_B, sigma1s_1_B, alpha1s_1_B, n1s_1_B);
-  RooAddPdf* cb1s_B;
-  //For the background: SingleSided(Nonprompt), Flipped(??), DoubleSided(Prompt Jpsi)
-  RooCBShape* cb1s_2_B = new RooCBShape("cball1s_2_B", "cystal Ball", *(ws->var("mass")), mean1s_B, sigma1s_2_B, alpha1s_2_B, n1s_2_B);
-  cb1s_B = new RooAddPdf("cb1s_B","Signal 1S",RooArgList(*cb1s_1_B,*cb1s_2_B), RooArgList(*bfrac) );
+  //// Set up total shapes
+  ////For the background: SingleSided(Nonprompt), Flipped(??), DoubleSided(Prompt Jpsi)
+  //Roo??* ctPR = new Roo??("", "", *(ws->var("ctau3D")), pr);
+  //Roo??* ctNP = new Roo??("", "", *(ws->var("ctau3D")), np);
+  //Roo??* ctBkg = new Roo??("", "", *(ws->var("ctau3D")), bkg);
+  //RooAddPdf* ctTotal;
+  //ctTotal = new RooAddPdf("ctTotal","Sig + Bkg ", RooArgList(*ctPR,*ctNP,*ctBkg), RooArgList(*bfrac) );
 
   //BACKGROUND
   double err_sigma_init = 5;
@@ -195,31 +183,30 @@ void doFit_Sim_Data(
   RooRealVar *nBkg = new RooRealVar("nBkg","fraction of component 1 in bkg",10000,0,5000000); 
 
   RooFormulaVar fracAlpha("fracAlpha","@0/(@0+@1)",RooArgList(*nBkg,*nSig)); ws->import(fracAlpha);
-  cout<<"Alpha: "<<ws->var("fracAlpha")<<endl;
+  //cout<<"Alpha: "<<ws->var("fracAlpha")->getVal()<<endl;
+
 //B: Ctau Bkg function
-  RooRealVar err_mu_B("#mu_B","err_mu", err_mu_init,  paramslower[5], paramsupper[5]) ;
-  RooRealVar err_sigma_B("#sigma_B","err_sigma", err_sigma_init, paramslower[6], paramsupper[6]);
-  RooRealVar m_lambda_B("#lambda_B","m_lambda",  m_lambda_init, paramslower[7], paramsupper[7]);
+  ws->factory("Decay::CtBkgPos(Jpsi_Ct,lambdap[0.42,0.1,1.0],CtPRRes,RooDecay::SingleSided)");
+  ws->factory("Decay::CtBkgNeg(Jpsi_Ct,lambdam[0.02,0.001,0.1],CtPRRes,RooDecay::Flipped)");
+  ws->factory("Decay::CtBkgDbl(Jpsi_Ct,lambdasym[0.2,0.001,0.8],CtPRRes,RooDecay::DoubleSided)");
+  ws->factory("SUM::CtBkgSum1(fracCtBkg1[0.9,0.0,1.0]*CtBkgPos,CtBkgNeg)");
+  ws->factory("SUM::CtBkgSum2(fracCtBkg2[0.9,0.0,1.0]*CtBkgSum1,CtBkgDbl)");
+  ws->factory("SUM::CtBkgTot(fracCtBkg3[0.29,0.0,1.0]*CtPRRes,CtBkgSum2)");
 
-  RooGenericPdf *bkg_B;
-  //THIS IS THE HIGH-PT BACKGROUND FUNCTION
-  RooGenericPdf *bkgHighPt_B = new RooGenericPdf("bkgHighPt_B","Background","TMath::Exp(-@0/@1)",RooArgList(*(ws->var("mass")),m_lambda_B));
-  bkg_B = bkgHighPt_B ;
-
-  //RooAddPdf  decay_Bkg = new RooAddPdf("decay_Bkg","Bkg",RooArgList(*decay_tm), RooArgList(*nBkg) );
-  //RooGenericPdf* model_decay = new RooAddPdf("model_decay","ctau test",RooArgList(*decay_Bkg), RooArgList(*nBkg));
   //Build the model
+//Model A: Mass
   RooAddPdf* model_A = new RooAddPdf();
-  model_A = new RooAddPdf("model_A","Jpsi + Bkg",RooArgList(*cb1s_A, *bkg),RooArgList(*nSig,*nBkg));
-  //model_A = new RooAddPdf("model_A","PR Jpsi + NP Jpsi + Bkg",RooArgList(*cb1s_1_A, *cb1s_2_A, *bkg),RooArgList(*nSigPR,*nSigNP,*nBkg));
+  model_A = new RooAddPdf("model_A","Jpsi + Bkg",RooArgList(*cb_A, *bkg),RooArgList(*nSig,*nBkg));
+  //model_A = new RooAddPdf("model_A","PR Jpsi + NP Jpsi + Bkg",RooArgList(*cb_1_A, *cb_2_A, *bkg),RooArgList(*nSigPR,*nSigNP,*nBkg));
   ws->import(*model_A);
   c_A->cd();
   RooPlot* myPlot2_A = (RooPlot*)myPlot_A->Clone();
   ws->data("reducedDS_A")->plotOn(myPlot2_A,Name("dataOS_FIT_A"),MarkerSize(.8));
 
+//Model B: Ctau
   RooAddPdf* model_B = new RooAddPdf();
-  //model_B = new RooAddPdf("model_B","Jpsi + Bkg",RooArgList(*cb1s_B, *bkg_B),RooArgList(*nSig, *nBkg));
-  model_B = new RooAddPdf("model_B","Jpsi + Bkg",RooArgList(*cb1s_B, *bkg_B),RooArgList(*nSig, *nBkg));
+  model_B = new RooAddPdf("model_B","Jpsi + Bkg",RooArgList(*cb_A, *bkg),RooArgList(*nSig, *nBkg));
+  //model_B = new RooAddPdf("model_B","Jpsi + Bkg",RooArgList(*ctPRRes, *CkBkgTot),RooArgList(*nSig, *nBkg));
   ws->import(*model_B);
   c_B->cd();
   RooPlot* myPlot2_B = (RooPlot*)myPlot_B->Clone();
@@ -229,7 +216,7 @@ void doFit_Sim_Data(
   // Construct simultaneous PDF
   RooSimultaneous* simPdf = new RooSimultaneous("simPdf","simPdf",tp);
   simPdf->addPdf(*(ws->pdf("model_A")),"A") ;
-  simPdf->addPdf(*(ws->pdf("model_B")),"B") ;
+  //simPdf->addPdf(*(ws->pdf("model_B")),"B") ;
   ws->import(*simPdf);
 
   cout << endl << "********* Starting Simutaneous Fit **************" << endl << endl;
@@ -240,7 +227,7 @@ void doFit_Sim_Data(
   c_A->cd();
   gPad->SetLogy();
   ws->pdf("model_A")->plotOn(myPlot2_A,Name("modelHist_A"), LineColor(kBlack));
-  ws->pdf("model_A")->plotOn(myPlot2_A,Name("Sig1S_A"),Components(RooArgSet(*cb1s_A)),LineColor(kOrange+7),LineWidth(2),LineStyle(2));
+  ws->pdf("model_A")->plotOn(myPlot2_A,Name("Sig_A"),Components(RooArgSet(*cb_A)),LineColor(kOrange+7),LineWidth(2),LineStyle(2));
   ws->pdf("model_A")->plotOn(myPlot2_A,Name("bkgPDF_A"),Components(RooArgSet(*bkg)),LineColor(kBlue),LineStyle(kDashed),LineWidth(2));
 
   //make a pretty plot
@@ -252,7 +239,8 @@ void doFit_Sim_Data(
   myPlot2_A->GetYaxis()->SetLabelSize(0.054);
   //myPlot2_A->GetXaxis()->SetLabelSize(0);
   myPlot2_A->GetXaxis()->SetRangeUser(massLow,massHigh);
-  myPlot2_A->GetYaxis()->SetRangeUser(2*10, 2*10e3);
+  //myPlot2_A->GetYaxis()->SetRangeUser(2*10, 2*10e3);
+  myPlot2_A->SetMinimum(2*10);
   //myPlot2_A->GetXaxis()->SetTitleSize(0);
   myPlot2_A->Draw();
 
@@ -261,7 +249,7 @@ void doFit_Sim_Data(
   float pos_y_diff = 0.056;
   float text_size = 19;
   int text_color = 1;
-  drawText(Form("%.f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),pos_text_x,pos_text_y,text_color,text_size);
+  drawText(Form("%.1f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),pos_text_x,pos_text_y,text_color,text_size);
   drawText(Form("|y^{#mu#mu}| < %.1f",yHigh ), pos_text_x,pos_text_y-pos_y_diff,text_color,text_size);
   drawText(Form("n_{J/#psi} = %.f #pm %.f", ws->var("nSig")->getVal(),ws->var("nSig")->getError()),pos_text_x,pos_text_y-pos_y_diff*2,text_color,text_size);
   drawText(Form("n_{Bkg} = %.f #pm %.f", ws->var("nBkg")->getVal(),ws->var("nBkg")->getError()),pos_text_x,pos_text_y-pos_y_diff*3,text_color,text_size);
@@ -269,9 +257,9 @@ void doFit_Sim_Data(
 
   c_B->cd();
   gPad->SetLogy();
-  ws->pdf("model_B")->plotOn(myPlot2_B,Name("modelHist_B"));
-  ws->pdf("model_B")->plotOn(myPlot2_B,Name("Sig1S_B"),Components(RooArgSet(*cb1s_B)),LineColor(kOrange+7),LineWidth(2),LineStyle(2));
-  ws->pdf("model_B")->plotOn(myPlot2_B,Name("bkgPDF_B"),Components(RooArgSet(*bkg_B)),LineColor(kBlue),LineStyle(kDashed),LineWidth(2));
+  //ws->pdf("model_B")->plotOn(myPlot2_B,Name("modelHist_B"));
+  //ws->pdf("model_B")->plotOn(myPlot2_B,Name("Sig_B"),Components(RooArgSet(*cb_B)),LineColor(kOrange+7),LineWidth(2),LineStyle(2));
+  //ws->pdf("model_B")->plotOn(myPlot2_B,Name("bkgPDF_B"),Components(RooArgSet(*bkg_B)),LineColor(kBlue),LineStyle(kDashed),LineWidth(2));
 
   //make a pretty plot
   myPlot2_B->SetFillStyle(4000);
