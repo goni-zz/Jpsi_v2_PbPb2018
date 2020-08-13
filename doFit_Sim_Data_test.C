@@ -23,8 +23,8 @@ using namespace std;
 using namespace RooFit;
 void doFit_Sim_Data_test( 
        float ptLow=6.5, float ptHigh=50, 
-       float yLow=0., float yHigh=2.4,
-       int cLow=20, int cHigh=120,
+       float yLow=0., float yHigh=0.6,
+       int cLow=0, int cHigh=200,
        float muPtCut=0.0,
        bool whichModel=0,   // Nominal = 0. Alternative = 1.
        int ICset = 1
@@ -47,14 +47,14 @@ void doFit_Sim_Data_test(
 
   //Select Data Set
     f1 = new TFile("skimmedFiles/OniaRooDataSet_isMC0_JPsi.root");
-    kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5",ptLow, ptHigh, yLow, yHigh);
+    //kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5",ptLow, ptHigh, yLow, yHigh);
     SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.1",ptLow, ptHigh, yLow, yHigh);
     BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && (mass<2.8 || mass>3.1)",ptLow, ptHigh, yLow, yHigh);
     //SigCut = Form("pt>%.2f && pt<%.2f && abs(y)<%.2f && abs(eta1)<%.2f && abs(eta2)<%.2f && mass>2.9&&mass<3.2", ptLow, ptHigh, yHigh, yHigh, yHigh);
     //BkgCut = Form("pt>%.2f && pt<%.2f && abs(y)<%.2f && abs(eta1)<%.2f && abs(eta2)<%.2f && (mass<2.9||mass>3.2)",ptLow, ptHigh, yHigh, yHigh, yHigh);
     TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) ) &&";//2018 acceptance cut
 
-  kineCut = accCut + kineCut;
+  //kineCut = accCut + kineCut;
   SigCut = accCut + SigCut;
   BkgCut = accCut + BkgCut;
 
@@ -187,7 +187,7 @@ void doFit_Sim_Data_test(
   //myPlot2_A->GetYaxis()->SetTitleSize(0.058);
   myPlot2_A->GetYaxis()->SetLabelSize(0.054);
   //myPlot2_A->GetYaxis()->SetRangeUser(2*10, 2*10e3);
-  myPlot2_A->GetYaxis()->SetRangeUser(ws->var("nSig")->getVal()/100, ws->var("nSig")->getVal());
+  myPlot2_A->GetYaxis()->SetRangeUser(ws->var("nSig")->getVal()/1000, ws->var("nSig")->getVal());
   //myPlot2_A->SetMinimum(2*10);
   //myPlot2_A->GetXaxis()->SetLabelSize(0);
   myPlot2_A->GetXaxis()->SetRangeUser(massLow,massHigh);
@@ -208,18 +208,21 @@ void doFit_Sim_Data_test(
 
 //CTAU
 //B:Ctau distribution with 3 decay pdf
-  RooRealVar tau("tau","tau", 0, 0e-12, 10); // some good start value
-  RooRealVar t("t3d", "t", 0, 10);
-  RooTruthModel idealres("idealres","Ideal resolution model",t);
-  RooDecay decay("decay", "decay", t, tau, idealres, RooDecay::DoubleSided);
+  RooRealVar tau("tau","tau", 1.548); // some good start value
+  RooTruthModel idealres("idealres","Ideal resolution model", *ws->var("ctau3D"));
+  RooDecay decay("decay", "decay", *ws->var("ctau3D"), tau, idealres, RooDecay::SingleSided);
+
+  RooRealVar dt("dt","per-event error on t",0.01,5) ;
+  RooRealVar bias("bias","bias",0,-10,10) ;
+  RooRealVar sigma("sigma","per-event error scale factor",1,0.1,2) ; 
+  RooGaussModel gm("gm1","gauss model scaled by per-event error",*ws->var("ctau3D"),bias,sigma,dt);
 
   RooRealVar testsig("testsig","testsig",ws->var("nSig")->getVal(),ws->var("nSig")->getVal(),ws->var("nSig")->getVal());
   RooAddPdf* ctau_sig = new RooAddPdf("ctau","ctau",RooArgSet(decay),RooArgList(testsig));
 //B: Ctau Bkg function
-  RooRealVar tau2("tau2","tau2", 0, 0e-12, 10); // some good start value
-  RooRealVar t2("t2", "t2", 0, 10);
-  RooTruthModel idealres2("idealres2","Ideal resolution model",t2);
-  RooDecay decay2("decay2", "decay2", t2, tau2, idealres2, RooDecay::Flipped);
+  RooRealVar tau2("tau2","tau2", 2.56); // some good start value
+  RooTruthModel idealres2("idealres2","Ideal resolution model", *ws->var("ctau3D"));
+  RooDecay decay2("decay2", "decay2", *ws->var("ctau3D"), tau2, idealres2, RooDecay::Flipped);
 
   RooRealVar testbkg("testbkg","testbkg",ws->var("nBkg")->getVal(),ws->var("nBkg")->getVal(),ws->var("nBkg")->getVal());
   RooAddPdf* ctau_bkg = new RooAddPdf("ctau_bkg","ctau_bkg",RooArgSet(decay2),RooArgList(testbkg));
@@ -239,7 +242,7 @@ void doFit_Sim_Data_test(
 
   c_B->cd();
   gPad->SetLogy();
-  ws->pdf("model_B")->plotOn(myPlot2_B,Name("modelHist_B"), LineColor(kRed));
+  ws->pdf("model_B")->plotOn(myPlot2_B,Name("modelHist_B"), LineColor(kBlack));
   ws->pdf("model_B")->plotOn(myPlot2_B,Name("Sig_B"),Components(RooArgSet(*ctau_sig)),LineColor(kOrange+7),LineWidth(2),LineStyle(2));
   ws->pdf("model_B")->plotOn(myPlot2_B,Name("bkgPDF_B"),Components(RooArgSet(*ctau_bkg)),LineColor(kBlue),LineStyle(kDashed),LineWidth(2));
 
