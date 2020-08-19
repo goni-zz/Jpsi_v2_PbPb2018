@@ -25,8 +25,8 @@ using namespace std;
 using namespace RooFit;
 void doFit_CtauErr_test( 
        float ptLow=6.5, float ptHigh=50, 
-       float yLow=0., float yHigh=2.4,
-       int cLow=20, int cHigh=120,
+       float yLow=0, float yHigh=2.4,
+       int cLow=0, int cHigh=200,
        float muPtCut=0.0,
        bool whichModel=0,   // Nominal = 0. Alternative = 1.
        int ICset = 1
@@ -38,10 +38,13 @@ void doFit_CtauErr_test(
   int   nMassBin  = 36; //(massHigh-massLow)*30;
 
   float ctauLow = -3, ctauHigh = 5;
-  int   nCtauBin  = (ctauHigh-ctauLow)*10;
-  int nBins = 100;
+  float ctauResLow = -20, ctauResHigh = 20;
+  int   nCtauBins  = (ctauHigh-ctauLow)*10;
+  int   nCtauErrBins = 72;
+  int   nCtauResBins = 72;
+  //int nCtauErrBins = 100;
   
-  double ctauErrMin = 0., ctauErrMax = 0.12;
+  double ctauErrLow = 0., ctauErrHigh = 0.18;
   double binWidth = 0.0025;
 
   TFile* f1;
@@ -50,7 +53,8 @@ void doFit_CtauErr_test(
   TString BkgCut;
 
   //Select Data Set
-    f1 = new TFile("skimmedFiles/OniaRooDataSet_isMC0_JPsi.root");
+    //f1 = new TFile("skimmedFiles/OniaRooDataSet_isMC0_JPsi.root");
+    f1 = new TFile("skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_2020819.root");
     //kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5",ptLow, ptHigh, yLow, yHigh);
     SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2",ptLow, ptHigh, yLow, yHigh);
     BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5))",ptLow, ptHigh, yLow, yHigh);
@@ -58,24 +62,28 @@ void doFit_CtauErr_test(
     //BkgCut = Form("pt>%.2f && pt<%.2f && abs(y)<%.2f && abs(eta1)<%.2f && abs(eta2)<%.2f && (mass<2.9||mass>3.2)",ptLow, ptHigh, yHigh, yHigh, yHigh);
     TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) ) &&";//2018 acceptance cut
 
-  kineCut = accCut + kineCut;
-  SigCut = accCut + SigCut;
-  BkgCut = accCut + BkgCut;
+  //kineCut = accCut + kineCut;
+  //SigCut = accCut + SigCut;
+  //BkgCut = accCut + BkgCut;
   
+  kineCut = kineCut;
+  SigCut = SigCut;
+  BkgCut = BkgCut;
   //import and merge datasets
   RooDataSet *dataset = (RooDataSet*)f1->Get("dataset");
   RooWorkspace *ws = new RooWorkspace("workspace");
   ws->import(*dataset);
   cout << "####################################" << endl;
-  RooDataSet *reducedDS_A = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), SigCut.Data() );
-  RooDataSet *reducedDS_B = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), BkgCut.Data() );
+  RooDataSet *reducedDS_A = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), SigCut.Data() );
+  RooDataSet *reducedDS_B = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), BkgCut.Data() );
   reducedDS_A->SetName("reducedDS_A");
   reducedDS_B->SetName("reducedDS_B");
   ws->import(*reducedDS_A);
   ws->import(*reducedDS_B);
   ws->var("mass")->setRange(massLow, massHigh);
   ws->var("ctau3D")->setRange(ctauLow, ctauHigh);
-  ws->var("ctau3DErr")->setRange("CtauErrWindow", ctauErrMin, ctauErrMax);
+  ws->var("ctau3DErr")->setRange(ctauLow, ctauHigh);
+  ws->var("ctau3DRes")->setRange(ctauResLow, ctauResHigh);
 
   reducedDS_A->Print();
   reducedDS_B->Print();
@@ -84,13 +92,18 @@ void doFit_CtauErr_test(
   tp.defineType("B");
 
   // Create a dataset that imports contents of all the above datasets mapped by index category tp
-  RooDataSet* dsAB = new RooDataSet("dsAB","dsAB",RooArgSet(*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))),Index(tp),Import("A",*reducedDS_A),Import("B",*reducedDS_B));
+  //RooDataSet* dsAB = new RooDataSet("dsAB","dsAB",RooArgSet(*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))),Index(tp),Import("A",*reducedDS_A),Import("B",*reducedDS_B));
+  RooDataSet* dsAB = new RooDataSet("dsAB","dsAB",RooArgSet(*(ws->var("ctau3DRes")), *(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))),Index(tp),Import("A",*reducedDS_A),Import("B",*reducedDS_B));
   cout << "******** New Combined Dataset ***********" << endl;
   dsAB->Print();
   ws->import(*dsAB);
   ws->var("mass")->setRange(massLow, massHigh);
   ws->var("ctau3D")->setRange(ctauLow, ctauHigh);
-  ws->var("ctau3DErr")->setRange("CtauErrWindow", ctauErrMin, ctauErrMax);
+  ws->var("ctau3D")->setRange("ctauRange", ctauLow, ctauHigh);
+  ws->var("ctau3DErr")->setRange(ctauErrLow, ctauErrHigh);
+  ws->var("ctau3DErr")->setRange("ctauErrRange",ctauErrLow, ctauErrHigh);
+  ws->var("ctau3DRes")->setRange(ctauResLow, ctauResHigh);
+  ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
   ws->var("mass")->Print();
   ws->var("ctau3D")->Print();
   ws->var("ctau3DErr")->Print();
@@ -102,8 +115,18 @@ void doFit_CtauErr_test(
 
   TCanvas* c_B =  new TCanvas("canvas_B","My plots",504,45,550,520);
   c_B->cd();
-  RooPlot* myPlot_B = ws->var("ctau3DErr")->frame(nCtauBin); // bins
-  //ws->data("dsAB")->plotOn(myPlot_B,Name("dataHist_B"));
+  RooPlot* myPlot_B = ws->var("ctau3DErr")->frame(nCtauErrBins); // bins
+ // ws->data("dsAB")->plotOn(myPlot_B,Name("dataHist_B"));
+
+  TCanvas* c_C =  new TCanvas("canvas_C","My plots",504,45,550,520);
+  c_C->cd();
+  RooPlot* myPlot_C = ws->var("ctau3DRes")->frame(nCtauResBins); // bins
+  //ws->data("dsAB")->plotOn(myPlot_C,Name("dataHist_C"));
+
+  TCanvas* c_D =  new TCanvas("canvas_D","My plots",504,45,550,520);
+  c_D->cd();
+  RooPlot* myPlot_D = ws->var("ctau3D")->frame(nCtauBins); // bins
+  //ws->data("dsAB")->plotOn(myPlot_C,Name("dataHist_C"));
 
   //The order is {sigma_1,x,alpha_1,n_1,f,err_mu,err_sigma,m_lambda}
   double paramsupper[8] = {0.2, 3.0, 3.321, 5.0, 1.0, 15.0, 15.0, 25.0};
@@ -171,10 +194,10 @@ void doFit_CtauErr_test(
   RooPlot* myPlot2_A = (RooPlot*)myPlot_A->Clone();
   ws->data("dsAB")->plotOn(myPlot2_A,Name("dataOS_FIT_A"),MarkerSize(.8));
 
-  //cout << endl << "********* Starting Simutaneous Fit **************" << endl << endl;
-  RooFitResult* fitResSim = ws->pdf("model_A")->fitTo(*dsAB,Save(), Hesse(kTRUE), Range(massLow,massHigh), Timer(kTRUE), Extended(kTRUE));
+  cout << endl << "********* Starting Mass Dist. Fit **************" << endl << endl;
+  RooFitResult* fitResSim = ws->pdf("model_A")->fitTo(*dsAB,Save(), Hesse(kTRUE), Range(massLow,massHigh), Timer(kTRUE), Extended(kTRUE), NumCPU(12));
   //RooFitResult* fitResSim = ws->pdf("simPdf")->fitTo(*dsAB,Save(), Hesse(kTRUE), Timer(kTRUE),Extended(kTRUE));
-  //cout << endl << "********* Finished Simutaneous Fit **************" << endl << endl;
+  cout << endl << "********* Finished Mass Dist. Fit **************" << endl << endl;
 
   c_A->cd();
   gPad->SetLogy();
@@ -196,19 +219,146 @@ void doFit_CtauErr_test(
   //myPlot2_A->GetXaxis()->SetTitleSize(0);
   myPlot2_A->Draw();
 
-  float pos_text_x = 0.15;
-  float pos_text_y = 0.816;
-  float pos_y_diff = 0.05;
+  float text_x = 0.15;
+  float text_y = 0.816;
+  float y_diff = 0.05;
   float text_size = 19;
   int text_color = 1;
-  drawText(Form("%.1f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),pos_text_x,pos_text_y,text_color,text_size);
-  drawText(Form("|y^{#mu#mu}| < %.1f",yHigh ), pos_text_x,pos_text_y-pos_y_diff,text_color,text_size);
-  drawText(Form("Cent. %d - %d%s", cLow, cHigh, "%"),pos_text_x,pos_text_y-pos_y_diff*2,text_color,text_size);
-  drawText(Form("n_{J/#psi} = %.f #pm %.f",ws->var("nSig")->getVal(),ws->var("nSig")->getError()),pos_text_x,pos_text_y-pos_y_diff*3,text_color,text_size);
-  drawText(Form("n_{Bkg} = %.f #pm %.f",ws->var("nBkg")->getVal(),ws->var("nBkg")->getError()),pos_text_x,pos_text_y-pos_y_diff*4,text_color,text_size);
-  //drawText(Form("Signal Function : %s CB", SignalCB.Data() ), 0.55,0.54,1,14);
+  drawText(Form("%.1f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
+  if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
+  else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
+  drawText(Form("Cent. %d - %d%s", cLow, cHigh, "%"),text_x,text_y-y_diff*2,text_color,text_size);
+  drawText(Form("n_{J/#psi} = %.f #pm %.f",ws->var("nSig")->getVal(),ws->var("nSig")->getError()),text_x,text_y-y_diff*3,text_color,text_size);
+  drawText(Form("n_{Bkg} = %.f #pm %.f",ws->var("nBkg")->getVal(),ws->var("nBkg")->getError()),text_x,text_y-y_diff*4,text_color,text_size);
+  cout << endl << "********* Start SPLOT **************" << endl << endl;
+  //SPlot Ctau Error
+  RooRealVar *sigYield = ws->var("nSig");
+  RooRealVar *bkgYield = ws->var("nBkg");
+  RooArgList yieldList;
+  yieldList.add(*ws->var("nSig"));
+  yieldList.add(*ws->var("nBkg"));
+  cout<<"Sig Yield: "<<sigYield->getVal()<<" +/- "<<sigYield->getError()<<endl;
+  cout<<"Bkg Yield: "<<bkgYield->getVal()<<" +/- "<<bkgYield->getError()<<endl;
+
+  c_B->cd();
+  c_B->SetLogy();
+  ////RooPlot *frame = ws->var("ctau3DErr")->frame(Range(0, ctauErrHigh)); //Bins(100);
+  //original
+  RooPlot* myPlot2_B = (RooPlot*)myPlot_B->Clone();
+  TH1D* hTot = (TH1D*)ws->data("dsAB")->createHistogram(("hTot"), *ws->var("ctau3DErr"),Binning(nCtauErrBins,ctauErrLow,ctauErrHigh));
+  TH1D* hSig = (TH1D*)ws->data("reducedDS_A")->createHistogram(("hSig"), *ws->var("ctau3DErr"),Binning(nCtauErrBins,ctauErrLow,ctauErrHigh));
+  TH1D* hBkg = (TH1D*)ws->data("reducedDS_B")->createHistogram(("hBkg"), *ws->var("ctau3DErr"),Binning(nCtauErrBins,ctauErrLow,ctauErrHigh));
+  RooDataHist* totHist = new RooDataHist("dsAB", "", *ws->var("ctau3DErr"), hTot);
+  RooDataHist* sigHist = new RooDataHist("reducedDS_A", "", RooArgSet(*ws->var("ctau3DErr")), hSig);
+  RooDataHist* bkgHist = new RooDataHist("reducedDS_B", "", RooArgSet(*ws->var("ctau3DErr")), hBkg);
+  RooHistPdf* TotPdf = new RooHistPdf("TotPdf","hist pdf", *ws->var("ctau3DErr"), *totHist);
+  RooHistPdf* sigPdf = new RooHistPdf("sigPdf","hist pdf", *ws->var("ctau3DErr"), *sigHist);
+  RooHistPdf* bkgPdf = new RooHistPdf("bkgPdf","hist pdf", *ws->var("ctau3DErr"), *bkgHist);
+  RooAddPdf* model_ctErr = new RooAddPdf();
+  model_ctErr = new RooAddPdf("model_ctErr","Sig + Bkg ctau models", RooArgList(*sigPdf, *bkgPdf), RooArgList(*sigYield, *bkgYield));
+  ws->import(*model_ctErr);
+  RooDataSet* data = (RooDataSet*)ws->data("dsAB")->Clone("TMP_DATA");
+  RooArgSet* cloneSet = (RooArgSet*)RooArgSet(*ws->pdf("model_A"),"model_A").snapshot(kTRUE);
+  auto pdf = (RooAbsPdf*)cloneSet->find("model_A");
+  pdf->setOperMode(RooAbsArg::ADirty, kTRUE);
+  RooStats::SPlot sData = RooStats::SPlot("sData", "An SPlot", *data, pdf, RooArgList(*sigYield, *bkgYield));
+  ws->import(*dsAB, Rename("dataset_SPLOT"));
+
+  cout<<"#### nSig: "<<ws->var("nSig")->getVal()<<", sWeights :"<<sData.GetYieldFromSWeight("nSig")<<endl;
+  cout<<"#### nBkg: "<<ws->var("nBkg")->getVal()<<", sWeights :"<<sData.GetYieldFromSWeight("nBkg")<<endl;
+
+  ws->data("dsAB")->plotOn(myPlot2_B,Name("dataHist_Tot"), MarkerSize(.7), Binning(nCtauErrBins));
+  ws->pdf("model_ctErr")->plotOn(myPlot2_B,Name("totPdf"), LineColor(kGreen+1), Range("ctauErrRange"), LineWidth(2));
+  ws->data("reducedDS_A")->plotOn(myPlot2_B,Name("dataHist_Sig"), MarkerSize(.7), LineColor(kRed+2), MarkerColor(kRed+2), Binning(nCtauErrBins));
+  ws->pdf("sigPdf")->plotOn(myPlot2_B,Name("sigPdf"),LineColor(kRed+2), LineWidth(2), Range("ctauErrRange"));
+  ws->data("reducedDS_B")->plotOn(myPlot2_B,Name("dataHist_Bkg"), MarkerSize(.7), LineColor(kBlue+2), MarkerColor(kBlue+2), Binning(nCtauErrBins));
+  ws->pdf("bkgPdf")->plotOn(myPlot2_B,Name("bkgPdf"), LineColor(kBlue+2), LineWidth(2), Range("ctauErrRange"));
+  ws->data("dsAB")->plotOn(myPlot2_B,Name("dataHist_Tot"), MarkerSize(.7), Binning(nCtauErrBins));
+  myPlot2_B->GetYaxis()->SetRangeUser(10e-4, 10e8);
+  myPlot2_B->GetXaxis()->SetTitle("l_{J/#psi} Error (mm)");
+  myPlot2_B->Draw();
+
+  /*RooPlot* myPlot2_B = (RooPlot*)myPlot_B->Clone();
+  TH1D* hTot = (TH1D*)ws->data("dsAB")->createHistogram(("hTot"), *ws->var("ctau3DErr"),Binning(nCtauErrBins,ctauErrLow,ctauErrHigh));
+  //TH1D* hSig = (TH1D*)ws->data("reducedDS_A")->createHistogram(("hSig"), *ws->var("ctau3DErr"),Binning(nCtauErrBins,ctauErrLow,ctauErrHigh));
+  //TH1D* hBkg = (TH1D*)ws->data("reducedDS_B")->createHistogram(("hBkg"), *ws->var("ctau3DErr"),Binning(nCtauErrBins,ctauErrLow,ctauErrHigh));
+  RooDataHist* totHist = new RooDataHist("dsAB", "", *ws->var("ctau3DErr"), hTot);
+  //RooDataHist* sigHist = new RooDataHist("dsAB", "", *ws->var("ctau3DErr"), hSig);
+  //RooDataHist* bkgHist = new RooDataHist("dsAB", "", *ws->var("ctau3DErr"), hBkg);
+  RooHistPdf* TotPdf = new RooHistPdf("TotPdf","hist pdf", *ws->var("ctau3DErr"), *totHist);
+  //RooHistPdf* sigPdf = new RooHistPdf("sigPdf","hist pdf", *ws->var("ctau3DErr"), *sigHist);
+  //RooHistPdf* bkgPdf = new RooHistPdf("bkgPdf","hist pdf", *ws->var("ctau3DErr"), *bkgHist);
+  RooAddPdf* model_ctErr = new RooAddPdf();
+  model_ctErr = new RooAddPdf("model_ctErr","Sig + Bkg ctau models", RooArgList(*sigPdf, *bkgPdf), RooArgList(*sigYield, *bkgYield));
+  ws->import(*model_ctErr);
+  RooDataSet* data = (RooDataSet*)ws->data("dsAB")->Clone("TMP_DATA");
+  RooArgSet* cloneSet = (RooArgSet*)RooArgSet(*ws->pdf("model_A"),"model_A").snapshot(kTRUE);
+  auto pdf = (RooAbsPdf*)cloneSet->find("model_A");
+  pdf->setOperMode(RooAbsArg::ADirty, kTRUE);
+  
+  RooStats::SPlot sData = RooStats::SPlot("sData", "An SPlot", *data, pdf, RooArgList(*sigYield, *bkgYield));
+  ws->import(*dsAB, Rename("dataset_SPLOT"));
+  RooDataSet* dataw_Sig = new RooDataSet("TMP_SIG_DATA","TMP_SIG_DATA", (RooDataSet*)ws.data("dataset_SPLOT"), RooArgSet(*ws->var("ctau3DErr"), *ws->var("nsData.GetYieldFromSWeight("nSig")")), 0, "N_Sig_sw");
+  RooDataSet* dataw_Bkg = new RooDataSet("TMP_SIG_DATA","TMP_SIG_DATA", (RooDataSet*)ws.data("dataset_SPLOT"), RooArgSet(*ws->var("ctau3DErr"), *ws->var("nsData.GetYieldFromSWeight("nSig")")), 0, "N_Sig_sw");
+  cout<<"#### nSig: "<<ws->var("nSig")->getVal()<<", sWeights :"<<sData.GetYieldFromSWeight("nSig")<<endl;
+  cout<<"#### nBkg: "<<ws->var("nBkg")->getVal()<<", sWeights :"<<sData.GetYieldFromSWeight("nBkg")<<endl;
+
+  ws->data("dsAB")->numEntries()<<endl;
+  ws->data("dsAB")->plotOn(myPlot2_B,Name("dataHist_Tot"), MarkerSize(.7), Binning(nCtauErrBins));
+  //ws->pdf("model_ctErr")->plotOn(myPlot2_B,Name("totPdf"), LineColor(kGreen+1), Range("ctauErrRange"), LineWidth(2));
+  ws->data("reducedDS_A")->plotOn(myPlot2_B,Name("dataHist_Sig"), MarkerSize(.7), LineColor(kRed+2), MarkerColor(kRed+2), Binning(nCtauErrBins));
+  ws->pdf("sigPdf")->plotOn(myPlot2_B,Name("sigPdf"),LineColor(kRed+2), LineWidth(2), Range("ctauErrRange"));
+  ws->data("reducedDS_B")->plotOn(myPlot2_B,Name("dataHist_Bkg"), MarkerSize(.7), LineColor(kBlue+2), MarkerColor(kBlue+2), Binning(nCtauErrBins));
+  ws->pdf("bkgPdf")->plotOn(myPlot2_B,Name("bkgPdf"), LineColor(kBlue+2), LineWidth(2), Range("ctauErrRange"));
+  ws->data("dsAB")->plotOn(myPlot2_B,Name("dataHist_Tot"), MarkerSize(.7), Binning(nCtauErrBins));
+  myPlot2_B->GetYaxis()->SetRangeUser(10e-4, 10e8);
+  //myPlot2_B->GetXaxis()->SetTitle("l_{J/#psi} Error (mm)");
+  myPlot2_B->Draw();*/
+
+  //Double_t outTot = ws->data("dsAB")->numEntries();
+  //Double_t outErr = ws->data("dsAB")->reduce(Form("(ctauErr>=%.6f || ctauErr<=%.6f)", ctauErrHigh, ctauErrLow))->numEntries();
+  //cout<<(outErr*100)/outTot<<endl;
+
+  //drawText(Form("%.1f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
+  //if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
+  //else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
+  //drawText(Form("Cent. %d - %d%s", cLow, cHigh, "%"),text_x,text_y-y_diff*2,text_color,text_size);
+  //drawText(Form("n_{J/#psi} = %.f #pm %.f", sData.GetYieldFromSWeight("nSig"), ws->var("nSig")->getError()),text_x,text_y-y_diff*3,text_color,text_size);
+  //drawText(Form("n_{Bkg} = %.f #pm %.f", sData.GetYieldFromSWeight("nBkg"), ws->var("nBkg")->getError()),text_x,text_y-y_diff*4,text_color,text_size);
 
 //CTAU
+  c_C->cd();
+  c_C->SetLogy();
+  ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, 0);
+  RooPlot* myPlot2_C = (RooPlot*)myPlot_C->Clone();
+  //ws->data("dataset_SPLOT")->plotOn(myPlot2_C,Name("dataHist_Tot"), MarkerSize(.7), Binning(nCtauBins), CutRange("ctauResRange"), DataError(RooAbsData::SumW2), XErrorSize(0));
+  ws->data("reducedDS_A")->plotOn(myPlot2_C,Name("dataHist_Sig"), MarkerSize(.7), Binning(nCtauBins), CutRange("ctauResRange"), DataError(RooAbsData::SumW2), XErrorSize(0), LineColor(kRed+2), MarkerColor(kRed+2));
+  //ws->data("reducedDS_B")->plotOn(myPlot2_C,Name("dataHist_Bkg"), MarkerSize(.7), Binning(nCtauBins), CutRange("ctauResRange"), DataError(RooAbsData::SumW2), XErrorSize(0), LineColor(kBlue+2), MarkerColor(kBlue+2));
+  //ws->data("dataset_SPLOT")->plotOn(myPlot2_C,Name("dataHist_Sig"), Components(RooArgSet(*sigPdf)), LineColor(kRed+2), MarkerColor(kRed+2), MarkerSize(.7), Binning(nCtauBins));
+  //ws->data("dataset_SPLOT")->plotOn(myPlot2_C,Name("dataHist_Bkg"), Components(RooArgSet(*bkgPdf)), LineColor(kBlue+2), MarkerColor(kBlue+2), MarkerSize(.7), Binning(nCtauBins));
+  //ws->pdf("model_ct")->plotOn(myPlot2_C,Name("totPdf"), LineColor(kGreen+1), Range("ctauRange"), LineWidth(2));
+  //ws->data("reducedDS_A")->plotOn(myPlot2_C,Name("dataHist_Sig"), MarkerSize(.7), LineColor(kRed+2), MarkerColor(kRed+2), Binning(nCtauBins));
+  //ws->pdf("sigPdf")->plotOn(myPlot2_C,Name("sigPdf"),LineColor(kRed+2), LineWidth(2), Range("ctauRange"));
+  //ws->data("reducedDS_B")->plotOn(myPlot2_C,Name("dataHist_Bkg"), MarkerSize(.7), LineColor(kBlue), MarkerColor(kBlue+2), Binning(nCtauBins));
+  //ws->pdf("bkgPdf")->plotOn(myPlot2_C,Name("bkgPdf"), LineColor(kBlue+2), LineWidth(2), Range("ctauRange"));
+  //ws->data("dsAB")->plotOn(myPlot2_C,Name("dataHist_Tot"), MarkerSize(.7), Binning(nCtauBins));
+  myPlot2_C->GetYaxis()->SetRangeUser(10e-4, 10e6);
+  //myPlot2_C->GetXaxis()->SetTitle("l_{J/#psi} (mm)");
+  myPlot2_C->Draw();
+
+  c_D->cd();
+  c_D->SetLogy();
+  RooPlot* myPlot2_D = (RooPlot*)myPlot_D->Clone();
+  ws->data("dsAB")->plotOn(myPlot2_D,Name("dataHist_Tot"), MarkerSize(.7), Binning(nCtauBins));
+  //ws->pdf("model_ct")->plotOn(myPlot2_D,Name("totPdf"), LineColor(kGreen+1), Range("ctauRange"), LineWidth(2));
+  ws->data("reducedDS_A")->plotOn(myPlot2_D,Name("dataHist_Sig"), MarkerSize(.7), LineColor(kRed+2), MarkerColor(kRed+2), Binning(nCtauBins));
+  //ws->pdf("sigPdf")->plotOn(myPlot2_D,Name("sigPdf"),LineColor(kRed+2), LineWidth(2), Range("ctauRange"));
+  ws->data("reducedDS_B")->plotOn(myPlot2_D,Name("dataHist_Bkg"), MarkerSize(.7), LineColor(kBlue), MarkerColor(kBlue+2), Binning(nCtauBins));
+  //ws->pdf("bkgPdf")->plotOn(myPlot2_D,Name("bkgPdf"), LineColor(kBlue+2), LineWidth(2), Range("ctauRange"));
+  //ws->data("dsAB")->plotOn(myPlot2_D,Name("dataHist_Tot"), MarkerSize(.7), Binning(nCtauBins));
+  myPlot2_D->GetYaxis()->SetRangeUser(10e-4, 10e6);
+  //myPlot2_D->GetXaxis()->SetTitle("l_{J/#psi} (mm)");
+  myPlot2_D->Draw();
 //B:Ctau distribution with 3 decay pdf
   //RooRealVar tau("tau","tau", 1.548); // some good start value
   //RooTruthModel idealres("idealres","Ideal resolution model", *ws->var("ctau3D"));//needed MC?
@@ -257,54 +407,6 @@ void doFit_CtauErr_test(
   //model_B = new RooAddPdf("model_B","Jpsi + Bkg",RooArgList(*ctau_sig, *ctau_bkg), RooArgList(testsig, testbkg));
   //model_B = new RooAddPdf("model_B","Jpsi + Bkg",RooArgList(*ctPRRes, *CkBkgTot),RooArgList(*nSig, *nBkg));
   //ws->import(*model_B);
-  RooRealVar *sigYield = ws->var("nSig");
-  RooRealVar *bkgYield = ws->var("nBkg");
-  RooArgList yieldList;
-  yieldList.add(*ws->var("nSig"));
-  yieldList.add(*ws->var("nBkg"));
-  cout<<"Sig Yield: "<<sigYield->getVal()<<endl;
-  cout<<"Bkg Yield: "<<bkgYield->getVal()<<endl;
-
-  //string pdfMassName = "pdfMASS_Tot";
-  //
-  //RooDataSet* data = (RooDataSet*)ws->data("dsAB")->Clone("TMP_DATA");
-  //RooAbsPdf* pdf;
-
-  //RooAbsPdf* pdf = ws->pdf("model");
-  //RooRealVar *ctau3DErr = ws->var("ctau3DErr");
-
-  c_B->cd();
-  c_B->SetLogy();
-  //RooPlot *frame = ws->var("ctau3DErr")->frame(Range(0, ctauErrMax)); //Bins(100);
-  RooPlot* myPlot2_B = (RooPlot*)myPlot_B->Clone();
-  TH1D* hTot = (TH1D*)ws->data("dsAB")->createHistogram(("hTot"), *ws->var("ctau3DErr"),Binning(nBins,ctauErrMin,ctauErrMax));
-  TH1D* hSig = (TH1D*)ws->data("reducedDS_A")->createHistogram(("hSig"), *ws->var("ctau3DErr"),Binning(nBins,ctauErrMin,ctauErrMax));
-  TH1D* hBkg = (TH1D*)ws->data("reducedDS_B")->createHistogram(("hBkg"), *ws->var("ctau3DErr"),Binning(nBins,ctauErrMin,ctauErrMax));
-  RooDataHist* totHist = new RooDataHist("dsAB", "", *ws->var("ctau3DErr"), hTot);
-  RooDataHist* sigHist = new RooDataHist("reducedDS_A", "", RooArgSet(*ws->var("ctau3DErr")), hSig);
-  RooDataHist* bkgHist = new RooDataHist("reducedDS_B", "", RooArgSet(*ws->var("ctau3DErr")), hBkg);
-  RooHistPdf* TotPdf = new RooHistPdf("TotPdf","hist pdf", *ws->var("ctau3DErr"), *totHist);
-  RooHistPdf* sigPdf = new RooHistPdf("sigPdf","hist pdf", *ws->var("ctau3DErr"), *sigHist);
-  RooHistPdf* bkgPdf = new RooHistPdf("bkgPdf","hist pdf", *ws->var("ctau3DErr"), *bkgHist);
-  
-  RooAddPdf* model_ctErr = new RooAddPdf();
-  model_ctErr = new RooAddPdf("model_ctErr","Sig + Bkg ctau models", RooArgList(*sigPdf, *bkgPdf), RooArgList(*sigYield, *bkgYield));
-  ws->import(*model_ctErr);
-  //SPlot
-  RooStats::SPlot sData = RooStats::SPlot("sData", "An SPlot", *dsAB, model_ctErr, RooArgList(*sigYield, *bkgYield));
-  ws->import(*dsAB, Rename("dataset_SPLOT"));
-  cout<<ws->var("sigYield")<<", sWeights :"<<sData.GetYieldFromSWeight("sigYield")<<endl;
-  ws->data("dsAB")->plotOn(myPlot_B,Name("dataHist_Tot"), MarkerSize(.7));
-  ws->data("reducedDS_A")->plotOn(myPlot_B,Name("dataHist_Sig"), MarkerSize(.7), LineColor(kRed+2), MarkerColor(kRed+2));
-  ws->data("reducedDS_B")->plotOn(myPlot_B,Name("dataHist_Bkg"), MarkerSize(.7), LineColor(kBlue), MarkerColor(kBlue+2));
-  //RooFitResult* fitResSim_ctauErr = ws->pdf("model_ctErr")->fitTo(*reducedDS_B ,Save(), Hesse(kTRUE), Range(ctauLow, ctauHigh), Timer(kTRUE));
-  ws->pdf("model_ctErr")->plotOn(myPlot_B,Name("totPdf"), LineColor(kGreen+1));
-  ws->pdf("model_ctErr")->plotOn(myPlot_B,Name("sigPdf"), Components(RooArgSet(*sigPdf)), LineColor(kRed+2));
-  ws->pdf("model_ctErr")->plotOn(myPlot_B,Name("bkgPdf"), Components(RooArgSet(*bkgPdf)), LineColor(kBlue+2));
-  //Components(RooArgSet(*sigPdf)), 
-  //Components(RooArgSet(*bkgPdf)),   
-  myPlot_B->Draw();
-
   // Construct simultaneous PDF
   //RooSimultaneous* simPdf = new RooSimultaneous("simPdf","simPdf", tp);
   //simPdf->addPdf(*(ws->pdf("model_B")),"A") ;
