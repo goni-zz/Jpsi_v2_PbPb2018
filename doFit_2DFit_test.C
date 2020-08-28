@@ -374,8 +374,7 @@ void doFit_2DFit_test(
   ws->factory(Form("N_Jpsi[%.12f,%.12f,%.12f]", entries, entries, entries*2.0));
 // create the variables for this model
   //ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
-  int nGauss = 4;
-  ws->factory("One[1.0]");
+  int nGauss = 3;
   ws->factory("ctauRes_mean[0.0]");
   ws->factory("ctau1_CtauRes[0., -0.1, 0.1]");  ws->factory("s1_CtauRes[.5, 0., 10.]");
   ws->factory("ctau2_CtauRes[0., -0.1, 0.1]");  ws->factory("s2_CtauRes[1.12, 0., 10.]");
@@ -389,25 +388,25 @@ void doFit_2DFit_test(
                    "ctauRes_mean", //"ctau1_CtauRes",
                    "s1_CtauRes"
                    //"One", //meanSF
-                   //"ctau3DErr"//sigmaSF (usePerEventError?"ctauErr":"One")
+                   //"SF_sigma"//sigmaSF (usePerEventError?"ctauErr":"One")
                    ));
   ws->factory(Form("GaussModel::%s(%s, %s, %s)", "GaussModel2_ctauRes", varName.Data(), 
                    "ctauRes_mean", //"ctau2_CtauRes",
                    "s2_CtauRes"
                    //"One", //meanSF
-                   //"ctau3DErr"//sigmaSF (usePerEventError?"ctauErr":"One")
+                   //"SF_sigma"//sigmaSF (usePerEventError?"ctauErr":"One")
                    ));
   ws->factory(Form("GaussModel::%s(%s, %s, %s)", "GaussModel3_ctauRes", varName.Data(), 
                    "ctauRes_mean", //"ctau3_CtauRes",
                    "s3_CtauRes"
                    //"One", //meanSF
-                   //"ctau3DErr"//sigmaSF (usePerEventError?"ctauErr":"One")
+                   //"SF_sigma"//sigmaSF (usePerEventError?"ctauErr":"One")
                    ));
   ws->factory(Form("GaussModel::%s(%s, %s, %s)", "GaussModel4_ctauRes", varName.Data(), 
                    "ctauRes_mean", //"ctau3_CtauRes",
                    "s4_CtauRes"
                    //"One", //meanSF
-                   //"ctau3DErr"//sigmaSF (usePerEventError?"ctauErr":"One")
+                   //"SF_sigma"//sigmaSF (usePerEventError?"ctauErr":"One")
                    ));
 // combine the two PDFs
   if(nGauss==4){
@@ -444,7 +443,7 @@ void doFit_2DFit_test(
   c_C->SetLogy();
   RooPlot* myPlot2_C = (RooPlot*)myPlot_C->Clone();
   bool isWeighted = ws->data("ctauResCutDS")->isWeighted();
-  RooFitResult* fitCtauRes = ws->pdf("GaussModel_Tot")->fitTo(*ctauResCutDS, Save(), Range(ctauResLow,0), SumW2Error(isWeighted), Extended(kTRUE), NumCPU(12), PrintLevel(-1));
+  RooFitResult* fitCtauRes = ws->pdf("GaussModel_Tot")->fitTo(*ctauResCutDS, Save(), Range(ctauResLow,0), SumW2Error(isWeighted), Extended(kTRUE), NumCPU(12), PrintLevel(3));
   ws->data("ctauResCutDS")->plotOn(myPlot2_C, Name("dataHist_ctauRes"), DataError(RooAbsData::SumW2), XErrorSize(0), 
       MarkerSize(.7), Binning(120), LineColor(kRed+2), MarkerColor(kRed+2));
   ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_Tot"), Precision(1e-5), Range("ctauResRange"),
@@ -464,7 +463,7 @@ void doFit_2DFit_test(
   TLegend* leg_C = new TLegend(text_x+0.5,text_y-0.27,text_x+0.65,text_y-0.03); leg_C->SetTextSize(text_size);
   leg_C->SetTextFont(43);
   leg_C->SetBorderSize(0);
-  leg_C->AddEntry(myPlot2_C->findObject("dataHist_ctauRes"),"Data","pe");
+  leg_C->AddEntry(myPlot2_C->findObject("dataHist_ctauRes"),"Data_Sig","pe");
   leg_C->AddEntry(myPlot2_C->findObject("modelHist_Tot"),"Total PDF","l");
   leg_C->AddEntry(myPlot2_C->findObject("modelHist_gm1"),"Gauss 1","l");
   leg_C->AddEntry(myPlot2_C->findObject("modelHist_gm2"),"Gauss 2","l");
@@ -520,23 +519,31 @@ void doFit_2DFit_test(
   //***********************************************************************
   cout << endl << "************** Start Ctau Fit *****************" << endl << endl;
 //
+  ws->factory("One[1.0]");
+  ws->factory("SF_sigma[0.5, 0., 1.0]");
   ws->factory("lambdaDSS_Bkg[0.03, 0., 1.]");
   ws->factory("lambdaDF[0.03, 0., 1.]");
   ws->factory("lambdaDDS[0.5, 0., 1.]");
   ws->factory("fDFSS[0.5, 0., 1.]");
   ws->factory("fDLIV[0.5, 0., 1.]");
 
-  ws->factory(Form("GaussModel::%s(%s, %s, %s)", "ctauRes1", "ctau3D", 
+  ws->factory(Form("GaussModel::%s(%s, %s, %s, %s, %s)", "ctauRes1", "ctau3D", 
                    "ctauRes_mean", //"ctau1_CtauRes",
-                   "s1_CtauRes"
+                   "s1_CtauRes",
+                   "One",
+                   "SF_sigma"
                    ));
-  ws->factory(Form("GaussModel::%s(%s, %s, %s)", "ctauRes2", "ctau3D", 
+  ws->factory(Form("GaussModel::%s(%s, %s, %s, %s, %s)", "ctauRes2", "ctau3D", 
                    "ctauRes_mean", //"ctau2_CtauRes",
-                   "s2_CtauRes"
+                   "s2_CtauRes",
+                   "One",
+                   "SF_sigma"
                    ));
-  ws->factory(Form("GaussModel::%s(%s, %s, %s)", "ctauRes3", "ctau3D", 
+  ws->factory(Form("GaussModel::%s(%s, %s, %s, %s, %s)", "ctauRes3", "ctau3D", 
                    "ctauRes_mean", //"ctau3_CtauRes",
-                   "s3_CtauRes"
+                   "s3_CtauRes",
+                   "One",
+                   "SF_sigma"
                    ));
 
   ws->factory(Form("AddModel::%s({%s, %s}, {%s})", "ctauRes32", "ctauRes3", "ctauRes2", "f2_CtauRes"));
@@ -566,8 +573,12 @@ void doFit_2DFit_test(
   RooPlot* myPlot2_E = (RooPlot*)myPlot_E->Clone();
   RooFitResult* fitCtauBkg = ws->pdf("BkgModel_Tot")->fitTo(*dataw_Bkg, Save(), Range("ctauRange"), Extended(kTRUE), NumCPU(12), PrintLevel(3));
   //ws->data("dataw_Sig")->plotOn(myPlot2_E,Name("dataHist_Tot"), DataError(RooAbsData::SumW2), MarkerSize(.7), Binning(nCtauBins), LineColor(kRed+2), MarkerColor(kRed+2));
-  ws->data("dataw_Bkg")->plotOn(myPlot2_E,Name("dataHist_Tot"), DataError(RooAbsData::SumW2), MarkerSize(.7), Binning(nCtauBins), LineColor(kBlue+2), MarkerColor(kBlue+2));
-  ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("totPdf"), LineColor(kGreen+1), Range("ctauRange"), LineWidth(2));
+  ws->data("dataw_Bkg")->plotOn(myPlot2_E,Name("dataHist_ctauBkg"), DataError(RooAbsData::SumW2), MarkerSize(.7), Binning(nCtauBins), LineColor(kBlue+2), MarkerColor(kBlue+2));
+  ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("ctauBkg_Tot"), LineColor(kBlack));
+  ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E, Name("test"), Components(*ws->pdf("pdfCTAU1")), LineColor(kRed+2));
+  //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("resPdf"), Components(*ws->pdf("pdfCTAUDSS")), LineColor(kRed+2));
+  //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("resPdf"), Components(*ws->pdf("pdfCTAUDF")), LineColor(kBlue+2));
+  //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("resPdf"), Components(*ws->pdf("pdfCTAUDDS")), LineColor(kMagenta+2));
   //ws->data("reducedDS_A")->plotOn(myPlot2_D,Name("dataHist_Sig"), MarkerSize(.7), LineColor(kRed+2), MarkerColor(kRed+2), Binning(nCtauBins));
   ////ws->pdf("sigPdf")->plotOn(myPlot2_D,Name("sigPdf"),LineColor(kRed+2), LineWidth(2), Range("ctauRange"));
   //ws->data("reducedDS_B")->plotOn(myPlot2_D,Name("dataHist_Bkg"), MarkerSize(.7), LineColor(kBlue), MarkerColor(kBlue+2), Binning(nCtauBins));
@@ -578,9 +589,18 @@ void doFit_2DFit_test(
   myPlot2_E->GetXaxis()->SetRangeUser(-4, 6);
   myPlot2_E->GetXaxis()->SetTitle("l_{J/#psi} (mm)");
   myPlot2_E->Draw();
-  drawText(Form("%.1f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),text_x+0.5,text_y,text_color,text_size);
-  if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x+0.5,text_y-y_diff,text_color,text_size);
-  else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x+0.5,text_y-y_diff,text_color,text_size);
+  TLegend* leg_D = new TLegend(text_x+0.5,text_y-0.17,text_x+0.65,text_y-0.03); leg_D->SetTextSize(text_size);
+  leg_D->SetTextFont(43);
+  leg_D->SetBorderSize(0);
+  leg_D->AddEntry(myPlot2_E->findObject("dataHist_ctauBkg"),"Data_Bkg","pe");
+  leg_D->AddEntry(myPlot2_E->findObject("ctauBkg_Tot"),"Total PDF","l");
+  //leg_D->AddEntry(myPlot2_E->findObject("test"),"Total PDF","l");
+  leg_D->Draw("same");
+  drawText(Form("%.1f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
+  if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
+  else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
+  drawText(Form("Cent. %d - %d%s", cLow, cHigh, "%"),text_x,text_y-y_diff*2,text_color,text_size);
+ 
 //B:Ctau distribution with 3 decay pdf
   //RooRealVar tau("tau","tau", 1.548); // some good start value
   //RooTruthModel idealres("idealres","Ideal resolution model", *ws->var("ctau3D"));//needed MC?
