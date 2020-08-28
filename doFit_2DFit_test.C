@@ -24,7 +24,7 @@
 using namespace std;
 using namespace RooFit;
 void doFit_2DFit_test( 
-       float ptLow=6.5, float ptHigh=8, 
+       float ptLow=6.5, float ptHigh=8.5, 
        float yLow=1.6, float yHigh=2.4,
        int cLow=20, int cHigh=120,
        float muPtCut=0.0,
@@ -44,7 +44,7 @@ void doFit_2DFit_test(
   int   nCtauResBins = 72;
   //int nCtauErrBins = 100;
   
-  double ctauErrLow = 0., ctauErrHigh = 0.18;
+  double ctauErrLow = 1e-6, ctauErrHigh = 0.18;
   double binWidth = 0.0025;
 
   TFile* f1; TFile* f2;
@@ -144,6 +144,11 @@ void doFit_2DFit_test(
   RooPlot* myPlot_E = ws->var("ctau3D")->frame(nCtauBins); // bins
   //ws->data("dsAB")->plotOn(myPlot_C,Name("dataHist_C"));
 
+  TCanvas* c_F =  new TCanvas("canvas_F","My plots",4,45,550,520);
+  c_F->cd();
+  RooPlot* myPlot_F = ws->var("ctau3D")->frame(nCtauBins); // bins
+  //ws->data("dsAB")->plotOn(myPlot_F,Name("dataHist_ctauTot"));
+
   //***********************************************************************
   //****************************** MASS FIT *******************************
   //***********************************************************************
@@ -197,15 +202,20 @@ void doFit_2DFit_test(
   RooRealVar err_mu_A("#mu_A","err_mu", err_mu_init,  paramslower[5], paramsupper[5]) ;
   RooRealVar err_sigma_A("#sigma_A","err_sigma", err_sigma_init, paramslower[6], paramsupper[6]);
   RooRealVar m_lambda_A("#lambda_A","m_lambda",  m_lambda_init, paramslower[7], paramsupper[7]);
-
   //THIS IS THE BACKGROUND FUNCTION
   RooGenericPdf *bkg = new RooGenericPdf("bkg","Background","TMath::Exp(-@0/@1)",RooArgList(*(ws->var("mass")),m_lambda_A));
   RooRealVar *nBkg = new RooRealVar("nBkg","fraction of component 1 in bkg",10000,0,50000); 
 
+  //RooRealVar *sl1 = new RooRealVar("sl1","sl1",0.1,-3.,3);
+  //RooRealVar *cnst1 = new RooRealVar("cnst1","cnst1",0.1,-2.,2);
+  //RooGenericPdf *bkg_1order = new RooGenericPdf("bkg","Background","@0*@1+@2",RooArgList( *(ws->var("mass")), sl1, cnst1) );
+  //RooChebychev *bkg_1order;
+  //bkg_1order = new RooChebychev("bkg","Background",*(ws->var("mass")),RooArgList(*sl1,*cnst1));
   //Build the model
 //Model A: Mass
   RooAddPdf* model_A = new RooAddPdf();
   model_A = new RooAddPdf("model_A","Jpsi + Bkg",RooArgList(*cb_A, *bkg),RooArgList(*nSig,*nBkg));
+  //model_A = new RooAddPdf("model_A","Jpsi + Bkg",RooArgList(*cb_A, *bkg_1order),RooArgList(*nSig,*nBkg));
   //model_A = new RooAddPdf("model_A","PR Jpsi + NP Jpsi + Bkg",RooArgList(*cb_1_A, *cb_2_A, *bkg),RooArgList(*nSigPR,*nSigNP,*nBkg));
   ws->import(*model_A);
   cout << endl << "********* Starting Mass Dist. Fit **************" << endl << endl;
@@ -515,35 +525,35 @@ void doFit_2DFit_test(
   if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x+0.5,text_y-y_diff,text_color,text_size);
   else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x+0.5,text_y-y_diff,text_color,text_size);
   //***********************************************************************
-  //****************************** CTAU FIT *******************************
+  //**************************** Bkg CTAU FIT *****************************
   //***********************************************************************
   cout << endl << "************** Start Ctau Fit *****************" << endl << endl;
 //
-  ws->factory("One[1.0]");
+  ws->factory("zeroMean[0.]");
   ws->factory("SF_sigma[0.5, 0., 1.0]");
   ws->factory("lambdaDSS_Bkg[0.03, 0., 1.]");
-  ws->factory("lambdaDF[0.03, 0., 1.]");
-  ws->factory("lambdaDDS[0.5, 0., 1.]");
+  ws->factory("lambdaDF[0.01, 0., 0.1]");
+  ws->factory("lambdaDDS[0.01, 0., 0.1]");
   ws->factory("fDFSS[0.5, 0., 1.]");
   ws->factory("fDLIV[0.5, 0., 1.]");
 
   ws->factory(Form("GaussModel::%s(%s, %s, %s, %s, %s)", "ctauRes1", "ctau3D", 
                    "ctauRes_mean", //"ctau1_CtauRes",
                    "s1_CtauRes",
-                   "One",
-                   "SF_sigma"
+                   "zeroMean",
+                   "ctau3DErr"
                    ));
   ws->factory(Form("GaussModel::%s(%s, %s, %s, %s, %s)", "ctauRes2", "ctau3D", 
                    "ctauRes_mean", //"ctau2_CtauRes",
                    "s2_CtauRes",
-                   "One",
-                   "SF_sigma"
+                   "zeroMean",
+                   "ctau3DErr"
                    ));
   ws->factory(Form("GaussModel::%s(%s, %s, %s, %s, %s)", "ctauRes3", "ctau3D", 
                    "ctauRes_mean", //"ctau3_CtauRes",
                    "s3_CtauRes",
-                   "One",
-                   "SF_sigma"
+                   "zeroMean",
+                   "ctau3DErr"
                    ));
 
   ws->factory(Form("AddModel::%s({%s, %s}, {%s})", "ctauRes32", "ctauRes3", "ctauRes2", "f2_CtauRes"));
@@ -574,110 +584,86 @@ void doFit_2DFit_test(
   RooFitResult* fitCtauBkg = ws->pdf("BkgModel_Tot")->fitTo(*dataw_Bkg, Save(), Range("ctauRange"), Extended(kTRUE), NumCPU(12), PrintLevel(3));
   //ws->data("dataw_Sig")->plotOn(myPlot2_E,Name("dataHist_Tot"), DataError(RooAbsData::SumW2), MarkerSize(.7), Binning(nCtauBins), LineColor(kRed+2), MarkerColor(kRed+2));
   ws->data("dataw_Bkg")->plotOn(myPlot2_E,Name("dataHist_ctauBkg"), DataError(RooAbsData::SumW2), MarkerSize(.7), Binning(nCtauBins), LineColor(kBlue+2), MarkerColor(kBlue+2));
-  ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("ctauBkg_Tot"), LineColor(kBlack));
-  ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E, Name("test"), Components(*ws->pdf("pdfCTAU1")), LineColor(kRed+2));
+  //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("ctauBkg_Tot"), LineColor(kBlack));
+  ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("BKG"), 
+      Normalization(ws->data("dataw_Bkg")->sumEntries(), RooAbsReal::NumEvent), NormRange("ctauRange"),
+      ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dataw_Bkg"), kTRUE),
+      FillStyle(1001), FillColor(kAzure-9), LineColor(kBlack), LineWidth(3), DrawOption("LCF"), Precision(1e-4));
+      //FillStyle(1001), FillColor(kAzure-9), LineColor(kBlack), VLines(), DrawOption("LCF"), Precision(1e-4));
+  ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("BKG"), 
+      Normalization(ws->data("dataw_Bkg")->sumEntries(), RooAbsReal::NumEvent), NormRange("ctauRange"),
+      ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dataw_Bkg"), kTRUE), Components("ctauResCond"),
+      LineWidth(2), LineColor(kRed+2));
+  //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E, Name("test"), Components(*ws->pdf("pdfCTAU1")), LineColor(kRed+2));
   //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("resPdf"), Components(*ws->pdf("pdfCTAUDSS")), LineColor(kRed+2));
   //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("resPdf"), Components(*ws->pdf("pdfCTAUDF")), LineColor(kBlue+2));
   //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_E,Name("resPdf"), Components(*ws->pdf("pdfCTAUDDS")), LineColor(kMagenta+2));
-  //ws->data("reducedDS_A")->plotOn(myPlot2_D,Name("dataHist_Sig"), MarkerSize(.7), LineColor(kRed+2), MarkerColor(kRed+2), Binning(nCtauBins));
-  ////ws->pdf("sigPdf")->plotOn(myPlot2_D,Name("sigPdf"),LineColor(kRed+2), LineWidth(2), Range("ctauRange"));
-  //ws->data("reducedDS_B")->plotOn(myPlot2_D,Name("dataHist_Bkg"), MarkerSize(.7), LineColor(kBlue), MarkerColor(kBlue+2), Binning(nCtauBins));
-  ////ws->pdf("bkgPdf")->plotOn(myPlot2_D,Name("bkgPdf"), LineColor(kBlue+2), LineWidth(2), Range("ctauRange"));
-  ////ws->data("dsAB")->plotOn(myPlot2_D,Name("dataHist_Tot"), MarkerSize(.7), Binning(nCtauBins));
-  //myPlot2_D->GetYaxis()->SetRangeUser(10e-4, 10e6);
+  ws->data("dataw_Bkg")->plotOn(myPlot2_E,Name("dataHist_ctauBkg"), DataError(RooAbsData::SumW2), MarkerSize(.7), Binning(nCtauBins), LineColor(kBlue+2), MarkerColor(kBlue+2));
   myPlot2_E->GetYaxis()->SetRangeUser(10e-2, 10e6);
   myPlot2_E->GetXaxis()->SetRangeUser(-4, 6);
   myPlot2_E->GetXaxis()->SetTitle("l_{J/#psi} (mm)");
   myPlot2_E->Draw();
-  TLegend* leg_D = new TLegend(text_x+0.5,text_y-0.17,text_x+0.65,text_y-0.03); leg_D->SetTextSize(text_size);
-  leg_D->SetTextFont(43);
-  leg_D->SetBorderSize(0);
-  leg_D->AddEntry(myPlot2_E->findObject("dataHist_ctauBkg"),"Data_Bkg","pe");
-  leg_D->AddEntry(myPlot2_E->findObject("ctauBkg_Tot"),"Total PDF","l");
-  //leg_D->AddEntry(myPlot2_E->findObject("test"),"Total PDF","l");
-  leg_D->Draw("same");
+  TLegend* leg_E = new TLegend(text_x+0.5,text_y-0.17,text_x+0.65,text_y-0.03); leg_E->SetTextSize(text_size);
+  leg_E->SetTextFont(43);
+  leg_E->SetBorderSize(0);
+  leg_E->AddEntry(myPlot2_E->findObject("dataHist_ctauBkg"),"Data_Bkg","pe");
+  leg_E->AddEntry(myPlot2_E->findObject("ctauBkg_Tot"),"Total PDF","fl");
+  //leg_E->AddEntry(myPlot2_E->findObject("test"),"?? PDF","l");
+  leg_E->Draw("same");
   drawText(Form("%.1f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
   if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
   else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
   drawText(Form("Cent. %d - %d%s", cLow, cHigh, "%"),text_x,text_y-y_diff*2,text_color,text_size);
- 
-//B:Ctau distribution with 3 decay pdf
-  //RooRealVar tau("tau","tau", 1.548); // some good start value
-  //RooTruthModel idealres("idealres","Ideal resolution model", *ws->var("ctau3D"));//needed MC?
-  //RooDecay decay("decay", "decay", *ws->var("ctau3D"), tau, idealres, RooDecay::SingleSided);
 
-  //RooRealVar dt("dt","per-event error on t",0.01,5) ;
-  //RooRealVar bias("bias","bias",0,-3,5) ;
-  //RooRealVar sigma("sigma","per-event error scale factor",1,0.1,2) ; 
-  //RooGaussModel gm("gm1","gauss model scaled by per-event error",*ws->var("ctau3D"),bias,sigma);
+//  if ( ws->pdf("pdfCTAUMASS_JpsiNoPR") ) {
+//    ws->pdf(pdfTotName.c_str())->plotOn(frame,Name("JPSINOPR"),
+//        Components(RooArgSet(*ws->pdf("pdfCTAUMASS_JpsiNoPR"), *ws->pdf("pdfCTAUMASS_Bkg"))),
+//        ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
+//        Normalization(dsAB, RooAbsReal::NumEvent),
+//        LineColor(kGreen+3), LineStyle(1), Precision(1e-4), NumCPU(32)
+//        );
+//  }
 
-  //RooRealVar testsig("testsig","testsig",ws->var("nSig")->getVal(),ws->var("nSig")->getVal(),ws->var("nSig")->getVal());
-  //RooAddPdf* ctau_sig = new RooAddPdf("ctau","ctau",RooArgSet(decay),RooArgList(testsig));
-//B: Ctau Bkg function
-  //RooRealVar l_DDS("l_DDS","l_DDS", 0.1,  0., 1.); 
-  //RooRealVar l_DF("l_DF","l_DF", 0.1,  0., 1.); 
-  //RooRealVar l_DSS("l_DSS","l_DSS", 0.1,  0., 1.); 
-  //
-  //RooRealVar fDLIV("fDLIV","fDLIV",0.1, 0, 1.) ;
-  //RooRealVar fDFSS("fDFSS","fDFSS",0.1, 0, 1.) ;
-  //RooRealVar bbkg( "bbkg", "bbkg" ,0.5, 0, 1.) ;
-  //RooGenericPdf *DSS = new RooGenericPdf("DSS","Background",
-      //"@6*(@4*(@5*TMath::Exp(-abs(@1)*@0)+(@5*TMath::Exp(abs(@2)*@0)))+(1-@4)*TMath::Exp(-abs(@3)*@0))+(1-@6)*@7",RooArgList(*(ws->var("ctau3D")),l_DDS,l_DF,l_DSS,fDLIV,fDFSS,bbkg,*(ws->var("ctau3DErr"))));
-      //"(@4*(@5*TMath::Exp(-abs(@1)*@0)+((1-@5)*TMath::Exp(abs(@2)*@0)))+(1-@4)*TMath::Exp(-abs(@3)*@0))",RooArgList(*(ws->var("ctau3D")),l_DDS,l_DF,l_DSS,fDLIV,fDFSS));
-  //0:ctau, 1:l_DDS, 2:l_DF, 3:l_DSS, 4:fDLIV, 5:fDFSS
-  
-  //RooRealVar ctmean("ctmean","Mean of Gaussian",0.0,-0.3,0.3);
-  //RooGaussian ctgauss("ctgauss","gauss(x,mean,sigma)",*ws->var("ctau3D"),ctmean,*ws->var("ctau3DErr")) ;
-
-  //RooFormulaVar ff("ff", "bbkg*(fDLIV*(fDFSS*DSS)+(1-fDLIV)*DF)+(1-fDLIV)*DDS+(1-bbkg)*ctgauss", RooArgList(*ws->var("ctau3D"),fDLIV,fDLIV,bbkg,ctgauss, *DSS, *DF, *DDS));
-  //RooFormulaVar ff1("ff1", "bbkg*(fDLIV*(fDFSS*DSS)", RooArgList(fDLIV,fDFSS,bbkg,*DSS));
-  //RooFormulaVar ff2("ff2", "bbkg*((1-fDLIV)*DF)", RooArgList(fDLIV,bbkg,*DF));
-  //RooFormulaVar ff3("ff3", "(1-fDLIV)*DDS", RooArgList(fDLIV,*DDS));
-  //RooFormulaVar ff4("ff4", "(1-bbkg)*ctgauss", RooArgList(bbkg,ctgauss));
-  //RooFormulaVar ff("ff", "@2*(@0*(@1*@6)+(1-@1)*@5)+(1-@0)*@4+(1-@2)*@3", RooArgList(fDLIV,fDFSS,bbkg,ctgauss, *DSS, *DF, *DDS));
-  //RooAddPdf* ctau_bkg = new RooAddPdf("ctau_bkg","ctau_bkg",RooArgList(*DSS,ctgauss), RooArgList(bbkg));/////used
-  //RooAddPdf* ctau_bkg = new RooAddPdf("ctau_bkg","ctau_bkg",RooArgList(ctgauss, *DSS, *DF, *DDS),RooArgList(*ws->var("ctau3D"),fDLIV,fDLIV,bbkg));
-  //RooAddPdf* ctau_bkg = new RooAddPdf("ctau_bkg","ctau_bkg",RooArgList(ctgauss),RooArgList(*ws->var("ctau3D")));
-  //RooAddPdf::ctau_bkg[ bbkg * (fDLIV*(fDFSS*DSS)+(1-fDLIV)*DF)+(1-fDLIV)*DDS+(1-bbkg)* (*ws->var("ctau3DErr")) ];
-
-  //RooFormulaVar fracAlpha("fracAlpha","@0/(@0+@1)",RooArgList(*nBkg,*nSig)); ws->import(fracAlpha);
-
-  //RooRealVar testbkg("testbkg","testbkg",ws->var("nBkg")->getVal(),ws->var("nBkg")->getVal()*0.9,ws->var("nBkg")->getVal());
-//Model B: Ctau
-  //RooAddPdf* model_B = new RooAddPdf();
-  //model_B = new RooAddPdf("model_B","Bkg",RooArgList(*ctau_bkg), RooArgList(testbkg));
-  //model_B = new RooAddPdf("model_B","Jpsi + Bkg",RooArgList(*ctau_sig, *ctau_bkg), RooArgList(testsig, testbkg));
-  //model_B = new RooAddPdf("model_B","Jpsi + Bkg",RooArgList(*ctPRRes, *CkBkgTot),RooArgList(*nSig, *nBkg));
-  //ws->import(*model_B);
-  // Construct simultaneous PDF
-  //RooSimultaneous* simPdf = new RooSimultaneous("simPdf","simPdf", tp);
-  //simPdf->addPdf(*(ws->pdf("model_B")),"A") ;
-  //simPdf->addPdf(*(ws->pdf("model_B")),"B") ;
-  //ws->import(*simPdf);
-
-  //RooFitResult* fitResSim_ctau = ws->pdf("model_B")->fitTo(*reducedDS_B ,Save(), Hesse(kTRUE), Range(ctauLow, ctauHigh), Timer(kTRUE));
-  //RooFitResult* fitResSim_ctau = ws->pdf("model_B")->fitTo(*dsAB ,Save(), Hesse(kTRUE), Range(ctauLow, ctauHigh), Timer(kTRUE), Extended(kTRUE));
-  //ws->pdf("model_B")->plotOn(myPlot2_B,Name("modelHist_B"), LineColor(kBlack));
-  //ws->pdf("model_B")->plotOn(myPlot2_B,Name("Sig_B"),Components(RooArgSet(*ctau_sig)),LineColor(kOrange+7),LineWidth(2),LineStyle(2));
-  //ws->pdf("model_B")->plotOn(myPlot2_B,Name("bkgPDF_B"),Components(RooArgSet(*ctau_bkg)),LineColor(kBlue),LineStyle(kDashed),LineWidth(2));
-
-  //make a pretty plot
-  //myPlot2_B->SetFillStyle(4000);
-  //myPlot2_B->GetYaxis()->SetTitleOffset(1.43);
-  //myPlot2_B->GetYaxis()->CenterTitle();
-  //myPlot2_B->GetYaxis()->SetTitleSize(0.058);
-  //myPlot2_B->GetYaxis()->SetLabelSize(0.054);
-  //myPlot2_B->GetXaxis()->SetLabelSize(0);
-  //myPlot2_B->GetXaxis()->SetRangeUser(ctauLow,ctauHigh);
-  //myPlot2_B->GetYaxis()->SetRangeUser(10e-2, 10e5);
-  //myPlot2_B->GetXaxis()->SetTitleSize(0);
-  //myPlot2_B->Draw();
+  //***********************************************************************
+  //*************************** DRAW CTAU FIT *****************************
+  //***********************************************************************
+  c_F->cd();
+  c_F->SetLogy();
+  double normBkg = ws->data("dsAB")->sumEntries()/ws->data("dataw_Bkg")->sumEntries();
+  cout<<"[Info]: "<<normBkg<<endl;
+  RooPlot* myPlot2_F = (RooPlot*)myPlot_F->Clone();
+  myPlot2_F->updateNormVars(RooArgSet(*ws->var("mass"), *ws->var("ctau3D"), *ws->var("ctau3DErr")));
+  ws->pdf("BkgModel_Tot")->plotOn(myPlot2_F,Name("BKG"), 
+      //Normalization(normBkg, RooAbsReal::NumEvent), NormRange("ctauRange"),
+      Normalization(ws->data("dataw_Bkg")->sumEntries(), RooAbsReal::NumEvent), NormRange("ctauRange"),
+      ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dataw_Bkg"), kTRUE),
+      FillStyle(1001), FillColor(kAzure-9), VLines(), DrawOption("CF"), Precision(1e-4));
+  ws->data("dsAB")->plotOn(myPlot2_F,Name("dataHist_ctauTot"), DataError(RooAbsData::SumW2), XErrorSize(0));
+  //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_F,Name("resPdf"), Components(*ws->pdf("pdfCTAUDSS")), LineColor(kRed+2));
+  //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_F,Name("resPdf"), Components(*ws->pdf("pdfCTAUDF")), LineColor(kBlue+2));
+  //ws->pdf("BkgModel_Tot")->plotOn(myPlot2_F,Name("resPdf"), Components(*ws->pdf("pdfCTAUDDS")), LineColor(kMagenta+2));
+  myPlot2_F->GetYaxis()->SetRangeUser(10e-2, 10e6);
+  myPlot2_F->GetXaxis()->SetRangeUser(-4, 6);
+  myPlot2_F->GetXaxis()->SetTitle("l_{J/#psi} (mm)");
+  myPlot2_F->Draw();
+  TLegend* leg_F = new TLegend(text_x+0.5,text_y-0.17,text_x+0.65,text_y-0.03); leg_F->SetTextSize(text_size);
+  leg_F->SetTextFont(43);
+  leg_F->SetBorderSize(0);
+  leg_F->AddEntry(myPlot2_F->findObject("dataHist_ctauTot"),"Data","pe");
+  leg_F->AddEntry(myPlot2_F->findObject("BKG"),"Background PDF","fl");
+  //leg_F->AddEntry(myPlot2_F->findObject("test"),"?? PDF","l");
+  leg_F->Draw("same");
+  drawText(Form("%.1f < p_{T}^{#mu#mu} < %.f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
+  if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
+  else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
+  drawText(Form("Cent. %d - %d%s", cLow, cHigh, "%"),text_x,text_y-y_diff*2,text_color,text_size);
 
   c_A->Update();
   c_B->Update();
   c_C->Update();
   c_D->Update();
   c_E->Update();
+  c_F->Update();
 
   TString kineLabel = getKineLabel (ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
   TString outFileName;
