@@ -154,7 +154,7 @@ void CtauSig(
 				"pdfCTAUCOND_SigPR"
 				));
 	ws->factory(Form("RooExtendPdf::%s(%s,%s)", "pdfTot_Sig", "pdfCTAUCOND_Sig", "N_Jpsi")); //N_Jpsi is number of bkg from dataw_Sig
-	RooAddPdf* pdfTot_Sig = new RooAddPdf("pdfTot_Sig","",RooArgList(*ws->pdf("pdfCTAUCOND_Sig")), RooArgList(*ws->pdf("N_Sig")));
+	RooAddPdf* pdfTot_Sig = new RooAddPdf("pdfTot_Sig","",RooArgList(*ws->pdf("pdfCTAUCOND_Sig")), RooArgList(*ws->var("N_Jpsi")));
 
 	TCanvas* c_F =  new TCanvas("canvas_F","My plots",1108,565,550,520);
 	c_F->cd();
