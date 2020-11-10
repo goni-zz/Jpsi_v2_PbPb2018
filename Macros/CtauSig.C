@@ -202,7 +202,7 @@ void CtauSig(
 	leg_F->AddEntry(myPlot2_F->findObject("NP"),"Non-Prompt J/#psi","l");
 	//leg_F->AddEntry(myPlot_F->findObject("test"),"?? PDF","l");
 	leg_F->Draw("same");
-	drawText(Form("%.1f < p_{T}^{#mu#mu} < %1.f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
+	drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
 	if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
 	else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
 	drawText(Form("Cent. %d - %d%s", cLow, cHigh, "%"),text_x,text_y-y_diff*2,text_color,text_size);
