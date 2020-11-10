@@ -9,6 +9,31 @@
 using namespace RooFit;
 using namespace std;
 
+
+    bool bkgfit=true;
+    bool sigfit=true;
+    bool totfit=true;
+    float massLow = 2.6, massHigh = 3.5;
+    int   nMassBin  = 36; //(massHigh-massLow)*30;
+
+    float ctauLow = -4, ctauHigh = 6.5;
+    float ctauResLow = -20, ctauResHigh = 20;
+    int   nCtauErrBins = 72;
+    int   nCtauResBins = 72;
+    int   nCtauBins  = (ctauHigh-ctauLow)*10;
+    int   nCtauTrueBins  = 50;
+
+    double ctauErrLow = 1e-6, ctauErrHigh = 0.18;
+    double binWidth = 0.0025;
+
+    float text_x = 0.15;
+    float text_y = 0.816;
+    float y_diff = 0.05;
+    float text_size = 13;
+    int text_color = 1;
+
+	int nCPU = 10; // Change to appropriate your cpu
+
 void printChi2(RooWorkspace* myws, TPad* Pad, RooPlot* frame, RooFitResult* fitRes, string varLabel, string dataLabel, string pdfLabel, int nBins, bool useDefaultName=true)
 {
     double chi2=0; unsigned int ndof=0;
@@ -114,27 +139,3 @@ void pullDist(RooWorkspace* ws, TPad* Pad, TCanvas* canvas, RooPlot* frame, RooH
 
     Pad->Update();
 };
-
-    bool bkgfit=true;
-    bool sigfit=true;
-    bool totfit=true;
-    float massLow = 2.6, massHigh = 3.5;
-    int   nMassBin  = 36; //(massHigh-massLow)*30;
-
-    float ctauLow = -4, ctauHigh = 6.5;
-    float ctauResLow = -20, ctauResHigh = 20;
-    int   nCtauErrBins = 72;
-    int   nCtauResBins = 72;
-    int   nCtauBins  = (ctauHigh-ctauLow)*10;
-    int   nCtauTrueBins  = 50;
-
-    double ctauErrLow = 1e-6, ctauErrHigh = 0.18;
-    double binWidth = 0.0025;
-
-    float text_x = 0.15;
-    float text_y = 0.816;
-    float y_diff = 0.05;
-    float text_size = 13;
-    int text_color = 1;
-
-

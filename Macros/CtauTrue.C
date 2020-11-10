@@ -106,7 +106,7 @@ void CtauTrue(
 
 	pad_D_1->cd();
 	gPad->SetLogy();
-	RooFitResult* fitCtauTrue = ws->pdf("TrueModel_Tot")->fitTo(*reducedDS_MC, SumW2Error(false), Range("ctauTrueRange"), Extended(kTRUE), NumCPU(10), PrintLevel(3), Save());
+	RooFitResult* fitCtauTrue = ws->pdf("TrueModel_Tot")->fitTo(*reducedDS_MC, SumW2Error(false), Range("ctauTrueRange"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(3), Save());
 	RooPlot* myPlot2_D = (RooPlot*)myPlot_D->Clone();
 	ws->data("reducedDS_MC")->plotOn(myPlot2_D,Name("MCHist_Tot"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerSize(.7), Binning(nCtauTrueBins));
 	ws->pdf("TrueModel_Tot")->plotOn(myPlot2_D,Name("MCpdf_Tot"), Normalization(ws->data("reducedDS_MC")->sumEntries(), RooAbsReal::NumEvent),

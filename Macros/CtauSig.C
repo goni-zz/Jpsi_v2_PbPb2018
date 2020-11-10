@@ -168,7 +168,7 @@ void CtauSig(
 	gPad->SetLogy();
 	RooPlot* myPlot2_F = (RooPlot*)myPlot_F->Clone();
 	cout << "HERE" << endl;
-	RooFitResult* fitCtauSig = ws->pdf("pdfTot_Sig")->fitTo(*dataw_Sig, Save(), Range("ctauRange"), Extended(kTRUE), NumCPU(12), PrintLevel(-1));
+	RooFitResult* fitCtauSig = ws->pdf("pdfTot_Sig")->fitTo(*dataw_Sig, Save(), Range("ctauRange"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(-1));
 	cout << "HERE!" << endl;
 	ws->data("dataw_Sig")->plotOn(myPlot2_F,Name("dataHist_ctauSig"), DataError(RooAbsData::SumW2), MarkerSize(.7), Binning(nCtauBins), LineColor(kRed+2), MarkerColor(kRed+2));
 	ws->pdf("pdfTot_Sig")->plotOn(myPlot2_F, Name("ctauSig_Tot"),

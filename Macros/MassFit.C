@@ -147,7 +147,7 @@ void MassFit(
 	//pdfMASS_Tot = new RooAddPdf("pdfMASS_Tot","PR Jpsi + NP Jpsi + Bkg",RooArgList(*cb_1_A, *cb_2_A, *bkg),RooArgList(*N_JpsiPR,*N_JpsiNP,*N_Bkg));
 	ws->import(*pdfMASS_Tot);
 	cout << endl << "********* Starting Mass Dist. Fit **************" << endl << endl;
-	RooFitResult* fitMass = ws->pdf("pdfMASS_Tot")->fitTo(*dsAB,Save(), Hesse(kTRUE), Range(massLow,massHigh), Timer(kTRUE), Extended(kTRUE), NumCPU(10), PrintLevel(-1));
+	RooFitResult* fitMass = ws->pdf("pdfMASS_Tot")->fitTo(*dsAB,Save(), Hesse(kTRUE), Range(massLow,massHigh), Timer(kTRUE), Extended(kTRUE), NumCPU(nCPU), PrintLevel(-1));
 	cout << endl << "********* Finished Mass Dist. Fit **************" << endl << endl;
 
 	TCanvas* c_A =  new TCanvas("canvas_A","My plots",4,4,550,520);

@@ -32,6 +32,7 @@ void CtauBkg(
 		int ICset=1
 		)
 {
+
 	gStyle->SetEndErrorSize(0);
 	TFile* f1; TFile* fMass; TFile* fCErr; TFile* fCRes;
 	TString kineCut;
@@ -171,7 +172,7 @@ void CtauBkg(
 	pad_E_1->cd();
 	gPad->SetLogy();
 	RooPlot* myPlot2_E = (RooPlot*)myPlot_E->Clone();
-	RooFitResult* fitCtauBkg = ws->pdf("pdfTot_Bkg")->fitTo(*dataw_Bkg, Save(), Range("ctauRange"), Extended(kTRUE), NumCPU(10), PrintLevel(-1));
+	RooFitResult* fitCtauBkg = ws->pdf("pdfTot_Bkg")->fitTo(*dataw_Bkg, Save(), Range("ctauRange"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(-1));
 	ws->data("dataw_Bkg")->plotOn(myPlot2_E,Name("data_ctauBkg"), DataError(RooAbsData::SumW2), MarkerSize(.7), Binning(nCtauBins), LineColor(kBlue+2), MarkerColor(kBlue+2));
 	ws->pdf("pdfTot_Bkg")->plotOn(myPlot2_E,Name("pdfCTAUCOND_Bkg"),
 			Normalization(ws->data("dataw_Bkg")->sumEntries(), RooAbsReal::NumEvent), NormRange("ctauRange"),

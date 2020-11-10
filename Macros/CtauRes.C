@@ -162,7 +162,7 @@ void CtauRes(
 	gPad->SetLogy();
 	RooPlot* myPlot2_C = (RooPlot*)myPlot_C->Clone();
 	bool isWeighted = ws->data("ctauResCutDS")->isWeighted();
-	RooFitResult* fitCtauRes = ws->pdf("GaussModel_Tot")->fitTo(*ctauResCutDS, Save(), Range(ctauResLow,0), SumW2Error(isWeighted), Extended(kTRUE), NumCPU(10), PrintLevel(-1));
+	RooFitResult* fitCtauRes = ws->pdf("GaussModel_Tot")->fitTo(*ctauResCutDS, Save(), Range(ctauResLow,0), SumW2Error(isWeighted), Extended(kTRUE), NumCPU(nCPU), PrintLevel(-1));
 	ws->import(*fitCtauRes);
 	//setFixedVarsToContantVars(ws);
 	ws->data("ctauResCutDS")->plotOn(myPlot2_C, Name("dataHist_ctauRes"), DataError(RooAbsData::SumW2), XErrorSize(0),
