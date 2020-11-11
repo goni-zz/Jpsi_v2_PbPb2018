@@ -269,8 +269,8 @@ void CtauRes(
 	TFile *outFile = new TFile(Form("../roots/2DFit/CtauResResult_%s.root",kineLabel.Data()),"recreate");
 	ctauResModel->Write();
 	//GaussModel_Tot->Write();
-	ctauResCutDS->Write();
-	datasetRes->Write();
+//	ctauResCutDS->Write();
+	//datasetRes->Write();
 	//fitCtauRes->Write();
 	outFile->Close();
 }

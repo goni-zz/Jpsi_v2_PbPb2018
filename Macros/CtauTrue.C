@@ -139,7 +139,7 @@ void CtauTrue(
 	pad_D_2->Update();
 
 	c_D->Update();
-	c_D->SaveAs(Form("../figs/2Dfit/ctauTrue_%s.pdf",kineLabel.Data()));
+	c_D->SaveAs(Form("../figs/2DFit/ctauTrue_%s.pdf",kineLabel.Data()));
 
 	//TH1 *h1 = (TH1*)TrueModel_Tot->createHistogram("ctau3Dtrue",50,50);
 	TFile *outFile = new TFile(Form("../roots/2DFit/CtauTrueResult_%s.root",kineLabel.Data()),"RECREATE");

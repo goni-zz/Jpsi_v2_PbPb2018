@@ -221,7 +221,7 @@ void CtauSig(
 	c_F->Update();
 	c_F->SaveAs(Form("../figs/2DFit/Sig_%s.pdf",kineLabel.Data()));
 
-	ws->Print();
+//	ws->Print();
 	
 	TFile *outFile = new TFile(Form("../roots/2DFit/CtauSigResult_%s.root",kineLabel.Data()),"recreate");
 	pdfTot_Sig->Write();

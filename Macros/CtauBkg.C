@@ -219,7 +219,7 @@ void CtauBkg(
 	pad_E_2->Update();
 
 	c_E->Update();
-	c_E->SaveAs(Form("../figs/2Dfit/Bkg_%s.pdf",kineLabel.Data()));
+	c_E->SaveAs(Form("../figs/2DFit/Bkg_%s.pdf",kineLabel.Data()));
 	RooArgSet* fitargs = new RooArgSet();
 	fitargs->add(fitCtauBkg->floatParsFinal());
 	RooDataSet *datasetCBkg = new RooDataSet("datasetCBkg","dataset with Ctau Background Fit result", *fitargs);
@@ -227,7 +227,7 @@ void CtauBkg(
 	wscbkg->import(*fitCtauBkg);
 	//wscbkg->import(*pdfCTAUCOND_Bkg);
 	
-	ws->Print();
+//	ws->Print();
 
 	TFile *outFile = new TFile(Form("../roots/2DFit/CtauBkgResult_%s.root",kineLabel.Data()),"recreate");
 	fitCtauBkg->Write();

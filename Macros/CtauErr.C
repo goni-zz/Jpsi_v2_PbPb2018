@@ -217,11 +217,12 @@ void CtauErr(
 	TLine *lB = new TLine(ctauErrLow,0, ctauErrHigh,0);
 	lB->SetLineStyle(1);
 	lB->Draw("same");
-
+	pad_B_2->Update();
 	cout << endl << "************** Finished SPLOT *****************" << endl << endl;
 
 	c_B->Update();
-	c_B->SaveAs(Form("../figs/2Dfit/ctauErr_%s.pdf",kineLabel.Data()));
+	c_B->SaveAs(Form("../figs/2DFit/ctauErr_%s.pdf",kineLabel.Data()));
+	c_B->SaveAs(Form("../figs/2DFit/ctauErr_%s.png",kineLabel.Data()));
 
 
 	TFile *outFile = new TFile(Form("../roots/2DFit/CtauErrResult_%s.root",kineLabel.Data()),"recreate");
