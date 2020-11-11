@@ -227,6 +227,9 @@ void CtauErr(
 	TFile *outFile = new TFile(Form("../roots/2DFit/CtauErrResult_%s.root",kineLabel.Data()),"recreate");
 	dataw_Bkg->Write();
 	dataw_Sig->Write();
+	pdfCTAUERR_Tot->Write();
+	pdfCTAUERR_Bkg->Write();
+	pdfCTAUERR_Jpsi->Write();
 	outFile->Close();
 
 
