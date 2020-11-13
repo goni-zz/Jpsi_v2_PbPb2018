@@ -34,13 +34,24 @@ void CtauBkg(
 {
 
 	gStyle->SetEndErrorSize(0);
+    gSystem->mkdir("../roots/2DFit/");
+    gSystem->mkdir("../figs/2DFit/");
+
+    RooMsgService::instance().getStream(0).removeTopic(Caching);
+    RooMsgService::instance().getStream(1).removeTopic(Caching);
+    RooMsgService::instance().getStream(0).removeTopic(Plotting);
+    RooMsgService::instance().getStream(1).removeTopic(Plotting);
+    RooMsgService::instance().getStream(0).removeTopic(Integration);
+    RooMsgService::instance().getStream(1).removeTopic(Integration);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
+
 	TFile* f1; TFile* fMass; TFile* fCErr; TFile* fCRes;
 	TString kineCut;
 	TString SigCut;
 	TString BkgCut;
 	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
-	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_2020819.root");
+	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
 	fMass = new TFile(Form("../roots/2DFit/MassFitResult_%s.root",kineLabel.Data()));
 	fCErr = new TFile(Form("../roots/2DFit/CtauErrResult_%s.root",kineLabel.Data()));
 	fCRes = new TFile(Form("../roots/2DFit/CtauResResult_%s.root",kineLabel.Data()));
@@ -83,14 +94,10 @@ void CtauBkg(
 	cout << "******** New Combined Dataset ***********" << endl;
 	dsAB->Print();
 	ws->import(*dsAB);
-	ws->var("mass")->setRange(massLow, massHigh);
 	ws->var("ctau3D")->setRange(ctauLow, ctauHigh);
 	ws->var("ctau3D")->setRange("ctauRange", ctauLow, ctauHigh);
 	ws->var("ctau3DErr")->setRange(ctauErrLow, ctauErrHigh);
 	ws->var("ctau3DErr")->setRange("ctauErrRange",ctauErrLow, ctauErrHigh);
-	ws->var("ctau3DRes")->setRange(ctauResLow, ctauResHigh);
-	ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
-	ws->var("mass")->Print();
 	ws->var("ctau3D")->Print();
 	ws->var("ctau3DErr")->Print();
 
@@ -102,9 +109,9 @@ void CtauBkg(
 	ws->factory("zeroMean[0.]");
 	ws->factory("fDFSS[0.5, 1e-6, 1.1]");
 	ws->factory("fDLIV[0.5, 1e-6, 1.]");
-	ws->factory("lambdaDDS_Bkg[0.9, 1e-6, 1.1]");
-	ws->factory("lambdaDF_Bkg[0.3, 1e-6, 1.1]");
-	ws->factory("lambdaDSS_Bkg[0.8, 1e-6, 1.1]");
+	ws->factory("lambdaDDS_Bkg[0.1, 1e-6, 1.]");
+	ws->factory("lambdaDF_Bkg[0.2, 1e-6, 1.]");
+	ws->factory("lambdaDSS_Bkg[0.8, 1e-6, 1.]");
 	//parameters fixed by Resolution model
 	ws->var("ctauRes_mean")->setConstant(kTRUE);
 	ws->var("s1_CtauRes")->setConstant(kTRUE);

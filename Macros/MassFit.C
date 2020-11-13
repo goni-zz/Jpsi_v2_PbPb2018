@@ -33,12 +33,23 @@ void MassFit(
 		)
 {
 	gStyle->SetEndErrorSize(0);
+	gSystem->mkdir("../roots/2DFit/");
+	gSystem->mkdir("../figs/2DFit/");
+
+    RooMsgService::instance().getStream(0).removeTopic(Caching);
+    RooMsgService::instance().getStream(1).removeTopic(Caching);
+    RooMsgService::instance().getStream(0).removeTopic(Plotting);
+    RooMsgService::instance().getStream(1).removeTopic(Plotting);
+    RooMsgService::instance().getStream(0).removeTopic(Integration);
+    RooMsgService::instance().getStream(1).removeTopic(Integration);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
+
 	TFile* f1; TFile* f2; TFile* f3;
 	TString kineCut;
 	TString SigCut;
 	TString BkgCut;
 
-	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_2020819.root");
+	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
 	kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f",ptLow, ptHigh, yLow, yHigh);
 	SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2",ptLow, ptHigh, yLow, yHigh);
 	BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5))",ptLow, ptHigh, yLow, yHigh);
@@ -67,26 +78,19 @@ void MassFit(
 	dsAB->Print();
 	ws->import(*dsAB);
 	ws->var("mass")->setRange(massLow, massHigh);
-	ws->var("ctau3D")->setRange(ctauLow, ctauHigh);
-	ws->var("ctau3D")->setRange("ctauRange", ctauLow, ctauHigh);
-	ws->var("ctau3DErr")->setRange(ctauErrLow, ctauErrHigh);
-	ws->var("ctau3DErr")->setRange("ctauErrRange",ctauErrLow, ctauErrHigh);
-	ws->var("ctau3DRes")->setRange(ctauResLow, ctauResHigh);
-	ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
 	ws->var("mass")->Print();
-	ws->var("ctau3D")->Print();
-	ws->var("ctau3DErr")->Print();
 
 
 //***********************************************************************
 //****************************** MASS FIT *******************************
 //***********************************************************************
 
+	//         The order is {sigma_1,  x, alpha_1, n_1,   f, err_mu, err_sigma, m_lambda}
 	double paramsupper[8] = {0.2,    3.0,   5.321, 5.0, 1.0,   25.0,      25.0,     25.0};
 	double paramslower[8] = {0.02,   0.0,     1.0, 1.0, 0.0,    0.0,       0.0,      0.0};
 	//SIGNAL: initial params
 	double sigma_1_init = 0.1;
-	double x_init = 0.8;
+	double x_init = 0.9;
 	double alpha_1_init = 1.5;
 	double n_1_init = 2.6;
 	double f_init = 0.5;
@@ -133,7 +137,7 @@ void MassFit(
 	//RooGenericPdf *pdfMASS_bkg = new RooGenericPdf("pdfMASS_bkg","Background","TMath::Exp(-@0/@1)",RooArgList(*(ws->var("mass")),m_lambda_A));
 	//RooRealVar *N_Bkg = new RooRealVar("N_Bkg","fraction of component 1 in bkg",10000,0,1000000);
 
-	RooRealVar *sl1 = new RooRealVar("sl1","sl1",0.6,0.,3);
+	RooRealVar *sl1 = new RooRealVar("sl1","sl1",0.6,0.,1);
 	RooRealVar *cnst1 = new RooRealVar("cnst1","cnst1",0.8,0.,1);
 	//RooGenericPdf *bkg = new RooGenericPdf("bkg","Background","@0*@1+@2",RooArgList( *(ws->var("mass")), sl1, cnst1) );
 	RooChebychev *pdfMASS_bkg;
@@ -236,9 +240,12 @@ void MassFit(
 	cout << "Chebychev Par1 : " << Par1->getVal() << " +/- " << Par1->getError() << endl;
 	cout << "Chebychev Par2 : " << Par2->getVal() << " +/- " << Par2->getError() << endl;
 
+	ws->Print();
 	RooArgSet* fitargs = new RooArgSet();
 	fitargs->add(fitMass->floatParsFinal());
-	RooDataSet *datasetMass = new RooDataSet("datasetMass","dataset with Mass Fit result", *fitargs);
+	//RooDataSet *datasetMass = new RooDataSet("datasetMass","dataset with Mass Fit result", RooArgList(*ws->var("N_Jpsi"),*ws->var("N_Bkg")) );
+	RooDataSet *datasetMass = new RooDataSet("datasetMass","dataset with Mass Fit result", *fitargs );
+	datasetMass->add(*fitargs);
 	RooWorkspace *wsmass = new RooWorkspace("workspaceMass");
 
 	c_A->Update();
@@ -251,5 +258,6 @@ void MassFit(
 	datasetMass->Write();
 	outFile->Close();
 
+	fitMass->Print();
 }
 

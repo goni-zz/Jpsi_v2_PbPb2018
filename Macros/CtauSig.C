@@ -33,13 +33,23 @@ void CtauSig(
 		)
 {
 	gStyle->SetEndErrorSize(0);
+    gSystem->mkdir("../roots/2DFit/");
+    gSystem->mkdir("../figs/2DFit/");
+
+    RooMsgService::instance().getStream(0).removeTopic(Caching);
+    RooMsgService::instance().getStream(1).removeTopic(Caching);
+    RooMsgService::instance().getStream(0).removeTopic(Plotting);
+    RooMsgService::instance().getStream(1).removeTopic(Plotting);
+    RooMsgService::instance().getStream(0).removeTopic(Integration);
+    RooMsgService::instance().getStream(1).removeTopic(Integration);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING);
 	TFile* f1; TFile* fMass; TFile* fCErr; TFile* fCRes; TFile* fCTrue;
 	TString kineCut;
 	TString SigCut;
 	TString BkgCut;
 	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
-	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_2020819.root");
+	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
 	fMass = new TFile(Form("../roots/2DFit/MassFitResult_%s.root",kineLabel.Data()));
 	fCErr = new TFile(Form("../roots/2DFit/CtauErrResult_%s.root",kineLabel.Data()));
 	fCRes = new TFile(Form("../roots/2DFit/CtauResResult_%s.root",kineLabel.Data()));
@@ -85,14 +95,10 @@ void CtauSig(
 	cout << "******** New Combined Dataset ***********" << endl;
 	dsAB->Print();
 	ws->import(*dsAB);
-	ws->var("mass")->setRange(massLow, massHigh);
 	ws->var("ctau3D")->setRange(ctauLow, ctauHigh);
 	ws->var("ctau3D")->setRange("ctauRange", ctauLow, ctauHigh);
 	ws->var("ctau3DErr")->setRange(ctauErrLow, ctauErrHigh);
 	ws->var("ctau3DErr")->setRange("ctauErrRange",ctauErrLow, ctauErrHigh);
-	ws->var("ctau3DRes")->setRange(ctauResLow, ctauResHigh);
-	ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
-	ws->var("mass")->Print();
 	ws->var("ctau3D")->Print();
 	ws->var("ctau3DErr")->Print();
 
@@ -184,7 +190,7 @@ void CtauSig(
 			ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dataw_Sig"), kTRUE), Components("pdfCTAUCOND_SigNoPR"),
 			LineWidth(2), LineColor(kOrange-5));
 	ws->data("dataw_Sig")->plotOn(myPlot2_F,Name("dataHist_ctauSig"), DataError(RooAbsData::SumW2), MarkerSize(.7), Binning(nCtauBins), LineColor(kRed+2), MarkerColor(kRed+2));
-	myPlot2_F->GetYaxis()->SetRangeUser(10e-2, 10e6);
+	myPlot2_F->GetYaxis()->SetRangeUser(10e-2, 10e7);
 	myPlot2_F->GetXaxis()->SetRangeUser(-4, 6);
 	myPlot2_F->GetXaxis()->SetTitle("#font[12]{l}_{J/#psi} (mm)");
 	myPlot2_F->SetFillStyle(4000);

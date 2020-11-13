@@ -32,13 +32,24 @@ void CtauErr(
 		)
 {
 	gStyle->SetEndErrorSize(0);
+    gSystem->mkdir("../roots/2DFit/");
+    gSystem->mkdir("../figs/2DFit/");
+
+	RooMsgService::instance().getStream(0).removeTopic(Caching);
+	RooMsgService::instance().getStream(1).removeTopic(Caching);
+	RooMsgService::instance().getStream(0).removeTopic(Plotting);
+	RooMsgService::instance().getStream(1).removeTopic(Plotting);
+	RooMsgService::instance().getStream(0).removeTopic(Integration);
+	RooMsgService::instance().getStream(1).removeTopic(Integration);
+	RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
+
 	TFile* f1; TFile* f2; TFile* f3; TFile* fMass;
 	TString kineCut;
 	TString SigCut;
 	TString BkgCut;
 	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
-	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_2020819.root");
+	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
 	fMass = new TFile(Form("../roots/2DFit/MassFitResult_%s.root",kineLabel.Data()));
 	kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f",ptLow, ptHigh, yLow, yHigh);
 	SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2",ptLow, ptHigh, yLow, yHigh);
@@ -58,10 +69,16 @@ void CtauErr(
 	ws->import(*datasetMass);
 	ws->import(*pdfMASS_Tot);
 	cout << "####################################" << endl;
-	RooDataSet *reducedDS_A = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y")), *(ws->var("N_Jpsi"))), SigCut.Data() );
-	RooDataSet *reducedDS_B = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y")), *(ws->var("N_Bkg"))), BkgCut.Data() );
+	//RooDataSet *reducedDS_A = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y")), *(ws->var("N_Jpsi"))), SigCut.Data() );
+	RooRealVar *N_Jpsi = ws->var("N_Jpsi");
+	RooRealVar *N_Bkg = ws->var("N_Bkg");
+	RooDataSet *reducedDS_A = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), SigCut.Data() );
+	reducedDS_A->add(*N_Jpsi);
+	RooDataSet *reducedDS_B = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), BkgCut.Data() );
+	reducedDS_B->add(*N_Bkg);
 	reducedDS_A->SetName("reducedDS_A");
 	reducedDS_B->SetName("reducedDS_B");
+	reducedDS_A->Print();
 
 	RooCategory tp("tp","tp");
 	tp.defineType("A");
@@ -71,16 +88,10 @@ void CtauErr(
 	cout << "******** New Combined Dataset ***********" << endl;
 	dsAB->Print();
 	ws->import(*dsAB);
-	ws->var("mass")->setRange(massLow, massHigh);
-	ws->var("ctau3D")->setRange(ctauLow, ctauHigh);
-	ws->var("ctau3D")->setRange("ctauRange", ctauLow, ctauHigh);
 	ws->var("ctau3DErr")->setRange(ctauErrLow, ctauErrHigh);
 	ws->var("ctau3DErr")->setRange("ctauErrRange",ctauErrLow, ctauErrHigh);
-	ws->var("ctau3DRes")->setRange(ctauResLow, ctauResHigh);
-	ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
-	ws->var("mass")->Print();
-	ws->var("ctau3D")->Print();
 	ws->var("ctau3DErr")->Print();
+	ws->var("N_Jpsi")->Print();
 
 
 	//***********************************************************************
@@ -222,7 +233,6 @@ void CtauErr(
 
 	c_B->Update();
 	c_B->SaveAs(Form("../figs/2DFit/ctauErr_%s.pdf",kineLabel.Data()));
-	c_B->SaveAs(Form("../figs/2DFit/ctauErr_%s.png",kineLabel.Data()));
 
 
 	TFile *outFile = new TFile(Form("../roots/2DFit/CtauErrResult_%s.root",kineLabel.Data()),"recreate");

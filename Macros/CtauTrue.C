@@ -33,6 +33,17 @@ void CtauTrue(
 		)
 {
 	gStyle->SetEndErrorSize(0);
+    gSystem->mkdir("../roots/2DFit/");
+    gSystem->mkdir("../figs/2DFit/");
+
+    RooMsgService::instance().getStream(0).removeTopic(Caching);
+    RooMsgService::instance().getStream(1).removeTopic(Caching);
+    RooMsgService::instance().getStream(0).removeTopic(Plotting);
+    RooMsgService::instance().getStream(1).removeTopic(Plotting);
+    RooMsgService::instance().getStream(0).removeTopic(Integration);
+    RooMsgService::instance().getStream(1).removeTopic(Integration);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
+
 	TFile* f1; TFile* f2; 
 	TString kineCut;
 	TString SigCut;

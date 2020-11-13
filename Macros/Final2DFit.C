@@ -33,13 +33,25 @@ void Final2DFit(
 		)
 {
 	gStyle->SetEndErrorSize(0);
+	gSystem->mkdir("../roots/2DFit/");
+    gSystem->mkdir("../figs/2DFit/");
+
+    RooMsgService::instance().getStream(0).removeTopic(Caching);
+    RooMsgService::instance().getStream(1).removeTopic(Caching);
+    RooMsgService::instance().getStream(0).removeTopic(Plotting);
+    RooMsgService::instance().getStream(1).removeTopic(Plotting);
+    RooMsgService::instance().getStream(0).removeTopic(Integration);
+    RooMsgService::instance().getStream(1).removeTopic(Integration);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
+
+
 	TFile* f1; TFile* f2; TFile* f3; TFile* fMass; TFile* fCErr; TFile* fCRes; TFile* fCBkg; TFile* fCTrue;
 	TString kineCut;
 	TString SigCut;
 	TString BkgCut;
 	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
-	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_2020819.root");
+	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
 	f2 = new TFile("../skimmedFiles/OniaRooDataSet_JPsi_GENONLY_NonPrompt_20201006_365_2_ver618.root");
 	f3 = new TFile("../skimmedFiles/OniaRooDataSet_JPsi_GENONLY_NonPrompt_20201006_6550_ver618.root");
 	fMass = new TFile(Form("../roots/2DFit/MassFitResult_%s.root",kineLabel.Data()));
@@ -264,7 +276,7 @@ void Final2DFit(
 	//                                     LineColor(kBlack), NumCPU(32)
 	//                                     );
 	ws->saveSnapshot("pdfCTAUMASS_Tot_parFit",*newpars,kTRUE);
-	myPlot2_G->GetYaxis()->SetRangeUser(10e-2, 10e7);
+	myPlot2_G->GetYaxis()->SetRangeUser(10e-2, 10e8);
 	myPlot2_G->GetXaxis()->SetRangeUser(-4, 6);
 	myPlot2_G->GetXaxis()->SetTitle("#font[12]{l}_{J/#psi} (mm)");
 	myPlot2_G->Draw();
@@ -273,7 +285,7 @@ void Final2DFit(
 	leg_G->SetBorderSize(0);
 	leg_G->AddEntry(myPlot2_G->findObject("dOS"),"Data","pe");
 	leg_G->AddEntry(myPlot2_G->findObject("PDF"),"Total fit","fl");
-	leg_G->AddEntry(myPlot2_G->findObject("BKG"),"Background","pe");
+	leg_G->AddEntry(myPlot2_G->findObject("BKG"),"Background","fl");
 	leg_G->AddEntry(myPlot2_G->findObject("JPSIPR"),"J/#psi Prompt","l");
 	leg_G->AddEntry(myPlot2_G->findObject("JPSINOPR"),"J/#psi Non-Prompt","l");
 	leg_G->Draw("same");

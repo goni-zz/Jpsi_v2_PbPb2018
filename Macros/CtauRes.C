@@ -33,13 +33,24 @@ void CtauRes(
 	    )
 {
 	gStyle->SetEndErrorSize(0);
+	gSystem->mkdir("../roots/2DFit/");
+    gSystem->mkdir("../figs/2DFit/");
+
+    RooMsgService::instance().getStream(0).removeTopic(Caching);
+    RooMsgService::instance().getStream(1).removeTopic(Caching);
+    RooMsgService::instance().getStream(0).removeTopic(Plotting);
+    RooMsgService::instance().getStream(1).removeTopic(Plotting);
+    RooMsgService::instance().getStream(0).removeTopic(Integration);
+    RooMsgService::instance().getStream(1).removeTopic(Integration);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
+
 	TFile* f1; TFile* fMass; TFile* fCErr;
 	TString kineCut;
 	TString SigCut;
 	TString BkgCut;
 	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
-	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_2020819.root");
+	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
 	fMass = new TFile(Form("../roots/2DFit/MassFitResult_%s.root",kineLabel.Data()));
 	fCErr = new TFile(Form("../roots/2DFit/CtauErrResult_%s.root",kineLabel.Data()));
 	kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f",ptLow, ptHigh, yLow, yHigh);
@@ -77,16 +88,10 @@ void CtauRes(
 	cout << "******** New Combined Dataset ***********" << endl;
 	dsAB->Print();
 	ws->import(*dsAB);
-	ws->var("mass")->setRange(massLow, massHigh);
-	ws->var("ctau3D")->setRange(ctauLow, ctauHigh);
-	ws->var("ctau3D")->setRange("ctauRange", ctauLow, ctauHigh);
-	ws->var("ctau3DErr")->setRange(ctauErrLow, ctauErrHigh);
-	ws->var("ctau3DErr")->setRange("ctauErrRange",ctauErrLow, ctauErrHigh);
 	ws->var("ctau3DRes")->setRange(ctauResLow, ctauResHigh);
 	ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
-	ws->var("mass")->Print();
-	ws->var("ctau3D")->Print();
-	ws->var("ctau3DErr")->Print();
+	ws->var("ctau3DRes")->Print();
+	dataw_Sig->Print();
 
 	//***********************************************************************
 	//**************************** CTAU RES FIT *****************************
@@ -99,7 +104,7 @@ void CtauRes(
 	double entries = ws->data("ctauResCutDS")->sumEntries();
 	//double entries = ws->var("N_Jpsi")->getVal();
 	cout<<"[Info] #J/psi: "<<entries<<endl;
-	ws->factory(Form("N_Jpsi[%.12f,%.12f,%.12f]", entries, entries, entries*2.0));
+	ws->factory(Form("N_Jpsi_sw[%.12f,%.12f,%.12f]", entries, entries, entries*2.0));
 	cout << "HERE" << endl;
 	// create the variables for this model
 	//ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
@@ -155,7 +160,7 @@ void CtauRes(
 	TPad *pad_C_1 = new TPad("pad_C_1", "pad_C_1", 0, 0.16, 0.98, 1.0);
 	pad_C_1->SetTicks(1,1);
 	pad_C_1->Draw(); pad_C_1->cd();
-	RooPlot* myPlot_C = ws->var("ctau3DRes")->frame(nCtauResBins); // bins
+	RooPlot* myPlot_C = ws->var("ctau3DRes")->frame(Bins(nCtauResBins), Range(ctauResLow, ctauResHigh)); // bins
 	myPlot_C->SetTitle("");
 
 	pad_C_1->cd();
