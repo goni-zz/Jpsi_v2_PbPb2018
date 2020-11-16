@@ -1,0 +1,774 @@
+#include <iostream>
+
+#include <TLorentzVector.h>
+#include "../commonUtility.h"
+#include "../JpsiUtility.h"
+#include "../HiEvtPlaneList.h"
+#include "../cutsAndBin.h"
+#include "../Style_jaebeom.h"
+#include "tnp_weight_lowptPbPb.h"
+#include <TAttMarker.h>
+
+using namespace std;
+
+void getEfficiency_rapidity_jpsi_pbpb(
+  float ptLow = 0.0, float ptHigh = 50.0,
+  float yLow = 0.0, float yHigh = 2.4,
+  int cLow = 0, int cHigh = 180, bool isTnP = true, bool isPtWeight = false, int state=1
+  ) {
+
+  gStyle->SetOptStat(0);
+  int kTrigSel = 12;	//jpsi=12,Upsilon=13
+
+  float muPtCut = 0; //3.5, 1.8
+  float muEtaCut = 2.4;
+
+  ////Upsilon
+  //float massLow = 8.0;
+  //float massHigh = 10.0;
+  //if(state==2){massLow = 8.5; massHigh = 11;}
+
+  //jpsi
+  float massLow = 2.5;
+  float massHigh = 3.5;
+  if(state==2){massLow = 2.5; massHigh = 3.5;}
+
+
+  double min = 0;
+  double max = ptHigh;
+  double binwidth = 1;
+  //const int numBins = 31; //50;//(max-min)/binwidth;  //31//
+  const int numBins = 12; //50;//(max-min)/binwidth;  //31//
+
+  //input files
+  //PbPb
+  TString inputMC = "/work2/Oniatree/JPsi/OniatreeMC_JPsi_pThat2_TunedCP5_HydjetDrumMB_5p02TeV_Pythia8_part*.root";	//PbPb_prompt
+  if(state==2) inputMC = "/work2/Oniatree/JPsi/OniatreeMC_BToJpsi_pThat-2_TuneCP5-EvtGen_HydjetDrumMB_5p02TeV_pythia8.root";	//PbPb_non prompt
+  TChain* mytree = new TChain("myTree"); 
+  mytree->Add(inputMC.Data());
+  TString outFileName = "mc_eff_vs_pt_prompt_pbpb_Jpsi.root"; 
+  if(state==2) outFileName = "mc_eff_vs_pt_nprompt_pbpb_Jpsi.root"; 
+
+  ////pp
+  //TString inputMC = "/work2/Oniatree/JPsi/OniaTree_JpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root";	//pp_prompt
+  //if(state==2) inputMC = "/work2/Oniatree/JPsi/OniaTree_BJpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root";	//pp_non prompt
+  //TChain* mytree = new TChain("hionia/myTree"); 
+  //mytree->Add(inputMC.Data());
+  //TString outFileName = "mc_eff_vs_pt_prompt_pp_Jpsi.root"; 
+  //if(state==2) TString outFileName = "mc_eff_vs_pt_nprompt_pp_Jpsi.root"; 
+
+  //TString outFileName = "mc_eff_vs_pt_prompt_pbpb_Jpsi.root"; 
+  //if(state==2) TString outFileName = "mc_eff_vs_pt_nprompt_pbpb_Jpsi.root"; 
+  //else if(state==3) TString outFileName = "mc_eff_vs_pt_prompt_pp_Jpsi.root"; 
+  //else if(state==4) TString outFileName = "mc_eff_vs_pt_nprompt_pp_Jpsi.root"; 
+  //TString outFileName = "mc_eff_vs_pt_prompt_pbpb_v10.root";
+
+  //pT reweighting function
+  //TFile *fPtW = new TFile(Form("../Reweight/WeightedFunc/Func_dNdpT_%dS.root",state),"read");
+  //TF1* f1 = (TF1*) fPtW->Get("fitRatio");
+
+  
+  //double ptBin[numBins+1] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,27,30,34,38,42,46,50};
+  double ptBin[numBins+1] = {0,1,2,3,4,5,6,7,8,9,10,13,50};
+  float yBin[7] = {0,0.4,0.8,1.2,1.6,2.0,2.4};
+
+  TH1D* hpt_reco_0to24	 = new TH1D("hpt_reco_0to24","hpt_reco_0to24",numBins,ptBin);
+  TH1D* hpt_reco_0to6	 = new TH1D("hpt_reco_0to6","hpt_reco_0to6",numBins,ptBin);
+  TH1D* hpt_reco_6to12	 = new TH1D("hpt_reco_6to12","hpt_reco_6to12",numBins,ptBin);
+  TH1D* hpt_reco_12to18	 = new TH1D("hpt_reco_12to18","hpt_reco_12to18",numBins,ptBin);
+  TH1D* hpt_reco_18to24	 = new TH1D("hpt_reco_18to24","hpt_reco_18to24",numBins,ptBin);
+
+  TH1D* hpt_gen_0to24  = new TH1D("hpt_gen_0to24 ","hpt_gen_0to24 ",numBins,ptBin);
+  TH1D* hpt_gen_0to6   = new TH1D("hpt_gen_0to6  ","hpt_gen_0to6  ",numBins,ptBin);
+  TH1D* hpt_gen_6to12  = new TH1D("hpt_gen_6to12 ","hpt_gen_6to12 ",numBins,ptBin);
+  TH1D* hpt_gen_12to18 = new TH1D("hpt_gen_12to18","hpt_gen_12to18",numBins,ptBin);
+  TH1D* hpt_gen_18to24 = new TH1D("hpt_gen_18to24","hpt_gen_18to24",numBins,ptBin);
+
+  TH1D* hpt_reco_Trig_0to24  = new TH1D("hpt_reco_Trig_0to24 ","hpt_reco_Trig_0to24 ",numBins,ptBin);
+  TH1D* hpt_reco_Trig_0to6   = new TH1D("hpt_reco_Trig_0to6  ","hpt_reco_Trig_0to6  ",numBins,ptBin);
+  TH1D* hpt_reco_Trig_6to12  = new TH1D("hpt_reco_Trig_6to12 ","hpt_reco_Trig_6to12 ",numBins,ptBin);
+  TH1D* hpt_reco_Trig_12to18 = new TH1D("hpt_reco_Trig_12to18","hpt_reco_Trig_12to18",numBins,ptBin);
+  TH1D* hpt_reco_Trig_18to24 = new TH1D("hpt_reco_Trig_18to24","hpt_reco_Trig_18to24",numBins,ptBin);
+
+  TH1D* hpt_reco_NoTrig_0to24  = new TH1D("hpt_reco_NoTrig_0to24 ","hpt_reco_NoTrig_0to24 ",numBins,ptBin);
+  TH1D* hpt_reco_NoTrig_0to6   = new TH1D("hpt_reco_NoTrig_0to6  ","hpt_reco_NoTrig_0to6  ",numBins,ptBin);
+  TH1D* hpt_reco_NoTrig_6to12  = new TH1D("hpt_reco_NoTrig_6to12 ","hpt_reco_NoTrig_6to12 ",numBins,ptBin);
+  TH1D* hpt_reco_NoTrig_12to18 = new TH1D("hpt_reco_NoTrig_12to18","hpt_reco_NoTrig_12to18",numBins,ptBin);
+  TH1D* hpt_reco_NoTrig_18to24 = new TH1D("hpt_reco_NoTrig_18to24","hpt_reco_NoTrig_18to24",numBins,ptBin);
+
+  TH1D* hy_gen = new TH1D("hy_gen","hy_gen",6,yBin);
+  TH1D* hy_reco = new TH1D("hy_reco","hy_reco",6,yBin);
+  hy_gen ->Sumw2();
+  hy_reco ->Sumw2();
+
+  hpt_reco_0to24 ->Sumw2();
+  hpt_reco_0to6  ->Sumw2();
+  hpt_reco_6to12 ->Sumw2();
+  hpt_reco_12to18->Sumw2();
+  hpt_reco_18to24->Sumw2();
+
+  hpt_gen_0to24 ->Sumw2();
+  hpt_gen_0to6  ->Sumw2();
+  hpt_gen_6to12 ->Sumw2();
+  hpt_gen_12to18->Sumw2();
+  hpt_gen_18to24->Sumw2();
+
+  hpt_reco_Trig_0to24 ->Sumw2();
+  hpt_reco_Trig_0to6  ->Sumw2();
+  hpt_reco_Trig_6to12 ->Sumw2();
+  hpt_reco_Trig_12to18->Sumw2();
+  hpt_reco_Trig_18to24->Sumw2();
+
+  hpt_reco_NoTrig_0to24 ->Sumw2();
+  hpt_reco_NoTrig_0to6  ->Sumw2();
+  hpt_reco_NoTrig_6to12 ->Sumw2();
+  hpt_reco_NoTrig_12to18->Sumw2();
+  hpt_reco_NoTrig_18to24->Sumw2();
+
+  hpt_reco_0to24 ->SetTitle("Reco: Rapidity 0.0-2.4");
+  hpt_reco_0to6  ->SetTitle("Reco: Rapidity 0.0-0.6");
+  hpt_reco_6to12 ->SetTitle("Reco: Rapidity 0.6-1.2");
+  hpt_reco_12to18->SetTitle("Reco: Rapidity 1.2-1.8");
+  hpt_reco_18to24->SetTitle("Reco: Rapidity 1.8-2.4");
+
+  hpt_reco_0to24 ->GetXaxis()->SetTitle("pt");
+  hpt_reco_0to6  ->GetXaxis()->SetTitle("pt");
+  hpt_reco_6to12 ->GetXaxis()->SetTitle("pt");
+  hpt_reco_12to18->GetXaxis()->SetTitle("pt");
+  hpt_reco_18to24->GetXaxis()->SetTitle("pt");
+
+  hpt_gen_0to24 ->SetTitle("Gen: Rapidity 0.0-2.4");
+  hpt_gen_0to6  ->SetTitle("Gen: Rapidity 0.0-0.6");
+  hpt_gen_6to12 ->SetTitle("Gen: Rapidity 0.6-1.2");
+  hpt_gen_12to18->SetTitle("Gen: Rapidity 1.2-1.8");
+  hpt_gen_18to24->SetTitle("Gen: Rapidity 1.8-2.4");
+
+  hpt_gen_0to24 ->GetXaxis()->SetTitle("pt");
+  hpt_gen_0to6  ->GetXaxis()->SetTitle("pt");
+  hpt_gen_6to12 ->GetXaxis()->SetTitle("pt");
+  hpt_gen_12to18->GetXaxis()->SetTitle("pt");
+  hpt_gen_18to24->GetXaxis()->SetTitle("pt");
+
+  const int maxBranchSize = 1000;
+  Int_t           Centrality;
+  ULong64_t       HLTriggers;
+  Int_t           Gen_QQ_size;
+  Int_t           Gen_mu_size;
+  TClonesArray    *Gen_QQ_4mom;
+  TClonesArray    *Gen_mu_4mom;
+  ULong64_t       Gen_QQ_trig[maxBranchSize];   //[Gen_QQ_size]
+  Float_t         Gen_QQ_VtxProb[maxBranchSize];   //[Gen_QQ_size]
+  TBranch        *b_Centrality;   //!
+  TBranch        *b_HLTriggers;   //!
+  TBranch        *b_Gen_QQ_size;   //!
+  TBranch        *b_Gen_mu_size;   //!
+  TBranch        *b_Gen_QQ_4mom;   //!
+  TBranch        *b_Gen_mu_4mom;   //!
+  TBranch        *b_Gen_QQ_trig;   //!
+  TBranch        *b_Gen_QQ_VtxProb;   //!
+
+  Gen_QQ_4mom = 0; Gen_mu_4mom = 0;
+  mytree->SetBranchAddress("Gen_QQ_size", &Gen_QQ_size, &b_Gen_QQ_size);
+  mytree->SetBranchAddress("Gen_mu_size", &Gen_mu_size, &b_Gen_mu_size);
+  mytree->SetBranchAddress("Gen_QQ_4mom", &Gen_QQ_4mom, &b_Gen_QQ_4mom);
+  mytree->SetBranchAddress("Gen_mu_4mom", &Gen_mu_4mom, &b_Gen_mu_4mom);
+
+  //  muon id 
+  Int_t           Gen_QQ_mupl_idx[maxBranchSize];
+  Int_t           Gen_QQ_mumi_idx[maxBranchSize];
+  TBranch        *b_Gen_QQ_mupl_idx;
+  TBranch        *b_Gen_QQ_mumi_idx;
+  mytree->SetBranchAddress("Gen_QQ_mupl_idx",Gen_QQ_mupl_idx,&b_Gen_QQ_mupl_idx);
+  mytree->SetBranchAddress("Gen_QQ_mumi_idx",Gen_QQ_mumi_idx,&b_Gen_QQ_mumi_idx);
+
+  Int_t           Gen_mu_charge[maxBranchSize];
+  TBranch        *b_Gen_mu_charge;   //!
+  mytree->SetBranchAddress("Gen_mu_charge", Gen_mu_charge, &b_Gen_mu_charge);
+
+
+  Int_t           Reco_QQ_size;
+  Int_t           Reco_mu_size;
+  TClonesArray    *Reco_QQ_4mom;
+  TClonesArray    *Reco_mu_4mom;
+  ULong64_t       Reco_QQ_trig[maxBranchSize];   //[Reco_QQ_size]
+  ULong64_t       Reco_mu_trig[maxBranchSize];   //[Reco_QQ_size]
+  Float_t         Reco_QQ_VtxProb[maxBranchSize];   //[Reco_QQ_size]
+  TBranch        *b_Reco_QQ_size;   //!
+  TBranch        *b_Reco_mu_size;   //!
+  TBranch        *b_Reco_QQ_4mom;   //!
+  TBranch        *b_Reco_mu_4mom;   //!
+  TBranch        *b_Reco_QQ_trig;   //!
+  TBranch        *b_Reco_mu_trig;   //!
+  TBranch        *b_Reco_QQ_VtxProb;   //!
+
+  Reco_QQ_4mom = 0; Reco_mu_4mom = 0;
+  mytree->SetBranchAddress("Centrality", &Centrality, &b_Centrality);
+  mytree->SetBranchAddress("HLTriggers", &HLTriggers, &b_HLTriggers);
+  mytree->SetBranchAddress("Reco_QQ_size", &Reco_QQ_size, &b_Reco_QQ_size);
+  mytree->SetBranchAddress("Reco_mu_size", &Reco_mu_size, &b_Reco_mu_size);
+  mytree->SetBranchAddress("Reco_QQ_4mom", &Reco_QQ_4mom, &b_Reco_QQ_4mom);
+  mytree->SetBranchAddress("Reco_mu_4mom", &Reco_mu_4mom, &b_Reco_mu_4mom);
+  mytree->SetBranchAddress("Reco_QQ_trig", Reco_QQ_trig, &b_Reco_QQ_trig);
+  mytree->SetBranchAddress("Reco_mu_trig", Reco_mu_trig, &b_Reco_mu_trig);
+  mytree->SetBranchAddress("Reco_QQ_VtxProb", Reco_QQ_VtxProb, &b_Reco_QQ_VtxProb);
+
+  //  muon id 
+  Int_t           Reco_QQ_mupl_idx[maxBranchSize];
+  Int_t           Reco_QQ_mumi_idx[maxBranchSize];
+  TBranch        *b_Reco_QQ_mupl_idx;
+  TBranch        *b_Reco_QQ_mumi_idx;
+  mytree->SetBranchAddress("Reco_QQ_mupl_idx",Reco_QQ_mupl_idx,&b_Reco_QQ_mupl_idx);
+  mytree->SetBranchAddress("Reco_QQ_mumi_idx",Reco_QQ_mumi_idx,&b_Reco_QQ_mumi_idx);
+
+
+  Float_t         Reco_mu_dxy[maxBranchSize];   //[Reco_mu_size]
+  TBranch        *b_Reco_mu_dxy;   //!
+  mytree->SetBranchAddress("Reco_mu_dxy", Reco_mu_dxy, &b_Reco_mu_dxy);
+  Float_t         Reco_mu_dz[maxBranchSize];   //[Reco_mu_size]
+  TBranch        *b_Reco_mu_dz;   //!
+  mytree->SetBranchAddress("Reco_mu_dz", Reco_mu_dz, &b_Reco_mu_dz);
+  Int_t           Reco_mu_nTrkWMea[maxBranchSize];   //[Reco_mu_size]
+  TBranch        *b_Reco_mu_nTrkWMea;   //!
+  mytree->SetBranchAddress("Reco_mu_nTrkWMea", Reco_mu_nTrkWMea, &b_Reco_mu_nTrkWMea);
+  Int_t           Reco_mu_nPixWMea[maxBranchSize];   //[Reco_mu_size]
+  TBranch        *b_Reco_mu_nPixWMea;   //!
+  mytree->SetBranchAddress("Reco_mu_nPixWMea", Reco_mu_nPixWMea, &b_Reco_mu_nPixWMea);
+  Int_t           Reco_QQ_sign[maxBranchSize];   //[Reco_QQ_size]
+  TBranch        *b_Reco_QQ_sign;   //!
+  mytree->SetBranchAddress("Reco_QQ_sign", Reco_QQ_sign, &b_Reco_QQ_sign);
+
+  Int_t           Reco_mu_SelectionType[maxBranchSize];
+  TBranch        *b_Reco_mu_SelectionType;
+  mytree->SetBranchAddress("Reco_mu_SelectionType", Reco_mu_SelectionType, &b_Reco_mu_SelectionType);
+
+  Int_t Reco_mu_whichGen[maxBranchSize];
+  TBranch *b_Reco_mu_whichGen;
+  Float_t Gen_weight;
+  TBranch *b_Gen_weight;
+  mytree->SetBranchAddress("Reco_mu_whichGen",Reco_mu_whichGen, &b_Reco_mu_whichGen);
+  mytree->SetBranchAddress("Gen_weight",&Gen_weight, &b_Gen_weight);
+
+  
+  TLorentzVector* JP_Gen= new TLorentzVector;
+  TLorentzVector* mupl_Gen = new TLorentzVector;
+  TLorentzVector* mumi_Gen = new TLorentzVector;
+
+  TLorentzVector* JP_Reco = new TLorentzVector;
+  TLorentzVector* mupl_Reco = new TLorentzVector;
+  TLorentzVector* mumi_Reco = new TLorentzVector;
+
+  double weight = 1;
+  double tnp_weight = 1;
+  double tnp_trig_weight_mupl = -1;
+  double tnp_trig_weight_mumi = -1;
+  double pt_weight = 1;
+  
+  double tnp_trig_dimu=-1;
+  TH2D* hpt_tnp_trig = new TH2D("hpt_tnp_trig","hpt_tnp_trig",numBins,ptBin,40,0,2);
+
+  int kL2filter = 16;	//jpsi=16,Upsilon=38
+  int kL3filter = 17;	//jpsi=17,Upsilon=39
+
+  int count =0;
+  int counttnp =0;
+  const int nevt = mytree->GetEntries();
+  cout << "Total Events : " << nevt << endl;
+  for(int iev=0; iev<nevt ; ++iev)
+  //cout << "Total Events : " << 300000 << endl;
+  //for(int iev=0; iev<300000 ; ++iev)
+  {
+    if(iev%100000==0) cout << ">>>>> EVENT " << iev << " / " << mytree->GetEntries() <<  " ("<<(int)(100.*iev/mytree->GetEntries()) << "%)" << endl;
+    //if(iev%100000==0) cout << ">>>>> EVENT " << iev << " / " << 300000 <<  " ("<<(int)(100.*iev/300000) << "%)" << endl;
+
+    mytree->GetEntry(iev);
+    if(Centrality > cHigh || Centrality < cLow) continue;
+    weight = findNcoll(Centrality) * Gen_weight;
+
+    for(int igen = 0; igen<Gen_QQ_size; igen++){
+	    JP_Gen = (TLorentzVector*) Gen_QQ_4mom->At(igen);
+	    mupl_Gen = (TLorentzVector*) Gen_mu_4mom->At(Gen_QQ_mupl_idx[igen]);
+	    mumi_Gen = (TLorentzVector*) Gen_mu_4mom->At(Gen_QQ_mumi_idx[igen]);
+
+	    Double_t Rapidity_g = fabs(JP_Gen->Rapidity());
+
+	    if(Rapidity_g < 1.2) muPtCut = 3.5;
+	    else if(Rapidity_g >1.2 && Rapidity_g <2.1) muPtCut = (5.77-1.89*Rapidity_g); 
+	    else if(Rapidity_g >2.1 && Rapidity_g <2.4) muPtCut = 1.8; 
+
+	    if(!( fabs(JP_Gen->Rapidity())<2.4 && (mupl_Gen->Pt()>muPtCut && fabs(mupl_Gen->Eta())<2.4) && (mumi_Gen->Pt()>muPtCut && fabs(mumi_Gen->Eta())<2.4) )) continue;
+	    if(Gen_mu_charge[Gen_QQ_mupl_idx[igen]]*Gen_mu_charge[Gen_QQ_mumi_idx[igen]]>0) continue;
+
+	    pt_weight = 1;
+	    //if(isPtWeight) pt_weight = f1->Eval(JP_Gen->Pt()); 
+	    //Double_t Rapidity_g = fabs(JP_Gen->Rapidity());
+
+	    hy_gen->Fill(Rapidity_g, weight);
+	    hpt_gen_0to24->Fill(JP_Gen->Pt(),weight*pt_weight);
+	    if(Rapidity_g < 0.6) hpt_gen_0to6 -> Fill(JP_Gen->Pt(), weight*pt_weight);
+	    else if(Rapidity_g > 0.6 && Rapidity_g < 1.2) hpt_gen_6to12 -> Fill(JP_Gen->Pt(), weight*pt_weight);
+	    else if(Rapidity_g > 1.2 && Rapidity_g < 1.8) hpt_gen_12to18 -> Fill(JP_Gen->Pt(), weight*pt_weight);
+	    else if(Rapidity_g > 1.8 && Rapidity_g < 2.4) hpt_gen_18to24 -> Fill(JP_Gen->Pt(), weight*pt_weight);
+    }
+
+
+    bool HLTPass = false;
+    if((HLTriggers&((ULong64_t)pow(2, kTrigSel))) == ((ULong64_t)pow(2, kTrigSel)) ) HLTPass=true;
+
+    for (Int_t irqq=0; irqq<Reco_QQ_size; ++irqq) 
+    {
+	    JP_Reco = (TLorentzVector*) Reco_QQ_4mom->At(irqq);
+	    mupl_Reco = (TLorentzVector*) Reco_mu_4mom->At(Reco_QQ_mupl_idx[irqq]);
+	    mumi_Reco = (TLorentzVector*) Reco_mu_4mom->At(Reco_QQ_mumi_idx[irqq]);
+
+      
+      bool HLTFilterPass=false;
+      if( (Reco_QQ_trig[irqq]&((ULong64_t)pow(2, kTrigSel))) == ((ULong64_t)pow(2, kTrigSel)) ) HLTFilterPass=true;
+
+      if(Reco_mu_whichGen[Reco_QQ_mupl_idx[irqq]] == -1) continue;
+      if(Reco_mu_whichGen[Reco_QQ_mumi_idx[irqq]] == -1) continue;
+
+      bool passMuonTypePl = true;
+      passMuonTypePl = passMuonTypePl && (Reco_mu_SelectionType[Reco_QQ_mupl_idx[irqq]]&((int)pow(2,1)));
+      passMuonTypePl = passMuonTypePl && (Reco_mu_SelectionType[Reco_QQ_mupl_idx[irqq]]&((int)pow(2,3)));
+
+      bool passMuonTypeMi = true;
+      passMuonTypeMi = passMuonTypeMi && (Reco_mu_SelectionType[Reco_QQ_mumi_idx[irqq]]&((int)pow(2,1)));
+      passMuonTypeMi = passMuonTypeMi && (Reco_mu_SelectionType[Reco_QQ_mumi_idx[irqq]]&((int)pow(2,3)));
+
+      bool muplSoft = (  //(Reco_mu_TMOneStaTight[Reco_QQ_mupl_idx[irqq]]==true) &&
+          (Reco_mu_nTrkWMea[Reco_QQ_mupl_idx[irqq]] > 5) &&
+          (Reco_mu_nPixWMea[Reco_QQ_mupl_idx[irqq]] > 0) &&
+          (fabs(Reco_mu_dxy[Reco_QQ_mupl_idx[irqq]])<0.3) &&
+          (fabs(Reco_mu_dz[Reco_QQ_mupl_idx[irqq]])<20.) &&
+          passMuonTypePl        //			 &&  (Reco_mu_highPurity[Reco_QQ_mupl_idx[irqq]]==true) 
+          ) ; 
+
+      bool mumiSoft = ( //(Reco_mu_TMOneStaTight[Reco_QQ_mumi_idx[irqq]]==true) &&
+          (Reco_mu_nTrkWMea[Reco_QQ_mumi_idx[irqq]] > 5) &&
+          (Reco_mu_nPixWMea[Reco_QQ_mumi_idx[irqq]] > 0) &&
+          (fabs(Reco_mu_dxy[Reco_QQ_mumi_idx[irqq]])<0.3) &&
+          (fabs(Reco_mu_dz[Reco_QQ_mumi_idx[irqq]])<20.)  && 
+          passMuonTypeMi       //			 &&  (Reco_mu_highPurity[Reco_QQ_mupl_idx[irqq]]==true) 
+          ) ; 
+
+      if ( !(muplSoft && mumiSoft) ) continue;   
+      if ( Reco_QQ_VtxProb[irqq]  < 0.01 ) continue;
+      if(Reco_QQ_sign[irqq]!=0) continue;  
+
+      Double_t Rapidity = fabs(JP_Reco->Rapidity());
+
+      if(Rapidity < 1.2) muPtCut = 3.5;
+      else if(Rapidity >1.2 && Rapidity <2.1) muPtCut = (5.77-1.89*Rapidity); 
+      else if(Rapidity >2.1 && Rapidity <2.4) muPtCut = 1.8; 
+
+      if(!( (mupl_Reco->Pt()>muPtCut && fabs(mupl_Reco->Eta())<2.4) && (mumi_Reco->Pt()>muPtCut && fabs(mumi_Reco->Eta())<2.4) && (fabs(JP_Reco->Rapidity())<2.4 && JP_Reco->Pt()<50  && JP_Reco->M()>massLow && JP_Reco->M()<massHigh))) continue;
+
+      hy_reco->Fill(Rapidity, weight);
+      hpt_reco_0to24->Fill(JP_Reco->Pt(),weight * pt_weight);
+      if(Rapidity < 0.6) hpt_reco_0to6 -> Fill(JP_Reco->Pt(), weight *pt_weight);
+      else if(Rapidity > 0.6 && Rapidity < 1.2) hpt_reco_6to12 -> Fill(JP_Reco->Pt(), weight *pt_weight);
+      else if(Rapidity > 1.2 && Rapidity < 1.8) hpt_reco_12to18 -> Fill(JP_Reco->Pt(), weight *pt_weight);
+      else if(Rapidity > 1.8 && Rapidity < 2.4) hpt_reco_18to24 -> Fill(JP_Reco->Pt(), weight *pt_weight);
+
+      //Double_t Rapidity = fabs(JP_Reco->Rapidity());
+      if(HLTPass==true && HLTFilterPass==true) count++;
+      if(isTnP){
+       tnp_weight = 1;
+       tnp_trig_weight_mupl = -1;
+       tnp_trig_weight_mumi = -1;
+       tnp_weight = tnp_weight * tnp_weight_muid_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 0) * tnp_weight_muid_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 0); //mu id
+       tnp_weight = tnp_weight * tnp_weight_trk_pbpb(mupl_Reco->Eta(), 0) * tnp_weight_trk_pbpb(mumi_Reco->Eta(), 0); //inner tracker
+
+       //Trigger part
+       if(!((Reco_mu_trig[Reco_QQ_mupl_idx[irqq]]&((ULong64_t)pow(2, kL2filter))) == ((ULong64_t)pow(2, kL2filter)) && (Reco_mu_trig[Reco_QQ_mumi_idx[irqq]]&((ULong64_t)pow(2, kL2filter))) == ((ULong64_t)pow(2, kL2filter)) ) ){
+//         cout << "irqq : " << irqq << " - iev : " << iev << endl;
+//         cout << "TnP ERROR !!!! ::: No matched L2 filter1 " << endl;
+         continue;
+       }
+       bool mupl_L2Filter = ( (Reco_mu_trig[Reco_QQ_mupl_idx[irqq]]&((ULong64_t)pow(2, kL2filter))) == ((ULong64_t)pow(2, kL2filter)) ) ? true : false ;
+       bool mupl_L3Filter = ( (Reco_mu_trig[Reco_QQ_mupl_idx[irqq]]&((ULong64_t)pow(2, kL3filter))) == ((ULong64_t)pow(2, kL3filter)) ) ? true : false ;
+       bool mumi_L2Filter = ( (Reco_mu_trig[Reco_QQ_mumi_idx[irqq]]&((ULong64_t)pow(2, kL2filter))) == ((ULong64_t)pow(2, kL2filter)) ) ? true : false ;
+       bool mumi_L3Filter = ( (Reco_mu_trig[Reco_QQ_mumi_idx[irqq]]&((ULong64_t)pow(2, kL3filter))) == ((ULong64_t)pow(2, kL3filter)) ) ? true : false ;
+       if(mupl_L2Filter == false || mumi_L2Filter == false){ cout << "TnP ERROR !!!! ::: No matched L2 filter2 " << endl; cout << endl;} 
+
+       bool mupl_isL2 = (mupl_L2Filter && !mupl_L3Filter) ? true : false;
+       bool mupl_isL3 = (mupl_L2Filter && mupl_L3Filter) ? true : false;
+       bool mumi_isL2 = (mumi_L2Filter && !mumi_L3Filter) ? true : false;
+       bool mumi_isL3 = (mumi_L2Filter && mumi_L3Filter) ? true : false;
+       bool SelDone = false;
+
+       if( mupl_isL2 && mumi_isL3){
+         tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 2, 0);
+         tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 3, 0);
+         SelDone = true;
+       }
+       else if( mupl_isL3 && mumi_isL2){
+         tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 3, 0);
+         tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 2, 0);
+         SelDone = true;
+       }
+       else if( mupl_isL3 && mumi_isL3){
+         int t[2] = {-1,1}; // mupl, mumi
+         int l = rand() % (2); 
+         //pick up what will be L2
+         if(t[l]==-1){
+           tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 2, 0);
+           tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 3, 0);
+         }
+         else if(t[l]==1){
+           tnp_trig_weight_mupl = tnp_weight_trg_pbpb(mupl_Reco->Pt(), mupl_Reco->Eta(), 3, 0);
+           tnp_trig_weight_mumi = tnp_weight_trg_pbpb(mumi_Reco->Pt(), mumi_Reco->Eta(), 2, 0);
+         }
+         else {cout << "ERROR :: No random selection done !!!!" << endl; continue;}
+         SelDone = true;
+       }    
+
+       //if(SelDone == false){cout << "ERROR :: No muon filter combination selected !!!!" << endl; continue;}
+       //if((tnp_trig_weight_mupl == -1 || tnp_trig_weight_mumi == -1)){cout << "ERROR :: No trigger muon tnp scale factors selected !!!!" << endl; continue;}
+       tnp_weight = tnp_weight * tnp_trig_weight_mupl * tnp_trig_weight_mumi;
+       if(HLTPass==true && HLTFilterPass==true){
+         counttnp++;
+         tnp_trig_dimu = tnp_trig_weight_mupl * tnp_trig_weight_mumi;
+         hpt_tnp_trig->Fill(JP_Reco->Pt(),tnp_trig_dimu);
+       }
+      }
+
+      pt_weight = 1;
+      //if(isPtWeight) pt_weight = f1->Eval(JP_Reco->Pt());
+
+      if(HLTPass==true && HLTFilterPass==true){
+	      hpt_reco_Trig_0to24->Fill(JP_Reco->Pt(),weight* tnp_weight* pt_weight);
+	      if(Rapidity < 0.6) hpt_reco_Trig_0to6 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
+	      else if(Rapidity > 0.6 && Rapidity < 1.2) hpt_reco_Trig_6to12 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
+	      else if(Rapidity > 1.2 && Rapidity < 1.8) hpt_reco_Trig_12to18 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
+	      else if(Rapidity > 1.8 && Rapidity < 2.4) hpt_reco_Trig_18to24 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
+      }
+      hpt_reco_NoTrig_0to24->Fill(JP_Reco->Pt(),weight* tnp_weight *pt_weight);
+      if(Rapidity < 0.6) hpt_reco_NoTrig_0to6 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
+      else if(Rapidity > 0.6 && Rapidity < 1.2) hpt_reco_NoTrig_6to12 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
+      else if(Rapidity > 1.2 && Rapidity < 1.8) hpt_reco_NoTrig_12to18 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
+      else if(Rapidity > 1.8 && Rapidity < 2.4) hpt_reco_NoTrig_18to24 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
+    }
+  }
+
+  cout << "count " << count << endl;
+  cout << "counttnp " << counttnp << endl;
+  
+
+
+  //Draw
+  //TCanvas * cpt_reco_0to24 = new TCanvas("cpt_reco_0to24","cpt_reco_0to24",0,0,400,400);
+  //cpt_reco_0to24->cd();
+  //hpt_reco_0to24->Draw();
+
+  //TCanvas * cpt_reco_0to6 = new TCanvas("cpt_reco_0to6","cpt_reco_0to6",0,0,400,400);
+  //cpt_reco_0to6->cd();
+  //hpt_reco_0to6->Draw();
+
+  //TCanvas * cpt_reco_6to12 = new TCanvas("cpt_reco_6to12","cpt_reco_6to12",0,0,400,400);
+  //cpt_reco_6to12->cd();
+  //hpt_reco_6to12->Draw();
+
+  //TCanvas * cpt_reco_12to18 = new TCanvas("cpt_reco_12to18","cpt_reco_12to18",0,0,400,400);
+  //cpt_reco_12to18->cd();
+  //hpt_reco_12to18->Draw();
+
+  //TCanvas * cpt_reco_18to24 = new TCanvas("cpt_reco_18to24","cpt_reco_18to24",0,0,400,400);
+  //cpt_reco_18to24->cd();
+  //hpt_reco_18to24->Draw();
+
+  ////Gen
+  //TCanvas * cpt_gen_0to24 = new TCanvas("cpt_gen_0to24","cpt_gen_0to24",0,0,400,400);
+  //cpt_gen_0to24->cd();
+  //hpt_gen_0to24->Draw();
+
+  //TCanvas * cpt_gen_0to6 = new TCanvas("cpt_gen_0to6","cpt_gen_0to6",0,0,400,400);
+  //cpt_gen_0to6->cd();
+  //hpt_gen_0to6->Draw();
+
+  //TCanvas * cpt_gen_6to12 = new TCanvas("cpt_gen_6to12","cpt_gen_6to12",0,0,400,400);
+  //cpt_gen_6to12->cd();
+  //hpt_gen_6to12->Draw();
+
+  //TCanvas * cpt_gen_12to18 = new TCanvas("cpt_gen_12to18","cpt_gen_12to18",0,0,400,400);
+  //cpt_gen_12to18->cd();
+  //hpt_gen_12to18->Draw();
+
+  //TCanvas * cpt_gen_18to24 = new TCanvas("cpt_gen_18to24","cpt_gen_18to24",0,0,400,400);
+  //cpt_gen_18to24->cd();
+  //hpt_gen_18to24->Draw();
+
+  //cpt_reco_0to24->Update();
+  //cpt_reco_0to6->Update();
+  //cpt_reco_6to12->Update();
+  //cpt_reco_12to18->Update();
+  //cpt_reco_18to24->Update();
+
+  //Divide
+  TH1D* hpt_eff_0to24 ;
+  TH1D* hpt_eff_0to6  ;
+  TH1D* hpt_eff_6to12 ;
+  TH1D* hpt_eff_12to18;
+  TH1D* hpt_eff_18to24;
+
+  TH1D* hpt_eff_reco_0to24 ;
+  TH1D* hpt_eff_reco_0to6  ;
+  TH1D* hpt_eff_reco_6to12 ;
+  TH1D* hpt_eff_reco_12to18;
+  TH1D* hpt_eff_reco_18to24;
+
+  TH1D* hpt_eff_NoTrig_0to24 ;
+  TH1D* hpt_eff_NoTrig_0to6  ;
+  TH1D* hpt_eff_NoTrig_6to12 ;
+  TH1D* hpt_eff_NoTrig_12to18;
+  TH1D* hpt_eff_NoTrig_18to24;
+
+  TH1D* hpt_eff_Trig_0to24 ;
+  TH1D* hpt_eff_Trig_0to6  ;
+  TH1D* hpt_eff_Trig_6to12 ;
+  TH1D* hpt_eff_Trig_12to18;
+  TH1D* hpt_eff_Trig_18to24;
+
+  hpt_eff_0to24  = (TH1D*)hpt_reco_0to24 ->Clone("hpt_eff_0to24 ");
+  hpt_eff_0to6   = (TH1D*)hpt_reco_0to6  ->Clone("hpt_eff_0to6  ");
+  hpt_eff_6to12  = (TH1D*)hpt_reco_6to12 ->Clone("hpt_eff_6to12 ");
+  hpt_eff_12to18 = (TH1D*)hpt_reco_12to18->Clone("hpt_eff_12to18");
+  hpt_eff_18to24 = (TH1D*)hpt_reco_18to24->Clone("hpt_eff_18to24");
+
+  hpt_eff_NoTrig_0to24  = (TH1D*)hpt_reco_NoTrig_0to24 ->Clone("hpt_eff_NoTrig_0to24 ");
+  hpt_eff_NoTrig_0to6   = (TH1D*)hpt_reco_NoTrig_0to6  ->Clone("hpt_eff_NoTrig_0to6  ");
+  hpt_eff_NoTrig_6to12  = (TH1D*)hpt_reco_NoTrig_6to12 ->Clone("hpt_eff_NoTrig_6to12 ");
+  hpt_eff_NoTrig_12to18 = (TH1D*)hpt_reco_NoTrig_12to18->Clone("hpt_eff_NoTrig_12to18");
+  hpt_eff_NoTrig_18to24 = (TH1D*)hpt_reco_NoTrig_18to24->Clone("hpt_eff_NoTrig_18to24");
+
+  hpt_eff_Trig_0to24  = (TH1D*)hpt_reco_Trig_0to24 ->Clone("hpt_eff_Trig_0to24 ");
+  hpt_eff_Trig_0to6   = (TH1D*)hpt_reco_Trig_0to6  ->Clone("hpt_eff_Trig_0to6  ");
+  hpt_eff_Trig_6to12  = (TH1D*)hpt_reco_Trig_6to12 ->Clone("hpt_eff_Trig_6to12 ");
+  hpt_eff_Trig_12to18 = (TH1D*)hpt_reco_Trig_12to18->Clone("hpt_eff_Trig_12to18");
+  hpt_eff_Trig_18to24 = (TH1D*)hpt_reco_Trig_18to24->Clone("hpt_eff_Trig_18to24");
+
+  hpt_eff_reco_0to24  = (TH1D*)hpt_reco_0to24 ->Clone("hpt_eff_reco_0to24 ");
+  hpt_eff_reco_0to6   = (TH1D*)hpt_reco_0to6  ->Clone("hpt_eff_reco_0to6  ");
+  hpt_eff_reco_6to12  = (TH1D*)hpt_reco_6to12 ->Clone("hpt_eff_reco_6to12 ");
+  hpt_eff_reco_12to18 = (TH1D*)hpt_reco_12to18->Clone("hpt_eff_reco_12to18");
+  hpt_eff_reco_18to24 = (TH1D*)hpt_reco_18to24->Clone("hpt_eff_reco_18to24");
+
+  hpt_eff_0to24 ->Divide(hpt_eff_0to24 , hpt_gen_0to24 , 1, 1, "B");
+  hpt_eff_0to6  ->Divide(hpt_eff_0to6  , hpt_gen_0to6  , 1, 1, "B");
+  hpt_eff_6to12 ->Divide(hpt_eff_6to12 , hpt_gen_6to12 , 1, 1, "B");
+  hpt_eff_12to18->Divide(hpt_eff_12to18, hpt_gen_12to18, 1, 1, "B");
+  hpt_eff_18to24->Divide(hpt_eff_18to24, hpt_gen_18to24, 1, 1, "B");
+
+  hpt_eff_NoTrig_0to24 ->Divide(hpt_eff_NoTrig_0to24 , hpt_gen_0to24 , 1, 1, "B");
+  hpt_eff_NoTrig_0to6  ->Divide(hpt_eff_NoTrig_0to6  , hpt_gen_0to6  , 1, 1, "B");
+  hpt_eff_NoTrig_6to12 ->Divide(hpt_eff_NoTrig_6to12 , hpt_gen_6to12 , 1, 1, "B");
+  hpt_eff_NoTrig_12to18->Divide(hpt_eff_NoTrig_12to18, hpt_gen_12to18, 1, 1, "B");
+  hpt_eff_NoTrig_18to24->Divide(hpt_eff_NoTrig_18to24, hpt_gen_18to24, 1, 1, "B");
+
+  hpt_eff_Trig_0to24 ->Divide(hpt_eff_Trig_0to24 , hpt_reco_NoTrig_0to24 , 1, 1, "B");
+  hpt_eff_Trig_0to6  ->Divide(hpt_eff_Trig_0to6  , hpt_reco_NoTrig_0to6  , 1, 1, "B");
+  hpt_eff_Trig_6to12 ->Divide(hpt_eff_Trig_6to12 , hpt_reco_NoTrig_6to12 , 1, 1, "B");
+  hpt_eff_Trig_12to18->Divide(hpt_eff_Trig_12to18, hpt_reco_NoTrig_12to18, 1, 1, "B");
+  hpt_eff_Trig_18to24->Divide(hpt_eff_Trig_18to24, hpt_reco_NoTrig_18to24, 1, 1, "B");
+
+  hpt_eff_reco_0to24 ->Divide(hpt_eff_reco_0to24 , hpt_reco_NoTrig_0to24 , 1, 1, "B");
+  hpt_eff_reco_0to6  ->Divide(hpt_eff_reco_0to6  , hpt_reco_NoTrig_0to6  , 1, 1, "B");
+  hpt_eff_reco_6to12 ->Divide(hpt_eff_reco_6to12 , hpt_reco_NoTrig_6to12 , 1, 1, "B");
+  hpt_eff_reco_12to18->Divide(hpt_eff_reco_12to18, hpt_reco_NoTrig_12to18, 1, 1, "B");
+  hpt_eff_reco_18to24->Divide(hpt_eff_reco_18to24, hpt_reco_NoTrig_18to24, 1, 1, "B");
+
+  TH1D* hy_eff;
+  hy_eff = (TH1D*)hy_reco->Clone("hy_eff");
+  hy_eff->Divide(hy_eff, hy_gen, 1, 1, "B");
+
+  hpt_eff_0to24 ->SetTitle("Eff: Rapidity 0.0-2.4");
+  hpt_eff_0to6  ->SetTitle("Eff: Rapidity 0.0-0.6");
+  hpt_eff_6to12 ->SetTitle("Eff: Rapidity 0.6-1.2");
+  hpt_eff_12to18->SetTitle("Eff: Rapidity 1.2-1.8");
+  hpt_eff_18to24->SetTitle("Eff: Rapidity 1.8-2.4");
+
+  //TCanvas * cpt_eff_0to24 = new TCanvas("cpt_eff_0to24","cpt_eff_0to24",0,0,400,400);
+  //cpt_eff_0to24->cd();
+  //hpt_eff_0to24->Draw();
+
+  //TCanvas * cpt_eff_0to6 = new TCanvas("cpt_eff_0to6","cpt_eff_0to6",0,0,400,400);
+  //cpt_eff_0to6->cd();
+  //hpt_eff_0to6->Draw();
+
+  //TCanvas * cpt_eff_6to12 = new TCanvas("cpt_eff_6to12","cpt_eff_6to12",0,0,400,400);
+  //cpt_eff_6to12->cd();
+  //hpt_eff_6to12->Draw();
+
+  //TCanvas * cpt_eff_12to18 = new TCanvas("cpt_eff_12to18","cpt_eff_12to18",0,0,400,400);
+  //cpt_eff_12to18->cd();
+  //hpt_eff_12to18->Draw();
+
+  //TCanvas * cpt_eff_18to24 = new TCanvas("cpt_eff_18to24","cpt_eff_18to24",0,0,400,400);
+  //cpt_eff_18to24->cd();
+  //hpt_eff_18to24->Draw();
+////NoTrig
+  //TCanvas * cpt_eff_NoTrig_0to24 = new TCanvas("cpt_eff_NoTrig_0to24","cpt_eff_NoTrig_0to24",0,0,400,400);
+  //cpt_eff_NoTrig_0to24->cd();
+  //hpt_eff_NoTrig_0to24->Draw();
+
+  //TCanvas * cpt_eff_NoTrig_0to6 = new TCanvas("cpt_eff_NoTrig_0to6","cpt_eff_NoTrig_0to6",0,0,400,400);
+  //cpt_eff_NoTrig_0to6->cd();
+  //hpt_eff_NoTrig_0to6->Draw();
+
+  //TCanvas * cpt_eff_NoTrig_6to12 = new TCanvas("cpt_eff_NoTrig_6to12","cpt_eff_NoTrig_6to12",0,0,400,400);
+  //cpt_eff_NoTrig_6to12->cd();
+  //hpt_eff_NoTrig_6to12->Draw();
+
+  //TCanvas * cpt_eff_NoTrig_12to18 = new TCanvas("cpt_eff_NoTrig_12to18","cpt_eff_NoTrig_12to18",0,0,400,400);
+  //cpt_eff_NoTrig_12to18->cd();
+  //hpt_eff_NoTrig_12to18->Draw();
+
+  //TCanvas * cpt_eff_NoTrig_18to24 = new TCanvas("cpt_eff_NoTrig_18to24","cpt_eff_NoTrig_18to24",0,0,400,400);
+  //cpt_eff_NoTrig_18to24->cd();
+  //hpt_eff_NoTrig_18to24->Draw();
+////Trig
+  //TCanvas * cpt_eff_Trig_0to24 = new TCanvas("cpt_eff_Trig_0to24","cpt_eff_Trig_0to24",0,0,400,400);
+  //cpt_eff_Trig_0to24->cd();
+  //hpt_eff_Trig_0to24->Draw();
+
+  //TCanvas * cpt_eff_Trig_0to6 = new TCanvas("cpt_eff_Trig_0to6","cpt_eff_Trig_0to6",0,0,400,400);
+  //cpt_eff_Trig_0to6->cd();
+  //hpt_eff_Trig_0to6->Draw();
+
+  //TCanvas * cpt_eff_Trig_6to12 = new TCanvas("cpt_eff_Trig_6to12","cpt_eff_Trig_6to12",0,0,400,400);
+  //cpt_eff_Trig_6to12->cd();
+  //hpt_eff_Trig_6to12->Draw();
+
+  //TCanvas * cpt_eff_Trig_12to18 = new TCanvas("cpt_eff_Trig_12to18","cpt_eff_Trig_12to18",0,0,400,400);
+  //cpt_eff_Trig_12to18->cd();
+  //hpt_eff_Trig_12to18->Draw();
+
+  //TCanvas * cpt_eff_Trig_18to24 = new TCanvas("cpt_eff_Trig_18to24","cpt_eff_Trig_18to24",0,0,400,400);
+  //cpt_eff_Trig_18to24->cd();
+  //hpt_eff_Trig_18to24->Draw();
+//draw same
+  //gROOT->Macro("~/rootlogon.C");
+  TLatex *lt1 = new TLatex();
+  lt1->SetNDC();
+  lt1->SetTextSize(0.03);
+  auto legend = new TLegend(0.6,0.84);
+
+  gStyle->SetOptFit(0);
+  TCanvas * cpt_eff = new TCanvas("cpt_eff","cpt_eff",0,0,900,800);
+  cpt_eff->cd();
+  hpt_eff_0to24->SetMarkerStyle(24);
+  //hpt_eff_0to24->SetMarkerSize(7);
+  hpt_eff_0to24->SetMarkerColor(1);
+  hpt_eff_0to24->SetLineColor(1);
+  //hpt_eff_0to24->GetXaxis()->CenterTitle();
+  hpt_eff_0to24->GetXaxis()->SetTitle("p_{T}[GeV/c]");
+  //hpt_eff_0to24->GetYaxis()->CenterTitle();
+  hpt_eff_0to24->GetYaxis()->SetTitle("Efficiency");
+  hpt_eff_0to24->GetYaxis()->SetRangeUser(0.,1.2);
+  hpt_eff_0to24->Draw("E");
+  lt1->SetTextSize(0.03);
+  if(state==1) lt1->DrawLatex(0.13,0.84,"Prompt J/#psi (PbPb)");
+  else if(state==2) lt1->DrawLatex(0.13,0.84,"Non-Prompt J/#psi (PbPb)");
+  //lt1->DrawLatex(0.6,0.84,"PbPb  #sqrt{s_{NN}} = 5.02 TeV");
+  lt1->SetTextSize(0.02);
+  //lt1->DrawLatex(0.15,0.88,Form("Yields : %0.2f #pm %0.2f",yields[0], yields[1]));
+  //lt1->DrawLatex(0.6,0.84,"#color[1]{#kOpenCircle} |y|: 0-2.4, 0-100%");
+  //legend->AddEntry("hpt_eff_0to24 ","|y|: 0-2.4, 0-100%","lep");
+  //legend->AddEntry("hpt_eff_0to6  ","|y|: 0-0.6, 0-100%","lep");
+  //legend->AddEntry("hpt_eff_6to12 ","|y|: 0.6-1.2, 0-100%","lep");
+  //legend->AddEntry("hpt_eff_12to18","|y|: 1.2-1.8, 0-100%","lep");
+  //legend->AddEntry("hpt_eff_18to24","|y|: 1.8-2.4, 0-100%","lep");
+  //legend->Draw();
+  hpt_eff_0to6->SetMarkerStyle(25);
+  hpt_eff_0to6->SetMarkerColor(2);
+  hpt_eff_0to6->SetLineColor(2);
+  hpt_eff_0to6->Draw("same");
+  hpt_eff_6to12->SetMarkerStyle(30);
+  hpt_eff_6to12->SetMarkerColor(kOrange+1);
+  hpt_eff_6to12->SetLineColor(kOrange+1);
+  hpt_eff_6to12->Draw("same");
+  hpt_eff_12to18->SetMarkerStyle(26);
+  hpt_eff_12to18->SetMarkerColor(3);
+  hpt_eff_12to18->SetLineColor(3);
+  hpt_eff_12to18->Draw("same");
+  hpt_eff_18to24->SetMarkerStyle(27);
+  hpt_eff_18to24->SetMarkerColor(4);
+  hpt_eff_18to24->SetLineColor(4);
+  hpt_eff_18to24->Draw("same");
+  //cpt_eff->BuildLegend();
+  legend->AddEntry("hpt_eff_0to24 ","|y|: 0-2.4, 0-100%","lep");
+  legend->AddEntry("hpt_eff_0to6  ","|y|: 0-0.6, 0-100%","lep");
+  legend->AddEntry("hpt_eff_6to12 ","|y|: 0.6-1.2, 0-100%","lep");
+  legend->AddEntry("hpt_eff_12to18","|y|: 1.2-1.8, 0-100%","lep");
+  legend->AddEntry("hpt_eff_18to24","|y|: 1.8-2.4, 0-100%","lep");
+  legend->SetBorderSize( 0);
+  //legend->SetFillColor ( 0);
+  //legend->Draw("same");
+  legend->Draw();
+  //cpt_eff->SaveAs("Eff_pt.png");
+
+  TCanvas * cy_eff = new TCanvas("cy_eff","cy_eff",0,0,900,800);
+  cy_eff->cd();
+  hy_eff->SetMarkerStyle(24);
+  hy_eff->SetMarkerColor(1);
+  hy_eff->SetLineColor(1);
+  hy_eff->GetXaxis()->SetTitle("|y|");
+  hy_eff->GetYaxis()->SetTitle("Efficiency");
+  hy_eff->GetYaxis()->SetRangeUser(0.,1.2);
+  hy_eff->Draw("E");
+  lt1->SetTextSize(0.03);
+  if(state==1) lt1->DrawLatex(0.13,0.84,"Prompt J/#psi (PbPb)");
+  else if(state==2) lt1->DrawLatex(0.13,0.84,"Non-Prompt J/#psi (PbPb)");
+
+  //Save efficiency files for later use.
+  hpt_eff_0to24 ->SetName(Form("mc_eff_vs_pt_TnP%d_0to24 ",isTnP));
+  hpt_eff_0to6  ->SetName(Form("mc_eff_vs_pt_TnP%d_0to6  ",isTnP));
+  hpt_eff_6to12 ->SetName(Form("mc_eff_vs_pt_TnP%d_6to12 ",isTnP));
+  hpt_eff_12to18->SetName(Form("mc_eff_vs_pt_TnP%d_12to18",isTnP));
+  hpt_eff_18to24->SetName(Form("mc_eff_vs_pt_TnP%d_18to24",isTnP));
+  hpt_eff_NoTrig_0to24 ->SetName(Form("mc_eff_vs_pt_TnP%d_0to24_NoTrig",isTnP));
+  hpt_eff_NoTrig_0to6  ->SetName(Form("mc_eff_vs_pt_TnP%d_0to6_NoTrig",isTnP));
+  hpt_eff_NoTrig_6to12 ->SetName(Form("mc_eff_vs_pt_TnP%d_6to12_NoTrig",isTnP));
+  hpt_eff_NoTrig_12to18->SetName(Form("mc_eff_vs_pt_TnP%d_12to18_NoTrig",isTnP));
+  hpt_eff_NoTrig_18to24->SetName(Form("mc_eff_vs_pt_TnP%d_18to24_NoTrig",isTnP));
+  hpt_eff_Trig_0to24 ->SetName(Form("mc_eff_vs_pt_TnP%d_0to24_Trig",isTnP));
+  hpt_eff_Trig_0to6  ->SetName(Form("mc_eff_vs_pt_TnP%d_0to6_Trig",isTnP));
+  hpt_eff_Trig_6to12 ->SetName(Form("mc_eff_vs_pt_TnP%d_6to12_Trig",isTnP));
+  hpt_eff_Trig_12to18->SetName(Form("mc_eff_vs_pt_TnP%d_12to18_Trig",isTnP));
+  hpt_eff_Trig_18to24->SetName(Form("mc_eff_vs_pt_TnP%d_18to24_Trig",isTnP));
+  hpt_eff_reco_0to24 ->SetName(Form("mc_eff_vs_pt_0to24_Trig"));
+  hpt_eff_reco_0to6  ->SetName(Form("mc_eff_vs_pt_0to6_Trig"));
+  hpt_eff_reco_6to12 ->SetName(Form("mc_eff_vs_pt_6to12_Trig"));
+  hpt_eff_reco_12to18->SetName(Form("mc_eff_vs_pt_12to18_Trig"));
+  hpt_eff_reco_18to24->SetName(Form("mc_eff_vs_pt_18to24_Trig"));
+  //TString outFileName = Form("mc_eff_vs_pt_TnP%d_PtW%d_OfficialMC_Y%dS_muPtCut%.1f.root",isTnP,isPtWeight,state,muPtCut);
+  TFile* outFile = new TFile(outFileName,"RECREATE");
+  hpt_eff_0to24 ->Write();
+  hpt_eff_0to6  ->Write();
+  hpt_eff_6to12 ->Write();
+  hpt_eff_12to18->Write();
+  hpt_eff_18to24->Write();
+  hpt_eff_NoTrig_0to24 ->Write();
+  hpt_eff_NoTrig_0to6  ->Write();
+  hpt_eff_NoTrig_6to12 ->Write();
+  hpt_eff_NoTrig_12to18->Write();
+  hpt_eff_NoTrig_18to24->Write();
+  hpt_eff_Trig_0to24 ->Write();
+  hpt_eff_Trig_0to6  ->Write();
+  hpt_eff_Trig_6to12 ->Write();
+  hpt_eff_Trig_12to18->Write();
+  hpt_eff_Trig_18to24->Write();
+  hpt_eff_reco_0to24 ->Write();
+  hpt_eff_reco_0to6  ->Write();
+  hpt_eff_reco_6to12 ->Write();
+  hpt_eff_reco_12to18->Write();
+  hpt_eff_reco_18to24->Write();
+  hpt_reco_NoTrig_0to24->Write();
+  hy_eff->Write();
+  cpt_eff->Write();
+  cy_eff->Write();
+  hpt_reco_0to24->Write();
+  if(isTnP) hpt_tnp_trig->Write();
+  outFile->Close();
+
+}
