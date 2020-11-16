@@ -29,12 +29,17 @@ void MassFit(
 		int cLow=0, int cHigh=200,
 		float muPtCut=0.0,
 		bool whichModel=0,  // Nominal=0, Alternative=1
-		int ICset=1
+		int ICset=1,
+                int bCont=2, //0=PR, 1=NP, 2=Inc.
 		)
 {
 	gStyle->SetEndErrorSize(0);
 	gSystem->mkdir("../roots/2DFit/");
 	gSystem->mkdir("../figs/2DFit/");
+
+    if(PR==0) bCont="Prompt";
+    else if(PR==1) bCont="NonPrompt";
+    else if(PR==2) bCont="Inclusive";
 
     RooMsgService::instance().getStream(0).removeTopic(Caching);
     RooMsgService::instance().getStream(1).removeTopic(Caching);
@@ -50,9 +55,9 @@ void MassFit(
 	TString BkgCut;
 
 	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
-	kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f",ptLow, ptHigh, yLow, yHigh);
-	SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2",ptLow, ptHigh, yLow, yHigh);
-	BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5))",ptLow, ptHigh, yLow, yHigh);
+	kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+	SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2 && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+	BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5)) && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
 	TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) ) &&";//2018 acceptance cut
 
 	kineCut = accCut+kineCut;
@@ -250,10 +255,10 @@ void MassFit(
 
 	c_A->Update();
 	TString kineLabel = getKineLabel (ptLow, ptHigh,yLow, yHigh, muPtCut, cLow, cHigh);
-	c_A->SaveAs(Form("../figs/2DFit/Mass_%s.pdf",kineLabel.Data()));
+	c_A->SaveAs(Form("../figs/2DFit/Mass_%s_%s.pdf", bCont.Data(), kineLabel.Data()));
 
 	TFile* outFile;
-	outFile = new TFile(Form("../roots/2DFit/MassFitResult_%s.root",kineLabel.Data()),"recreate");
+	outFile = new TFile(Form("../roots/2DFit/MassFitResult_%s_%s.root", bCont.Data(), kineLabel.Data()),"recreate");
 	pdfMASS_Tot->Write();
 	datasetMass->Write();
 	outFile->Close();
