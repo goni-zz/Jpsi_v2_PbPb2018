@@ -330,7 +330,7 @@ Double_t pol3bkg(Double_t* x, Double_t* par)
 void doSimultaneousV2MassFit_pt1250_cent1060_test(int cLow = 0, int cHigh = 200,
     float ptLow =  12, float ptHigh = 50,
     float yLow = 1.6, float yHigh = 2.4,
-    float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, int ibkg_vn_sel = fpol2, int PR = 2)
+    float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, int ibkg_vn_sel = fpol2, int PR = 2) //PR 0: PR, 1: NP, 2: Inc.
 {
   setTDRStyle();
   gStyle->SetOptFit(0000);

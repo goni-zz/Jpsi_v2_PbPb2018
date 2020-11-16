@@ -25,9 +25,9 @@ void GetHistSqrt(TH1D* h1 =0, TH1D* h2=0);
 void GetHistBkg(TH1D* h1 =0, TH1D* h2=0);
 
 void v2mass_hist(int cLow = 0, int cHigh = 200,
-    float ptLow =  3, float ptHigh =  10,
+    float ptLow =  12, float ptHigh =  50,
     float yLow = 1.6, float yHigh = 2.4,
-    float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, bool fAccW = false, bool fEffW = false, bool isMC = false, int dtype = 1, int PR=0)
+    float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, bool fAccW = false, bool fEffW = false, bool isMC = false, int dtype = 1, int PR=2) //PR 0: PR, 1: NP, 2: Inc.
 {
   //Basic Setting
   //gStyle->SetOptStat(0);
@@ -205,6 +205,7 @@ void v2mass_hist(int cLow = 0, int cHigh = 200,
     else if(ptLow==15&&ptHigh==30) ctauCut=0.0455;
     else if(ptLow==15&&ptHigh==50) ctauCut=0.0455;
     else if(ptLow==0&&ptHigh==30)  ctauCut=0.0765;}//All
+  ctauCut=0.2;
   //crosscheck+tnp+genweight
   //  else if(PR==1){
   //  else if(ptLow==3&&ptHigh==4.5) ctauCut=0.1135;
@@ -217,6 +218,7 @@ void v2mass_hist(int cLow = 0, int cHigh = 200,
   const int nMassBin = 12;
 
   float massBinDiff[nMassBin+1]={2.6, 2.7, 2.8, 2.9, 3.0, 3.06, 3.09, 3.12, 3.15, 3.2, 3.3, 3.4, 3.5};
+  //float massBinDiff[nMassBin+1]={2.6, 2.75, 2.9, 3.0, 3.06, 3.09, 3.12, 3.15, 3.2,3.5};
   float massBin_[nMassBin+1];
 
   kineLabel = kineLabel + Form("_m%.1f-%.1f",massLow,massHigh) + "_" + dimusignString;
@@ -314,7 +316,7 @@ void v2mass_hist(int cLow = 0, int cHigh = 200,
             ((abs(eta1[j]) > 1.2) && (abs(eta1[j]) <= 2.1) && (pt1[j] >= 5.47-1.89*(abs(eta1[j])))) || ((abs(eta2[j]) > 1.2)  && (abs(eta2[j]) <= 2.1) && (pt2[j] >= 5.47-1.89*(abs(eta2[j])))) ||
             ((abs(eta1[j]) > 2.1) && (abs(eta1[j]) <= 2.4) && (pt1[j] >= 1.5)) || ((abs(eta2[j]) > 2.1)  && (abs(eta2[j]) <= 2.4) && (pt2[j] >= 1.5)) )
         ){
-          //ctau3D[j]<=ctauCut){
+        //&&ctau3D[j]<=ctauCut){
         h_mass->Fill(mass[j]);
         h_decayL->Fill(ctau3D[j]);
         massVar->setVal((double)mass[j]);
