@@ -265,9 +265,12 @@ TString getKineLabelJpsi(float ptLow, float ptHigh, float yLow, float yHigh, int
     kineLabel = kineLabel+ Form("_centrality%d-%d",(int)cLow, (int)cHigh) ;
   return kineLabel;
 }
-TString getKineLabel(float ptLow, float ptHigh, float yLow, float yHigh, float muPtCut_, int cLow, int cHigh) {
+TString getKineLabel(float ptLow, float ptHigh, float yLow, float yHigh, float muPtCut_, int cLow, int cHigh, int whichModel) {
   TString kineLabel = Form("pt%.1f-%.1f_y%.1f-%.1f_muPt%.1f",ptLow,ptHigh, yLow, yHigh, (float)muPtCut_) ;
     kineLabel = kineLabel+ Form("_centrality%d-%d",(int)cLow, (int)cHigh) ;
+	if (whichModel==0) { kineLabel = kineLabel; }
+	else if (whichModel==1) { kineLabel = kineLabel+ "_ctauCut"; }
+
   return kineLabel;
 }
 
