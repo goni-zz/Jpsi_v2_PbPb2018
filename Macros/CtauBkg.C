@@ -24,26 +24,33 @@ using namespace std;
 using namespace RooFit;
 
 void CtauBkg(
-		float ptLow=3, float ptHigh=6.5,
+		float ptLow=3, float ptHigh=4.5,
 		float yLow=1.6, float yHigh=2.4,
-		int cLow=0, int cHigh=200,
+		int cLow=20, int cHigh=120,
 		float muPtCut=0.0,
 		bool whichModel=0,  // Nominal=0, Alternative=1
-		int ICset=1
+		int ICset=1,
+		int PR=2, //0=PR, 1=NP, 2=Inc.
+		float ctauCut=0.2
 		)
 {
 
 	gStyle->SetEndErrorSize(0);
-    gSystem->mkdir("../roots/2DFit/");
-    gSystem->mkdir("../figs/2DFit/");
+	gSystem->mkdir("../roots/2DFit/");
+	gSystem->mkdir("../figs/2DFit/");
 
-    RooMsgService::instance().getStream(0).removeTopic(Caching);
-    RooMsgService::instance().getStream(1).removeTopic(Caching);
-    RooMsgService::instance().getStream(0).removeTopic(Plotting);
-    RooMsgService::instance().getStream(1).removeTopic(Plotting);
-    RooMsgService::instance().getStream(0).removeTopic(Integration);
-    RooMsgService::instance().getStream(1).removeTopic(Integration);
-    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
+	TString bCont;
+	if(PR==0) bCont="Prompt";
+	else if(PR==1) bCont="NonPrompt";
+	else if(PR==2) bCont="Inclusive";
+
+	RooMsgService::instance().getStream(0).removeTopic(Caching);
+	RooMsgService::instance().getStream(1).removeTopic(Caching);
+	RooMsgService::instance().getStream(0).removeTopic(Plotting);
+	RooMsgService::instance().getStream(1).removeTopic(Plotting);
+	RooMsgService::instance().getStream(0).removeTopic(Integration);
+	RooMsgService::instance().getStream(1).removeTopic(Integration);
+	RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
 
 	TFile* f1; TFile* fMass; TFile* fCErr; TFile* fCRes;
 	TString kineCut;
@@ -52,13 +59,20 @@ void CtauBkg(
 	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
 	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
-	fMass = new TFile(Form("../roots/2DFit/MassFitResult_%s.root",kineLabel.Data()));
-	fCErr = new TFile(Form("../roots/2DFit/CtauErrResult_%s.root",kineLabel.Data()));
-	fCRes = new TFile(Form("../roots/2DFit/CtauResResult_%s.root",kineLabel.Data()));
+	fMass = new TFile(Form("../roots/2DFit/MassFitResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
+	fCErr = new TFile(Form("../roots/2DFit/CtauErrResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
+	fCRes = new TFile(Form("../roots/2DFit/CtauResResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
 
-	kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f",ptLow, ptHigh, yLow, yHigh);
-	SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2",ptLow, ptHigh, yLow, yHigh);
-	BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5))",ptLow, ptHigh, yLow, yHigh);
+	if(PR==2) {
+        kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5",ptLow, ptHigh, yLow, yHigh);
+        SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2 && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+        BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5)) && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+    }
+    else if(PR==0) {
+        kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  mass>2.6 && mass<3.5 && ctau3D<%.2f",ptLow, ptHigh, yLow, yHigh, ctauCut);
+        SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  mass>2.8 && mass<3.2 && cBin>%d && cBin<%d && ctau3D<%.2f",ptLow, ptHigh, yLow, yHigh, cLow, cHigh, ctauCut);
+        BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5)) && cBin>%d && cBin<%d && ctau3D<%.2f",ptLow, ptHigh, yLow, yHigh, cLow, cHigh, ctauCut);
+    }
 	TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) ) &&";//2018 acceptance cut
 
 	kineCut = accCut+kineCut;
@@ -226,17 +240,17 @@ void CtauBkg(
 	pad_E_2->Update();
 
 	c_E->Update();
-	c_E->SaveAs(Form("../figs/2DFit/Bkg_%s.pdf",kineLabel.Data()));
+	c_E->SaveAs(Form("../figs/2DFit/Bkg_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
 	RooArgSet* fitargs = new RooArgSet();
 	fitargs->add(fitCtauBkg->floatParsFinal());
 	RooDataSet *datasetCBkg = new RooDataSet("datasetCBkg","dataset with Ctau Background Fit result", *fitargs);
 	RooWorkspace *wscbkg = new RooWorkspace("workspaceCBkg");
 	wscbkg->import(*fitCtauBkg);
 	//wscbkg->import(*pdfCTAUCOND_Bkg);
-	
-//	ws->Print();
 
-	TFile *outFile = new TFile(Form("../roots/2DFit/CtauBkgResult_%s.root",kineLabel.Data()),"recreate");
+	//	ws->Print();
+
+	TFile *outFile = new TFile(Form("../roots/2DFit/CtauBkgResult_%s_%s.root",bCont.Data(),kineLabel.Data()),"recreate");
 	fitCtauBkg->Write();
 	pdfTot_Bkg->Write();
 	//pdfCTAUCOND_Bkg->Write();

@@ -24,25 +24,32 @@ using namespace std;
 using namespace RooFit;
 
 void CtauRes(
-		float ptLow=3, float ptHigh=6.5,
+		float ptLow=3, float ptHigh=4.5,
 		float yLow=1.6, float yHigh=2.4,
-		int cLow=0, int cHigh=200,
+		int cLow=20, int cHigh=120,
 		float muPtCut=0.0,
 		bool whichModel=0,  // Nominal=0, Alternative=1
-		int ICset=1
+		int ICset=1,
+		int PR=2,//0=PR, 1=NP, 2=Inc.
+		float ctauCut=0.2
 	    )
 {
 	gStyle->SetEndErrorSize(0);
 	gSystem->mkdir("../roots/2DFit/");
-    gSystem->mkdir("../figs/2DFit/");
+	gSystem->mkdir("../figs/2DFit/");
 
-    RooMsgService::instance().getStream(0).removeTopic(Caching);
-    RooMsgService::instance().getStream(1).removeTopic(Caching);
-    RooMsgService::instance().getStream(0).removeTopic(Plotting);
-    RooMsgService::instance().getStream(1).removeTopic(Plotting);
-    RooMsgService::instance().getStream(0).removeTopic(Integration);
-    RooMsgService::instance().getStream(1).removeTopic(Integration);
-    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
+	TString bCont;
+	if(PR==0) bCont="Prompt";
+	else if(PR==1) bCont="NonPrompt";
+	else if(PR==2) bCont="Inclusive";
+
+	RooMsgService::instance().getStream(0).removeTopic(Caching);
+	RooMsgService::instance().getStream(1).removeTopic(Caching);
+	RooMsgService::instance().getStream(0).removeTopic(Plotting);
+	RooMsgService::instance().getStream(1).removeTopic(Plotting);
+	RooMsgService::instance().getStream(0).removeTopic(Integration);
+	RooMsgService::instance().getStream(1).removeTopic(Integration);
+	RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING) ;
 
 	TFile* f1; TFile* fMass; TFile* fCErr;
 	TString kineCut;
@@ -51,11 +58,18 @@ void CtauRes(
 	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
 	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
-	fMass = new TFile(Form("../roots/2DFit/MassFitResult_%s.root",kineLabel.Data()));
-	fCErr = new TFile(Form("../roots/2DFit/CtauErrResult_%s.root",kineLabel.Data()));
-	kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f",ptLow, ptHigh, yLow, yHigh);
-	SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2",ptLow, ptHigh, yLow, yHigh);
-	BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5))",ptLow, ptHigh, yLow, yHigh);
+	fMass = new TFile(Form("../roots/2DFit/MassFitResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
+	fCErr = new TFile(Form("../roots/2DFit/CtauErrResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
+	if(PR==2) {
+		kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5",ptLow, ptHigh, yLow, yHigh);
+		SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2 && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+		BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5)) && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+	}
+	else if(PR==0) {
+		kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  mass>2.6 && mass<3.5 && ctau3D<%.2f",ptLow, ptHigh, yLow, yHigh, ctauCut);
+		SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  mass>2.8 && mass<3.2 && cBin>%d && cBin<%d && ctau3D<%.2f",ptLow, ptHigh, yLow, yHigh, cLow, cHigh, ctauCut);
+		BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5)) && cBin>%d && cBin<%d && ctau3D<%.2f",ptLow, ptHigh, yLow, yHigh, cLow, cHigh, ctauCut);
+	}
 	TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) ) &&";//2018 acceptance cut
 
 	kineCut = accCut+kineCut;
@@ -86,12 +100,10 @@ void CtauRes(
 
 	RooDataSet* dsAB = new RooDataSet("dsAB","dsAB",RooArgSet(*(ws->var("ctau3DRes")), *(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))),Index(tp),Import("A",*reducedDS_A),Import("B",*reducedDS_B));
 	cout << "******** New Combined Dataset ***********" << endl;
-	dsAB->Print();
 	ws->import(*dsAB);
-	ws->var("ctau3DRes")->setRange(ctauResLow, ctauResHigh);
-	ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
+	//ws->var("ctau3DRes")->setRange(ctauResLow, ctauResHigh);
+	//ws->var("ctau3DRes")->setRange(ctauResLow,ctauResHigh, ctauResLow, ctauResHigh);
 	ws->var("ctau3DRes")->Print();
-	dataw_Sig->Print();
 
 	//***********************************************************************
 	//**************************** CTAU RES FIT *****************************
@@ -105,9 +117,8 @@ void CtauRes(
 	//double entries = ws->var("N_Jpsi")->getVal();
 	cout<<"[Info] #J/psi: "<<entries<<endl;
 	ws->factory(Form("N_Jpsi_sw[%.12f,%.12f,%.12f]", entries, entries, entries*2.0));
-	cout << "HERE" << endl;
 	// create the variables for this model
-	//ws->var("ctau3DRes")->setRange("ctauResRange", ctauResLow, ctauResHigh);
+	//ws->var("ctau3DRes")->setRange(ctauResLow,ctauResHigh, ctauResLow, ctauResHigh);
 	int nGauss = 3;
 	ws->factory("ctauRes_mean[0.0]");
 	ws->factory("ctau1_CtauRes[0., -0.1, 0.1]");  ws->factory("s1_CtauRes[.4, 1e-6, 10.]");
@@ -172,15 +183,15 @@ void CtauRes(
 	//setFixedVarsToContantVars(ws);
 	ws->data("ctauResCutDS")->plotOn(myPlot2_C, Name("dataHist_ctauRes"), DataError(RooAbsData::SumW2), XErrorSize(0),
 			MarkerSize(.7), LineColor(kBlack), MarkerColor(kBlack));
-	ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_ctauRes"), Precision(1e-4), Range("ctauResRange"),
+	ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_ctauRes"), Precision(1e-4), Range(ctauResLow,ctauResHigh),
 			Normalization(ws->data("ctauResCutDS")->sumEntries(), RooAbsReal::NumEvent), LineColor(kBlack));
-	ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_gm1"), Precision(1e-4), Range("ctauResRange"),
+	ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_gm1"), Precision(1e-4), Range(ctauResLow,ctauResHigh),
 			Normalization(ws->data("ctauResCutDS")->sumEntries(), RooAbsReal::NumEvent), Components(*ws->pdf("GaussModel1_ctauRes")), LineColor(kGreen+2));
-	ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_gm2"), Precision(1e-4), Range("ctauResRange"),
+	ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_gm2"), Precision(1e-4), Range(ctauResLow,ctauResHigh),
 			Normalization(ws->data("ctauResCutDS")->sumEntries(), RooAbsReal::NumEvent), Components(*ws->pdf("GaussModel2_ctauRes")), LineColor(kRed+2));
-	ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_gm3"), Precision(1e-4), Range("ctauResRange"),
+	ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_gm3"), Precision(1e-4), Range(ctauResLow,ctauResHigh),
 			Normalization(ws->data("ctauResCutDS")->sumEntries(), RooAbsReal::NumEvent), Components(*ws->pdf("GaussModel3_ctauRes")), LineColor(kBlue+2));
-	if(nGauss==4){ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_gm4"), Precision(1e-4), Range("ctauResRange"),
+	if(nGauss==4){ws->pdf("GaussModel_Tot")->plotOn(myPlot2_C,Name("modelHist_gm4"), Precision(1e-4), Range(ctauResLow,ctauResHigh),
 			Normalization(ws->data("ctauResCutDS")->sumEntries(), RooAbsReal::NumEvent), Components(*ws->pdf("GaussModel4_ctauRes")), LineColor(kMagenta+2));}
 	ws->data("ctauResCutDS")->plotOn(myPlot2_C, Name("dataHist_ctauRes"), DataError(RooAbsData::SumW2), XErrorSize(0),
 			MarkerSize(.7), LineColor(kRed+2), MarkerColor(kRed+2), Precision(1e-4));
@@ -269,9 +280,9 @@ void CtauRes(
 	RooDataSet *datasetRes = new RooDataSet("datasetRes","dataset with Resolution Fit result", *fitargs);
 
 	c_C->Update();
-	c_C->SaveAs(Form("../figs/2DFit/CtauRes_%s.pdf",kineLabel.Data()));
+	c_C->SaveAs(Form("../figs/2DFit/CtauRes_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
 
-	TFile *outFile = new TFile(Form("../roots/2DFit/CtauResResult_%s.root",kineLabel.Data()),"recreate");
+	TFile *outFile = new TFile(Form("../roots/2DFit/CtauResResult_%s_%s.root",bCont.Data(),kineLabel.Data()),"recreate");
 	ctauResModel->Write();
 	//GaussModel_Tot->Write();
 //	ctauResCutDS->Write();

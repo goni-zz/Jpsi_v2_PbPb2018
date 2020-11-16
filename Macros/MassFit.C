@@ -24,19 +24,21 @@ using namespace std;
 using namespace RooFit;
 
 void MassFit(
-		float ptLow=3, float ptHigh=6.5,
+		float ptLow=3, float ptHigh=4.5,
 		float yLow=1.6, float yHigh=2.4,
-		int cLow=0, int cHigh=200,
+		int cLow=20, int cHigh=120,
 		float muPtCut=0.0,
 		bool whichModel=0,  // Nominal=0, Alternative=1
 		int ICset=1,
-                int bCont=2, //0=PR, 1=NP, 2=Inc.
+        int PR=2, //0=PR, 1=NP, 2=Inc.
+		float ctauCut=0.2
 		)
 {
 	gStyle->SetEndErrorSize(0);
 	gSystem->mkdir("../roots/2DFit/");
 	gSystem->mkdir("../figs/2DFit/");
 
+	TString bCont;
     if(PR==0) bCont="Prompt";
     else if(PR==1) bCont="NonPrompt";
     else if(PR==2) bCont="Inclusive";
@@ -55,9 +57,16 @@ void MassFit(
 	TString BkgCut;
 
 	f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20200928.root");
-	kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
-	SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2 && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
-	BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5)) && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+	if(PR==2) {
+		kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5",ptLow, ptHigh, yLow, yHigh);
+		SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.8 && mass<3.2 && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+		BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5)) && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+	}
+	else if(PR==0) {
+		kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  mass>2.6 && mass<3.5 && ctau3D<%.2f",ptLow, ptHigh, yLow, yHigh, ctauCut);
+		SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  mass>2.8 && mass<3.2 && cBin>%d && cBin<%d && ctau3D<%.2f",ptLow, ptHigh, yLow, yHigh, cLow, cHigh, ctauCut);
+		BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5)) && cBin>%d && cBin<%d && ctau3D<%.2f",ptLow, ptHigh, yLow, yHigh, cLow, cHigh, ctauCut);
+	}
 	TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) ) &&";//2018 acceptance cut
 
 	kineCut = accCut+kineCut;
@@ -91,7 +100,7 @@ void MassFit(
 //***********************************************************************
 
 	//         The order is {sigma_1,  x, alpha_1, n_1,   f, err_mu, err_sigma, m_lambda}
-	double paramsupper[8] = {0.2,    3.0,   5.321, 5.0, 1.0,   25.0,      25.0,     25.0};
+	double paramsupper[8] = {0.2,    5.0,   5.321, 5.0, 1.0,   25.0,      25.0,     25.0};
 	double paramslower[8] = {0.02,   0.0,     1.0, 1.0, 0.0,    0.0,       0.0,      0.0};
 	//SIGNAL: initial params
 	double sigma_1_init = 0.1;
@@ -123,7 +132,7 @@ void MassFit(
 	//DOUBLE CRYSTAL BALL
 	RooCBShape* cb_2_A = new RooCBShape("cball_2_A", "cystal Ball", *(ws->var("mass")), mean, sigma_2_A, alpha_2_A, n_2_A);
 	pdfMASS_Jpsi = new RooAddPdf("pdfMASS_Jpsi","Signal ",RooArgList(*cb_1_A,*cb_2_A), RooArgList(*f) );
-	RooRealVar *N_Jpsi= new RooRealVar("N_Jpsi","inclusive Jpsi signals",0,1000000);
+	RooRealVar *N_Jpsi= new RooRealVar("N_Jpsi","inclusive Jpsi signals",0,500000);
 	pdfMASS_Jpsi = new RooAddPdf("pdfMASS_Jpsi","Signal ",RooArgList(*cb_1_A,*cb_2_A), RooArgList(*f) );
 	//BACKGROUND
 	double err_sigma_init = 5;
@@ -142,12 +151,12 @@ void MassFit(
 	//RooGenericPdf *pdfMASS_bkg = new RooGenericPdf("pdfMASS_bkg","Background","TMath::Exp(-@0/@1)",RooArgList(*(ws->var("mass")),m_lambda_A));
 	//RooRealVar *N_Bkg = new RooRealVar("N_Bkg","fraction of component 1 in bkg",10000,0,1000000);
 
-	RooRealVar *sl1 = new RooRealVar("sl1","sl1",0.6,0.,1);
-	RooRealVar *cnst1 = new RooRealVar("cnst1","cnst1",0.8,0.,1);
+	RooRealVar *sl1 = new RooRealVar("sl1","sl1",-0.4,-1.,1);
+	RooRealVar *cnst1 = new RooRealVar("cnst1","cnst1",-0.3,-1.,1);
 	//RooGenericPdf *bkg = new RooGenericPdf("bkg","Background","@0*@1+@2",RooArgList( *(ws->var("mass")), sl1, cnst1) );
 	RooChebychev *pdfMASS_bkg;
 	pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1,*cnst1));
-	RooRealVar *N_Bkg = new RooRealVar("N_Bkg","fraction of component 1 in bkg",10000,0,1000000);
+	RooRealVar *N_Bkg = new RooRealVar("N_Bkg","fraction of component 1 in bkg",0,500000);
 	//Build the model
 	//Model A: Mass
 	RooAddPdf* pdfMASS_Tot = new RooAddPdf();
