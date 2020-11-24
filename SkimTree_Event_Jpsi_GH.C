@@ -11,11 +11,7 @@ double getAccWeight(TH1D* h = 0, double pt = 0);
 double getEffWeight(TH1D* h = 0, double pt = 0);
 
 
-<<<<<<< HEAD
-void SkimTree_Event_Jpsi(int nevt=-1, bool isMC = false, int kTrigSel = kTrigJpsi, int hiHFBinEdge = 0, int PDtype = 1) 
-=======
 void SkimTree_Event_Jpsi_GH(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJpsi, int hiHFBinEdge = 0, int PDtype = 1) 
->>>>>>> 3e62d89096d01866286e089860076e65f5a7394a
 {
 
   using namespace std;
@@ -33,13 +29,6 @@ void SkimTree_Event_Jpsi_GH(int nevt=-1, bool isMC = true, int kTrigSel = kTrigJ
   TString fnameDataReRecoPeri = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/ReReco/AOD/DoubleMuonPsiPeri/ReReco_Oniatree_addvn_part*.root";
   //TString fnameMC = "/eos/cms/store/group/phys_heavyions/gbak/2018PbPbMC/JPsi/OniatreeMC_BToJpsi_pThat-2_TuneCP5-EvtGen_HydjetDrumMB_5p02TeV_pythia8.root";
   //TString fnameMC = "/eos/cms/store/group/phys_heavyions/gbak/2018PbPbMC/JPsi/OniatreeMC_JPsi_pThat2_TunedCP5_HydjetDrumMB_5p02TeV_Pythia8_part*.root";
-<<<<<<< HEAD
-  //TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_JpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; 
-  //TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_BJpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; 
-=======
-//  TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_JpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; (Jpsi_GENONLY)
-  //TString fnameMC = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaTree_BJpsiMM_5p02TeV_TuneCUETP8M1_nofilter_pp502Fall15-MCRUN2_71_V1-v1_GENONLY.root"; (BJpsi_GENONLY)
->>>>>>> 3e62d89096d01866286e089860076e65f5a7394a
   TString fnameMC = "/work2/Oniatree/JPsi/OniatreeMC_JPsi_pThat2_TunedCP5_HydjetDrumMB_5p02TeV_Pythia8_part*.root";
 
 
