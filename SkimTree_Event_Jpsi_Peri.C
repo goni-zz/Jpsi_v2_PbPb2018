@@ -10,7 +10,7 @@ double getAccWeight(TH1D* h = 0, double pt = 0);
 double getEffWeight(TH1D* h = 0, double pt = 0);
 
 
-void SkimTree_Event_Jpsi_Peri(int nevt=-1, bool isMC = false, int kTrigSel = kTrigUps, int hiHFBinEdge = 0, int PDtype = 2) 
+void SkimTree_Event_Jpsi_Peri(int nevt=-1, bool isMC = false, int kTrigSel = kTrigJpsi, int hiHFBinEdge = 0, int PDtype = 2) 
 {
 
   using namespace std;
@@ -25,7 +25,7 @@ void SkimTree_Event_Jpsi_Peri(int nevt=-1, bool isMC = false, int kTrigSel = kTr
   TString fnameData1 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/PromptAOD_v1_Oniatree_addvn_part*.root";
   TString fnameData2 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/PromptAOD_v2_Oniatree_addvn_part*.root";
   TString fnameDataReReco = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/ReReco/AOD/DoubleMuon/ReReco_Oniatree_addvn_part*.root";
-  TString fnameDataReRecoPeri = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/ReReco/AOD/DoubleMuonPsiPeri/ReReco_Oniatree_addvn_part*.root";
+  TString fnameDataReRecoPeri = "/work2/Oniatree/ReReco/DoubleMuonPeri/ReReco_Oniatree_addvn_part*.root";
   TString fnameMC = "/eos/cms/store/group/phys_heavyions/dileptons/MC2018/PbPb502TeV/TTrees/Upsi1S_TuneCP5_HydjetDrumMB_officialPythia8MC*_v20190801.root";
 
   TString fPD;
@@ -171,7 +171,7 @@ void SkimTree_Event_Jpsi_Peri(int nevt=-1, bool isMC = false, int kTrigSel = kTr
 
   TChain *eptree = new TChain("tree");
   if(!isMC){
-    eptree->Add(fnameDataReReco.Data());
+    eptree->Add(fnameDataReRecoPeri.Data());
   }
   else if(isMC){
     eptree->Add(fnameMC.Data());
@@ -206,7 +206,7 @@ void SkimTree_Event_Jpsi_Peri(int nevt=-1, bool isMC = false, int kTrigSel = kTr
   if(hiHFBinEdge==1) fCentSelHF = "HFUp";
   else if(hiHFBinEdge==-1) fCentSelHF = "HFDown";
   TFile* newfile;
-  newfile = new TFile(Form("OniaFlowSkim_%sTrig_%sPD_isMC%d_%s_201124.root",fTrigName[trigIndx].Data(),fPD.Data(),isMC,fCentSelHF.Data()),"recreate");
+  newfile = new TFile(Form("OniaFlowSkim_%sTrig_%sPD_isMC%d_%s_201126.root",fTrigName[trigIndx].Data(),fPD.Data(),isMC,fCentSelHF.Data()),"recreate");
 
   const static int nMaxDimu = 1000;
   int evt;

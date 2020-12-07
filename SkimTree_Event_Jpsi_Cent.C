@@ -10,7 +10,7 @@ double getAccWeight(TH1D* h = 0, double pt = 0);
 double getEffWeight(TH1D* h = 0, double pt = 0);
 
 
-void SkimTree_Event_Jpsi_Cent(int nevt=-1, bool isMC = false, int kTrigSel = kTrigUps, int hiHFBinEdge = 0, int PDtype = 1) 
+void SkimTree_Event_Jpsi_Cent(int nevt=-1, bool isMC = false, int kTrigSel = kTrigJpsi, int hiHFBinEdge = 0, int PDtype = 1) 
 {
 
   using namespace std;
@@ -24,7 +24,7 @@ void SkimTree_Event_Jpsi_Cent(int nevt=-1, bool isMC = false, int kTrigSel = kTr
   //TString fname1 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/MinBias/HIMinimumBias_Run2018_Upsilon_PromptReco_v1.root";
   TString fnameData1 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/PromptAOD_v1_Oniatree_addvn_part*.root";
   TString fnameData2 = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD/DoubleMuonPD/PromptAOD_v2_Oniatree_addvn_part*.root";
-  TString fnameDataReReco = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/ReReco/AOD/DoubleMuon/ReReco_Oniatree_addvn_part1.root";
+  TString fnameDataReReco = "/work2/Oniatree/ReReco/DoubleMuon/ReReco_Oniatree_addvn_part*.root";
   TString fnameDataReRecoPeri = "/eos/cms/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/ReReco/AOD/DoubleMuonPsiPeri/ReReco_Oniatree_addvn_part*.root";
   TString fnameMC = "/eos/cms/store/group/phys_heavyions/dileptons/MC2018/PbPb502TeV/TTrees/Upsi1S_TuneCP5_HydjetDrumMB_officialPythia8MC*_v20190801.root";
 
@@ -206,7 +206,7 @@ void SkimTree_Event_Jpsi_Cent(int nevt=-1, bool isMC = false, int kTrigSel = kTr
   if(hiHFBinEdge==1) fCentSelHF = "HFUp";
   else if(hiHFBinEdge==-1) fCentSelHF = "HFDown";
   TFile* newfile;
-  newfile = new TFile(Form("OniaFlowSkim_%sTrig_%sPD_isMC%d_%s_Part1_201124.root",fTrigName[trigIndx].Data(),fPD.Data(),isMC,fCentSelHF.Data()),"recreate");
+  newfile = new TFile(Form("OniaFlowSkim_%sTrig_%sPD_isMC%d_%s_201126.root",fTrigName[trigIndx].Data(),fPD.Data(),isMC,fCentSelHF.Data()),"recreate");
 
   const static int nMaxDimu = 1000;
   int evt;
@@ -302,6 +302,8 @@ void SkimTree_Event_Jpsi_Cent(int nevt=-1, bool isMC = false, int kTrigSel = kTr
   
     nDimu = 0;
     
+	if( runNb >=327123 ) continue;
+
     if(!( (HLTriggers&((ULong64_t)pow(2, kTrigSel))) == ((ULong64_t)pow(2, kTrigSel)) ) ) continue;
 
     for (Int_t irqq=0; irqq<Reco_QQ_size; ++irqq) 
