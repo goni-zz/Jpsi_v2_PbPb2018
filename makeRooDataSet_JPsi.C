@@ -25,7 +25,7 @@ double getAccWeight(TH1D* h = 0, double pt = 0);
 double getEffWeight(TH1D* h = 0, double pt = 0);
 void GetHistSqrt(TH1D* h1 =0, TH1D* h2=0);
 
-void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = false, int state=1)
+void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = false, int state=2) //state 1: Prompt state 2: NonPrompt
 {
   //Basic Setting
   gStyle->SetOptStat(0);
@@ -38,10 +38,11 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
   //READ Input Skimmed File
   TFile *rf;
   if(isMC){
-    if(state==1) rf = new TFile("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/skimmedFiles/OniaFlowSkim_UpsTrig_DB_isMC1_HFNom_Y1S_190801.root","read");
-    else if(state==2) rf = new TFile("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/skimmedFiles/OniaFlowSkim_UpsTrig_DB_isMC1_HFNom_Y2S_190801.root","read");
+    if(state==1) rf = new TFile("/work2/Oniatree/JPsi/skimmed_file/OniaFlowSkim_JpsiTrig_isMC1_Prompt_HFNom_200407.root","read");
+    else if(state==2) rf = new TFile("/work2/Oniatree/JPsi/skimmed_file/OniaFlowSkim_JpsiTrig_isMC1_NonPrompt_HFNom_200407.root","read");
   }
-  else if(!isMC) rf = new TFile("/work2/Oniatree/JPsi/skimmed_file/OniaFlowSkim_JpsiTrig_JPsi_isMC0_HFNom_200618_RooDataSet.root","read");
+  //else if(!isMC) rf = new TFile("./skimmedFiles/OniaFlowSkim_JpsiTrig_AllPD_isMC0_HFNom_200407.root","read");
+  else if(!isMC) rf = new TFile("./skimmedFiles/OniaFlowSkim_JpsiTrig_DBAllPD_isMC0_HFNom_201127.root","read");
 //  else if(!isMC) rf = new TFile("OniaFlowSkim_JpsiTrig_JPsi_isMC0_HFNom_200619_RooDataSet_test100k.root","read");
   TTree *tree = (TTree*) rf -> Get("mmepevt");
 
@@ -150,10 +151,12 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
   RooRealVar* evtWeight = new RooRealVar("weight","corr weight", 0, 10000,"");
   RooRealVar* recoQQ = new RooRealVar("recoQQsign","qq sign",-1,3,"");
   RooRealVar* ctau3DVar = new RooRealVar("ctau3D","ctau3D dimuon",-20,20,"cm");
-  RooRealVar* ctau3DErrVar = new RooRealVar("ctau3DErr","ctau3DErr dimuon",0,16,"cm");
+  RooRealVar* ctau3DErrVar = new RooRealVar("ctau3DErr","ctau3DErr dimuon",0,0.5,"cm");
+  RooRealVar* ctau3DResVar = new RooRealVar("ctau3DRes","ctau3D Resolution dimuon",-20,20,"cm");
+  RooRealVar* ctau3DSignVar = new RooRealVar("ctau3DSign","ctau3D Significance dimuon",-20,20,"cm");
   RooRealVar* NumDimu = new RooRealVar("NumDimu","number of dimuon",0,100,"");
   RooArgSet* argSet    = new RooArgSet(*massVar, *ptVar, *yVar, *pt1Var, *pt2Var, *eta1Var, *eta2Var,*evtWeight);
-  argSet->add(*cBinVar); argSet->add(*recoQQ); argSet->add(*NumDimu); argSet->add(*ctau3DVar); argSet->add(*ctau3DErrVar);
+  argSet->add(*cBinVar); argSet->add(*recoQQ); argSet->add(*NumDimu); argSet->add(*ctau3DVar); argSet->add(*ctau3DErrVar); argSet->add(*ctau3DResVar);
   
   RooDataSet* dataSet  = new RooDataSet("dataset", " a dataset", *argSet);
 
@@ -215,6 +218,8 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
         cBinVar->setVal( (double)cBin ) ;
 		ctau3DVar->setVal( (double)ctau3D[j] ) ;
 		ctau3DErrVar->setVal( (double)ctau3DErr[j] ) ;
+		ctau3DResVar->setVal( (double)ctau3D[j]/ctau3DErr[j] ) ;
+		ctau3DSignVar->setVal( (double)ctau3DErr[j]/ctau3D[j] ) ;
         evtWeight->setVal( (double)weight_ ) ;
         NumDimu->setVal((int)nDimu);
         dataSet->add( *argSet);
@@ -225,8 +230,10 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
   cout << "more than one dimuon : " << nDimu_more << endl;
   cout << "one dimuon : " << nDimu_one << endl;
   
-  TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_JPsi%dSW_20200619.root",isMC,state),"recreate");
-  wf->cd();
+  
+  if (isMC && state==1) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_PR_JPsi_20201123.root",isMC),"recreate");  wf->cd();}
+  else if (isMC && state==2) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_BtoJPsi_20201123.root",isMC),"recreate");  wf->cd();}
+  else if (!isMC) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_JPsi%dSW_20201127.root",isMC,state),"recreate");  wf->cd();}
  dataSet->Write();
 }
     
