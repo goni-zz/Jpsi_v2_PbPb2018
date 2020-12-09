@@ -21,7 +21,6 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
   int kTrigSel = 12;	//jpsi=12,Upsilon=13
 
   float muPtCut = 0; //3.5, 1.8
-  float muEtaCut = 2.4;
 
   ////Upsilon
   //float massLow = 8.0;
@@ -36,7 +35,6 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
 
   double min = 0;
   double max = ptHigh;
-  double binwidth = 1;
   //const int numBins = 31; //50;//(max-min)/binwidth;  //31//
   const int numBins = 5; //50;//(max-min)/binwidth;  //31//
 
@@ -278,7 +276,7 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
   for(int iev=0; iev<300000 ; ++iev)
   {
     if(iev%100000==0) cout << ">>>>> EVENT " << iev << " / " << mytree->GetEntries() <<  " ("<<(int)(100.*iev/mytree->GetEntries()) << "%)" << endl;
-    //if(iev%100000==0) cout << ">>>>> EVENT " << iev << " / " << 300000 <<  " ("<<(int)(100.*iev/300000) << "%)" << endl;
+    //if(iev%100000==0) cout << ">>>>> EVENT " << iev << " / " << 300000 <<  " ("<<(int)(100.*iev/300000) << "%)" << endl
 
     mytree->GetEntry(iev);
     if(Centrality > cHigh || Centrality < cLow) continue;
@@ -289,11 +287,11 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
 	    mupl_Gen = (TLorentzVector*) Gen_mu_4mom->At(Gen_QQ_mupl_idx[igen]);
 	    mumi_Gen = (TLorentzVector*) Gen_mu_4mom->At(Gen_QQ_mumi_idx[igen]);
 
-	    Double_t Rapidity_g = fabs(JP_Gen->Rapidity());
+	    Double_t Rapidity_gen = fabs(JP_Gen->Rapidity());
 
-	    //if(Rapidity_g < 1.2) muPtCut = 3.5;
-	    //else if(Rapidity_g >1.2 && Rapidity_g <2.1) muPtCut = (5.77-1.89*Rapidity_g); 
-	    //else if(Rapidity_g >2.1 && Rapidity_g <2.4) muPtCut = 1.8; 
+	    if(Rapidity_gen < 1.2) muPtCut = 3.5;
+	    else if(Rapidity_gen >1.2 && Rapidity_gen <2.1) muPtCut = (5.47-1.89*Rapidity_gen); 
+	    else if(Rapidity_gen >2.1 && Rapidity_gen <2.4) muPtCut = 1.5; 
 
 	    if(!( fabs(JP_Gen->Rapidity())<2.4 && (mupl_Gen->Pt()>muPtCut && fabs(mupl_Gen->Eta())<2.4) && (mumi_Gen->Pt()>muPtCut && fabs(mumi_Gen->Eta())<2.4) )) continue;
 	    if(Gen_mu_charge[Gen_QQ_mupl_idx[igen]]*Gen_mu_charge[Gen_QQ_mumi_idx[igen]]>0) continue;
@@ -301,18 +299,18 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
 	    pt_weight = 1;
 	    //if(isPtWeight) pt_weight = f1->Eval(JP_Gen->Pt()); 
 
-	    hy_gen->Fill(Rapidity_g, weight*pt_weight);
+	    hy_gen->Fill(Rapidity_gen, weight*pt_weight);
 	    //hpt_gen_1->Fill(JP_Gen->Ptyy(),weight*pt_weight);
-	    //if(Rapidity_g < 0.6) hpt_gen_2 -> Fill(JP_Gen->Pt(), weight*pt_weight);
-	    //else if(Rapidity_g > 0.6 && Rapidity_g < 1.2) hpt_gen_3 -> Fill(JP_Gen->Pt(), weight*pt_weight);
-	    //else if(Rapidity_g > 1.2 && Rapidity_g < 1.8) hpt_gen_4 -> Fill(JP_Gen->Pt(), weight*pt_weight);
-	    //else if(Rapidity_g > 1.8 && Rapidity_g < 2.4) hpt_gen_5 -> Fill(JP_Gen->Pt(), weight*pt_weight);
+	    //if(Rapidity_gen < 0.6) hpt_gen_2 -> Fill(JP_Gen->Pt(), weight*pt_weight);
+	    //else if(Rapidity_gen > 0.6 && Rapidity_gen < 1.2) hpt_gen_3 -> Fill(JP_Gen->Pt(), weight*pt_weight);
+	    //else if(Rapidity_gen > 1.2 && Rapidity_gen < 1.8) hpt_gen_4 -> Fill(JP_Gen->Pt(), weight*pt_weight);
+	    //else if(Rapidity_gen > 1.8 && Rapidity_gen < 2.4) hpt_gen_5 -> Fill(JP_Gen->Pt(), weight*pt_weight);
 	    hpt_gen_1->Fill(JP_Gen->Pt(),weight*pt_weight);
 	    if(Centrality < 20) hpt_gen_2 -> Fill(JP_Gen->Pt(), weight*pt_weight);
 	    else if(Centrality > 20 && Centrality < 60) hpt_gen_3 -> Fill(JP_Gen->Pt(), weight*pt_weight);
 	    else if(Centrality > 60 && Centrality < 120) hpt_gen_4 -> Fill(JP_Gen->Pt(), weight*pt_weight);
 	    //else if(Centrality > 120 && Centrality < 180) hpt_gen_5 -> Fill(JP_Gen->Pt(), weight*pt_weight);
-	    else if(Rapidity_g > 1.6 && Rapidity_g < 2.4) hpt_gen_5 -> Fill(JP_Gen->Pt(), weight*pt_weight);
+	    else if(Rapidity_gen > 1.6 && Rapidity_gen < 2.4) hpt_gen_5 -> Fill(JP_Gen->Pt(), weight*pt_weight);
     }
 
 
@@ -360,27 +358,27 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
       if ( Reco_QQ_VtxProb[irqq]  < 0.01 ) continue;
       if(Reco_QQ_sign[irqq]!=0) continue;  
 
-      Double_t Rapidity = fabs(JP_Reco->Rapidity());
+      Double_t Rapidity_reco = fabs(JP_Reco->Rapidity());
 
-      //if(Rapidity < 1.2) muPtCut = 3.5;
-      //else if(Rapidity >1.2 && Rapidity <2.1) muPtCut = (5.77-1.89*Rapidity); 
-      //else if(Rapidity >2.1 && Rapidity <2.4) muPtCut = 1.8; 
+      if(Rapidity_reco < 1.2) muPtCut = 3.5;
+      else if(Rapidity_reco >1.2 && Rapidity_reco <2.1) muPtCut = (5.47-1.89*Rapidity_reco); 
+      else if(Rapidity_reco >2.1 && Rapidity_reco <2.4) muPtCut = 1.5; 
 
-      if(!( (mupl_Reco->Pt()>muPtCut && fabs(mupl_Reco->Eta())<2.4) && (mumi_Reco->Pt()>muPtCut && fabs(mumi_Reco->Eta())<2.4) && (fabs(JP_Reco->Rapidity())<2.4 && JP_Reco->Pt()<50  && JP_Reco->M()>massLow && JP_Reco->M()<massHigh))) continue;
+      if(!( (mupl_Reco->Pt()>muPtCut && fabs(mupl_Reco->Eta())<2.4) && (mumi_Reco->Pt()>muPtCut && fabs(mumi_Reco->Eta())<2.4) && (fabs(JP_Reco->Rapidity_reco())<2.4 && JP_Reco->Pt()<50  && JP_Reco->M()>massLow && JP_Reco->M()<massHigh))) continue;
 
-      //hy_reco->Fill(Rapidity, weight);
+      //hy_reco->Fill(Rapidity_reco, weight);
       hpt_reco_1->Fill(JP_Reco->Pt(),weight*pt_weight);
       if(Centrality < 20) hpt_reco_2 -> Fill(JP_Reco->Pt(), weight*pt_weight);
       else if(Centrality > 20 && Centrality < 60) hpt_reco_3 -> Fill(JP_Reco->Pt(), weight*pt_weight);
       else if(Centrality > 60 && Centrality < 120) hpt_reco_4 -> Fill(JP_Reco->Pt(), weight*pt_weight);
       else if(Centrality > 120 && Centrality < 180) hpt_reco_5 -> Fill(JP_Reco->Pt(), weight*pt_weight);
       //hpt_reco_1->Fill(JP_Reco->Pt(),weight * pt_weight);
-      //if(Rapidity < 0.6) hpt_reco_2 -> Fill(JP_Reco->Pt(), weight *pt_weight);
-      //else if(Rapidity > 0.6 && Rapidity < 1.2) hpt_reco_3 -> Fill(JP_Reco->Pt(), weight *pt_weight);
-      //else if(Rapidity > 1.2 && Rapidity < 1.8) hpt_reco_4 -> Fill(JP_Reco->Pt(), weight *pt_weight);
-      //else if(Rapidity > 1.8 && Rapidity < 2.4) hpt_reco_5 -> Fill(JP_Reco->Pt(), weight *pt_weight);
+      //if(Rapidity_reco < 0.6) hpt_reco_2 -> Fill(JP_Reco->Pt(), weight *pt_weight);
+      //else if(Rapidity_reco > 0.6 && Rapidity_reco < 1.2) hpt_reco_3 -> Fill(JP_Reco->Pt(), weight *pt_weight);
+      //else if(Rapidity_reco > 1.2 && Rapidity_reco < 1.8) hpt_reco_4 -> Fill(JP_Reco->Pt(), weight *pt_weight);
+      //else if(Rapidity_reco > 1.8 && Rapidity_reco < 2.4) hpt_reco_5 -> Fill(JP_Reco->Pt(), weight *pt_weight);
 
-      //Double_t Rapidity = fabs(JP_Reco->Rapidity());
+      //Double_t Rapidity_reco = fabs(JP_Reco->Rapidity_reco());
       if(HLTPass==true && HLTFilterPass==true) count++;
       if(isTnP){
        tnp_weight = 1;
@@ -447,13 +445,13 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
       //if(isPtWeight) pt_weight = f1->Eval(JP_Reco->Pt());
 
       if(HLTPass==true && HLTFilterPass==true){
-	      hy_reco->Fill(Rapidity, weight* tnp_weight* pt_weight);
+	      hy_reco->Fill(Rapidity_reco, weight* tnp_weight* pt_weight);
 	      hpt_reco_Trig_1->Fill(JP_Reco->Pt(),weight* tnp_weight* pt_weight);
 	      if(Centrality < 20) hpt_reco_Trig_2 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
 	      else if(Centrality > 20 && Centrality < 60) hpt_reco_Trig_3 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
 	      else if(Centrality > 60 && Centrality < 120) hpt_reco_Trig_4 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
 	      //else if(Centrality > 120 && Centrality < 180) hpt_reco_Trig_5 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
-	      else if(Rapidity > 1.6 && Rapidity < 2.4) hpt_reco_Trig_5 -> Fill(JP_Reco->Pt(), weight * tnp_weight *pt_weight);
+	      else if(Rapidity_reco > 1.6 && Rapidity_reco < 2.4) hpt_reco_Trig_5 -> Fill(JP_Reco->Pt(), weight * tnp_weight *pt_weight);
       }
       hpt_reco_NoTrig_1->Fill(JP_Reco->Pt(),weight* tnp_weight *pt_weight);
       if(Centrality < 20) hpt_reco_NoTrig_2 -> Fill(JP_Reco->Pt(), weight* tnp_weight *pt_weight);
