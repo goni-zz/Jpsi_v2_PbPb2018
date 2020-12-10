@@ -14,7 +14,7 @@ using namespace std;
 void get_Eff_pt_jpsi_pbpb_fit( 
   float ptLow = 0.0, float ptHigh = 50.0,
   float yLow = 0.0, float yHigh = 2.4,
-  int cLow = 0, int cHigh = 180, bool isTnP = true, bool isPtWeight = false, int state=2
+  int cLow = 0, int cHigh = 180, bool isTnP = true, bool isPtWeight = true, int state=2
   ) {
 
   gStyle->SetOptStat(0);
@@ -30,8 +30,6 @@ void get_Eff_pt_jpsi_pbpb_fit(
   //jpsi
   float massLow = 2.6;
   float massHigh = 3.5;
-  if(state==2){massLow = 2.6; massHigh = 3.5;}
-
 
   double min = 0;
   double max = ptHigh;
@@ -50,8 +48,8 @@ void get_Eff_pt_jpsi_pbpb_fit(
 
 
   //pT reweighting function
-  //TFile *fPtW = new TFile(Form("../Reweight/WeightedFunc/Func_dNdpT_%dS.root",state),"read");
-  //TF1* f1 = (TF1*) fPtW->Get("fitRatio");
+  TFile *fPtW = new TFile("compareDataToMC/WeightedFcN_fit/ratioDataMC_AA_DATA_1s.root","read");
+  TF1* fptw = (TF1*) fPtW->Get("fitRatio");
 
   
   //double ptBin[numBins+1] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,27,30,34,38,42,46,50};
@@ -297,6 +295,7 @@ void get_Eff_pt_jpsi_pbpb_fit(
 	    else if(Rapidity_gen >2.1 && Rapidity_gen <2.4) muPtCut = 1.5; 
 
 	    pt_weight = 1;
+	    if(isPtWeight) pt_weight = fptw->Eval(JP_Gen->Pt()); 
 
 	    if(!( fabs(JP_Gen->Rapidity())<2.4 && (mupl_Gen->Pt()>muPtCut && fabs(mupl_Gen->Eta())<2.4) && (mumi_Gen->Pt()>muPtCut && fabs(mumi_Gen->Eta())<2.4) )) continue;
 	    if(Gen_mu_charge[Gen_QQ_mupl_idx[igen]]*Gen_mu_charge[Gen_QQ_mumi_idx[igen]]>0) continue;
@@ -457,6 +456,7 @@ void get_Eff_pt_jpsi_pbpb_fit(
 
       pt_weight = 1;
       //if(isPtWeight) pt_weight = f1->Eval(JP_Reco->Pt());
+      if(isPtWeight) pt_weight = fptw->Eval(JP_Reco->Pt()); 
 
       if(HLTPass==true && HLTFilterPass==true){
 
