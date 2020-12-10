@@ -30,8 +30,6 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
   //jpsi
   float massLow = 2.6;
   float massHigh = 3.5;
-  if(state==2){massLow = 2.6; massHigh = 3.5;}
-
 
   double min = 0;
   double max = ptHigh;
@@ -47,12 +45,10 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
   TString outFileName = "mc_eff_vs_pt_cent_prompt_pbpb_Jpsi_fit_tnp.root"; 
   if(state==2) outFileName = "mc_eff_vs_pt_cent_nprompt_pbpb_Jpsi_fit_tnp.root"; 
 
-
   //pT reweighting function
-  //TFile *fPtW = new TFile(Form("../Reweight/WeightedFunc/Func_dNdpT_%dS.root",state),"read");
-  //TF1* f1 = (TF1*) fPtW->Get("fitRatio");
+  TFile *fPtW = new TFile("WeightedFcN_fit/ratioDataMC_AA_DATA.root","read");
+  TF1* fptw = (TF1*) fPtW->Get("dataMC_Ratio1");
 
-  
   //double ptBin[numBins+1] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,27,30,34,38,42,46,50};
   double ptBin[numBins+1] = {3,4.5,6.5,8,12,50};
   float yBin[7] = {0,0.4,0.8,1.2,1.6,2.0,2.4};
@@ -90,10 +86,10 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
   f1->SetLineColor(kBlack);
   //f1->SetLineStyle(2);
   f1->SetLineWidth(2);
-  f1->SetParameters(214,-22,14);
-  f1->SetParLimits(0,0,300);
-  f1->SetParLimits(1,-50,50);
-  f1->SetParLimits(2,0,30);
+  //f1->SetParameters(214,-22,14);
+  //f1->SetParLimits(0,0,300);
+  //f1->SetParLimits(1,-50,50);
+  //f1->SetParLimits(2,0,30);
   //f1->SetParLimits(0,0,300);
   //f1->SetParLimits(1,-50,50);
   //f1->SetParLimits(2,0,30);
@@ -298,6 +294,7 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
 
 	    pt_weight = 1;
 	    //if(isPtWeight) pt_weight = f1->Eval(JP_Gen->Pt()); 
+	    if(isPtWeight) pt_weight = fptw->Eval(JP_Gen->Pt()); 
 
 	    hy_gen->Fill(Rapidity_gen, weight*pt_weight);
 	    //hpt_gen_1->Fill(JP_Gen->Ptyy(),weight*pt_weight);
@@ -443,6 +440,7 @@ void getEfficiency_jpsi_pbpb_fit_tnp(
 
       pt_weight = 1;
       //if(isPtWeight) pt_weight = f1->Eval(JP_Reco->Pt());
+      if(isPtWeight) pt_weight = fptw->Eval(JP_Reco->Pt()); 
 
       if(HLTPass==true && HLTFilterPass==true){
 	      hy_reco->Fill(Rapidity_reco, weight* tnp_weight* pt_weight);
