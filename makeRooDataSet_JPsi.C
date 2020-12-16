@@ -25,7 +25,7 @@ double getAccWeight(TH1D* h = 0, double pt = 0);
 double getEffWeight(TH1D* h = 0, double pt = 0);
 void GetHistSqrt(TH1D* h1 =0, TH1D* h2=0);
 
-void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = false, int state=2) //state 1: Prompt state 2: NonPrompt
+void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = true, bool fEffW = true, int state=2) //state 0: inclusive, state 1: Prompt, state 2: NonPrompt
 {
   //Basic Setting
   gStyle->SetOptStat(0);
@@ -34,6 +34,10 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
   int iPeriod = 2;
   int iPos = 33;
   TString dimusignString;
+  TString bCont;
+  TString outName;
+  if (state==1) { bCont = "prompt"; outName="PR"; }
+  else if (state==2) {bCont = "nprompt"; outName="NP"; }
 
   //READ Input Skimmed File
   TFile *rf;
@@ -49,13 +53,37 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
   
   //Get Correction histograms
   bool isTnP = false;
-  TFile *fEff = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Efficiency/mc_eff_vs_pt_TnP%d_PtW1_OfficialMC_Y%dS_muPtCut3.5.root",isTnP,state),"read");
-  TH1D* hEffPt[3];
-  hEffPt[0] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_Cent010",isTnP)); 
-  hEffPt[1] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_Cent1050",isTnP)); 
-  hEffPt[2] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_Cent5090",isTnP)); 
-  TFile *fAcc = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Acceptance/acceptance_wgt_%dS_pt0_50_20190813_dNdptWeighted.root",state),"read");
-  TH1D* hAccPt = (TH1D*) fAcc -> Get(Form("hptAccNoW%dS",state)); 
+  bool isPtW = true;
+//  TFile *fEff = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Efficiency/mc_eff_vs_pt_TnP%d_PtW1_OfficialMC_Y%dS_muPtCut3.5.root",isTnP,state),"read");
+  TFile *fEff = new TFile(Form("mc_eff_vs_pt_cent_rap_%s_pbpb_Jpsi.root",bCont.Data()),"read");
+  TH1D* hEffPt[12];
+  hEffPt[0] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy0_0p6",isTnP,isPtW));
+  hEffPt[1] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy0p6_1p2",isTnP,isPtW));
+  hEffPt[2] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy1p2_1p6",isTnP,isPtW));
+  hEffPt[3] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy1p6_2p4",isTnP,isPtW));
+  hEffPt[4] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy0_0p6",isTnP,isPtW));
+  hEffPt[5] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy0p6_1p2",isTnP,isPtW));
+  hEffPt[6] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy1p2_1p6",isTnP,isPtW));
+  hEffPt[7] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy1p6_2p4",isTnP,isPtW));
+  hEffPt[8] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy0_0p6",isTnP,isPtW));
+  hEffPt[9] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy0p6_1p2",isTnP,isPtW));
+  hEffPt[10] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy1p2_1p6",isTnP,isPtW));
+  hEffPt[11] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy1p6_2p4",isTnP,isPtW));
+//  TFile *fAcc = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Acceptance/acceptance_wgt_%dS_pt0_50_20190813_dNdptWeighted.root",state),"read");
+  TFile *fAcc = new TFile(Form("mc_Acc_vs_pt_cent_rap_%s_pbpb_Jpsi_PtW1.root",bCont.Data()),"read");
+  TH1D* hAccPt[12];
+  hAccPt[0] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy0_0p6",isPtW));
+  hAccPt[1] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy0p6_1p2",isPtW));
+  hAccPt[2] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy1p2_1p6",isPtW));
+  hAccPt[3] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy1p6_2p4",isPtW));
+  hAccPt[4] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy0_0p6",isPtW));
+  hAccPt[5] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy0p6_1p2",isPtW));
+  hAccPt[6] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy1p2_1p6",isPtW));
+  hAccPt[7] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy1p6_2p4",isPtW));
+  hAccPt[8] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy0_0p6",isPtW));
+  hAccPt[9] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy0p6_1p2",isPtW));
+  hAccPt[10] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy1p2_1p6",isPtW));
+  hAccPt[11] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy1p6_2p4",isPtW));
 
 
   //SetBranchAddress
@@ -200,11 +228,45 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
         if(! ((double)pt[j]<50 && abs((double)y[j])<2.4 && IsAcceptanceQQ(pt1[j],eta1[j])&&IsAcceptanceQQ(pt2[j],eta2[j])) ) continue;
         weight_acc = 1;
         weight_eff = 1;
-        if(fAccW){weight_acc = getAccWeight(hAccPt, pt[j]);} 
+        if(fAccW){ 
+          if(cBin<20) {
+			  if ( abs((double)y[j])<0.6) { weight_acc = getAccWeight(hAccPt[0], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_acc = getAccWeight(hAccPt[1], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_acc = getAccWeight(hAccPt[2], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_acc = getAccWeight(hAccPt[3], pt[j]); }
+		  }
+          if(cBin>=20 && cBin<100){
+			  if ( abs((double)y[j])<0.6) { weight_acc = getAccWeight(hAccPt[4], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_acc = getAccWeight(hAccPt[5], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_acc = getAccWeight(hAccPt[6], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_acc = getAccWeight(hAccPt[7], pt[j]); }
+		  }
+          if(cBin>=100 && cBin<180){ 
+			  if ( abs((double)y[j])<0.6) { weight_acc = getAccWeight(hAccPt[8], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_acc = getAccWeight(hAccPt[9], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_acc = getAccWeight(hAccPt[10], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_acc = getAccWeight(hAccPt[11], pt[j]); }
+		  }
+        }
         if(fEffW){ 
-          if(cBin<20) weight_eff = getEffWeight(hEffPt[0], pt[j]);
-          if(cBin>=20 && cBin<100) weight_eff = getEffWeight(hEffPt[1], pt[j]);
-          if(cBin>=100 && cBin<180) weight_eff = getEffWeight(hEffPt[2], pt[j]);
+          if(cBin<20) {
+			  if ( abs((double)y[j])<0.6) { weight_eff = getEffWeight(hEffPt[0], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_eff = getEffWeight(hEffPt[1], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_eff = getEffWeight(hEffPt[2], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_eff = getEffWeight(hEffPt[3], pt[j]); }
+		  }
+          if(cBin>=20 && cBin<100){
+			  if ( abs((double)y[j])<0.6) { weight_eff = getEffWeight(hEffPt[4], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_eff = getEffWeight(hEffPt[5], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_eff = getEffWeight(hEffPt[6], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_eff = getEffWeight(hEffPt[7], pt[j]); }
+		  }
+          if(cBin>=100 && cBin<180){ 
+			  if ( abs((double)y[j])<0.6) { weight_eff = getEffWeight(hEffPt[8], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_eff = getEffWeight(hEffPt[9], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_eff = getEffWeight(hEffPt[10], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_eff = getEffWeight(hEffPt[11], pt[j]); }
+		  }
         }
         double weight_ = weight * weight_eff * weight_acc;
         recoQQ->setVal((int)recoQQsign[j]);     
@@ -233,7 +295,7 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
   
   if (isMC && state==1) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_PR_JPsi_20201123.root",isMC),"recreate");  wf->cd();}
   else if (isMC && state==2) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_BtoJPsi_20201123.root",isMC),"recreate");  wf->cd();}
-  else if (!isMC) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_JPsi%dSW_20201127.root",isMC,state),"recreate");  wf->cd();}
+  else if (!isMC) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_JPsi_%sw_Effw%d_Accw%d_PtW%d_TnP%d_20201216.root",isMC,outName.Data(),fEffW,fAccW,isPtW,isTnP),"recreate");  wf->cd();}
  dataSet->Write();
 }
     
