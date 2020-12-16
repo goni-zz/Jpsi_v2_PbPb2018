@@ -52,7 +52,7 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = true, bool fEffW = true
 
   
   //Get Correction histograms
-  bool isTnP = false;
+  bool isTnP = true;
   bool isPtW = true;
 //  TFile *fEff = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Efficiency/mc_eff_vs_pt_TnP%d_PtW1_OfficialMC_Y%dS_muPtCut3.5.root",isTnP,state),"read");
   TFile *fEff = new TFile(Form("mc_eff_vs_pt_cent_rap_%s_pbpb_Jpsi.root",bCont.Data()),"read");
@@ -316,12 +316,16 @@ void GetHistSqrt(TH1D* h1, TH1D* h2){
 
 double getAccWeight(TH1D* h, double pt){
   double binN = h->FindBin(pt);
-  double weight_ = 1./(h->GetBinContent(binN));
+  TF1 *acc1 = (TF1*)h->FindObject("f1");
+  double acc = acc1->Eval(pt);
+  double weight_ = 1./acc;
   return weight_;
 } 
 
 double getEffWeight(TH1D *h, double pt){
   double binN = h->FindBin(pt);
-  double weight_ = 1./(h->GetBinContent(binN));
+  TF1 *eff1 = (TF1*)h->FindObject("f1");
+  double eff = eff1->Eval(pt);
+  double weight_ = 1./eff;
   return weight_;
 } 
