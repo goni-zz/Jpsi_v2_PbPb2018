@@ -25,7 +25,7 @@ using namespace RooFit;
 
 void Final2DFit(
     float ptLow=8, float ptHigh=12,
-    float yLow=0, float yHigh=2.4,
+	float yLow=1.6, float yHigh=2.4,
     int cLow=20, int cHigh=120,
     float muPtCut=0.0,
     bool whichModel=0,  // Nominal=0, Alternative=1
@@ -59,7 +59,7 @@ void Final2DFit(
   TString BkgCut;
   TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
-  f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20201203.root");
+  f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi1SW_20201127.root");
   fMass = new TFile(Form("../roots/2DFit_1203/MassFitResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
   fCErr = new TFile(Form("../roots/2DFit_1203/CtauErrResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
   fCRes = new TFile(Form("../roots/2DFit_1203/CtauResResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
@@ -149,7 +149,7 @@ void Final2DFit(
   ws->factory(Form("SUM::%s(%s)", "pdfCTAUCOND_JpsiPR",//PR
         "pdfCTAURES"//resolution model
         ));
-  ws->factory("b_Jpsi[0.35, 0.0, 1.]");//NP fraction for Sig
+  ws->factory("b_Jpsi[0.35, 0.3, 0.5]");//NP fraction for Sig
 
   RooProdPdf pdfbkgPR("pdfCTAU_BkgPR", "", *ws->pdf("pdfCTAUERR_Bkg"),
       Conditional( *ws->pdf("pdfCTAUCOND_BkgPR"), RooArgList(*ws->var("ctau3D"))));
@@ -222,52 +222,56 @@ void Final2DFit(
 
   RooArgSet *newpars = (RooArgSet*) ws->pdf("pdfCTAUMASS_Tot")->getParameters(RooArgSet(*ws->var("ctau3D"), *ws->var("ctau3DErr"), *ws->var("ctau3DRes"), *ws->var("mass")));
 
-  TCanvas* c_G =  new TCanvas("canvas_G","My plots",1108,565,550,520);
+  TCanvas* c_G =  new TCanvas("canvas_G","My plots",1108,4,550,520);
   c_G->cd();
   TPad *pad_G_1 = new TPad("pad_G_1", "pad_G_1", 0, 0.16, 0.98, 1.0);
   pad_G_1->SetTicks(1,1);
   pad_G_1->Draw(); pad_G_1->cd();
+  gPad->SetLogy();
   RooPlot* myPlot_G = ws->var("ctau3D")->frame(nCtauBins); // bins
-  RooPlot* myPlot_H = ws->var("mass")->frame(Bins(nMassBin), Range(2.6,3.5)); // bins
+  //RooPlot* myPlot_H = ws->var("mass")->frame(Bins(nMassBin), Range(2.6,3.5)); // bins
   myPlot_G->SetTitle("");
 
   c_G->cd();
   c_G->SetLogy();
+  pad_G_1->cd();
+
+
   double normDSTot = ws->data("dsAB")->sumEntries()/ws->data("dsAB")->sumEntries();
   double normBkg = ws->data("dsAB")->sumEntries()*normDSTot/ws->data("dataw_Bkg")->sumEntries();
   double normJpsi =ws->data("dsAB")->sumEntries()*normDSTot/ws->data("dataw_Sig")->sumEntries();
 
   cout<<"##############START TOTAL CTAU FIT############"<<endl;
   RooFitResult* fitResult = ws->pdf("pdfCTAUMASS_Tot")->fitTo(*dsAB, Extended(kTRUE), ExternalConstraints(*ws->set("ConstrainPdfList")),
-      NumCPU(12), SumW2Error(true), PrintLevel(-1), Save());
+      NumCPU(nCPU), SumW2Error(true), PrintLevel(-1), Save());
   ws->import(*fitResult, "fitResult_pdfCTAUMASS_Tot");
 
   //DRAW
   RooPlot* myPlot2_G = (RooPlot*)myPlot_G->Clone();
   myPlot2_G->updateNormVars(RooArgSet(*ws->var("mass"), *ws->var("ctau3D"), *ws->var("ctau3DErr")));
   //ws->data("dsAB")->plotOn(myPlot2_G,Name("dOS"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerColor(kBlack), LineColor(kBlack));
-  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("PDF"),
+  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("Ctau_Tot"),
       ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
       Normalization(normDSTot, RooAbsReal::NumEvent),
-      FillStyle(1001), FillColor(kViolet+6), VLines(), DrawOption("LF"), NumCPU(6), LineColor(kBlack)
+      FillStyle(1001), FillColor(kViolet+6), VLines(), DrawOption("LF"), NumCPU(nCPU), LineColor(kBlack)
       );
-  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("BKG"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_Bkg") )),
+  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("Ctau_Bkg"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_Bkg") )),
       ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
       Normalization(normDSTot, RooAbsReal::NumEvent),
-      FillStyle(1001), FillColor(kAzure-9), VLines(), DrawOption("LF"), NumCPU(6)
+      FillStyle(1001), FillColor(kAzure-9), VLines(), DrawOption("LF"), NumCPU(nCPU)
       );
-  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("JPSIPR"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_JpsiPR") )),
+  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("Ctau_JpsiPR"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_JpsiPR") )),
       ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
       Normalization(normDSTot, RooAbsReal::NumEvent),
-      LineColor(kRed+3), NumCPU(6)
+      LineColor(kRed+3), NumCPU(nCPU)
       );
-  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("JPSINOPR"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_JpsiNoPR"))),
+  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("Ctau_JpsiNoPR"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_JpsiNoPR"))),
       ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
       Normalization(normDSTot, RooAbsReal::NumEvent),
-      LineColor(kGreen+3), NumCPU(6)
+      LineColor(kGreen+3), NumCPU(nCPU)
       );
-  ws->data("dsAB")->plotOn(myPlot2_G,Name("dOS"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerColor(kBlack), LineColor(kBlack));
-  //ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("PDFLINE"),
+  ws->data("dsAB")->plotOn(myPlot2_G,Name("data_Ctau"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerColor(kBlack), LineColor(kBlack));
+  //ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_G,Name("Mass_TotLINE"),
   //                                     ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
   //                                     Normalization(normDSTot, RooAbsReal::NumEvent),
   //                                     LineColor(kBlack), NumCPU(32)
@@ -276,15 +280,18 @@ void Final2DFit(
   myPlot2_G->GetYaxis()->SetRangeUser(10e-2, 10e8);
   myPlot2_G->GetXaxis()->SetRangeUser(-4, 6);
   myPlot2_G->GetXaxis()->SetTitle("#font[12]{l}_{J/#psi} (mm)");
+  myPlot2_G->SetFillStyle(4000);
+  myPlot2_G->GetXaxis()->SetLabelSize(0);
+  myPlot2_G->GetXaxis()->SetTitleSize(0);
   myPlot2_G->Draw();
   TLegend* leg_G = new TLegend(text_x+0.25,text_y+0.03,text_x+0.38,text_y-0.17); leg_G->SetTextSize(text_size);
   leg_G->SetTextFont(43);
   leg_G->SetBorderSize(0);
-  leg_G->AddEntry(myPlot2_G->findObject("dOS"),"Data","pe");
-  leg_G->AddEntry(myPlot2_G->findObject("PDF"),"Total fit","fl");
-  leg_G->AddEntry(myPlot2_G->findObject("BKG"),"Background","fl");
-  leg_G->AddEntry(myPlot2_G->findObject("JPSIPR"),"J/#psi Prompt","l");
-  leg_G->AddEntry(myPlot2_G->findObject("JPSINOPR"),"J/#psi Non-Prompt","l");
+  leg_G->AddEntry(myPlot2_G->findObject("data_Ctau"),"Data","pe");
+  leg_G->AddEntry(myPlot2_G->findObject("Ctau_Tot"),"Total fit","fl");
+  leg_G->AddEntry(myPlot2_G->findObject("Ctau_Bkg"),"Background","fl");
+  leg_G->AddEntry(myPlot2_G->findObject("Ctau_JpsiPR"),"J/#psi Prompt","l");
+  leg_G->AddEntry(myPlot2_G->findObject("Ctau_JpsiNoPR"),"J/#psi Non-Prompt","l");
   leg_G->Draw("same");
   drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
   if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
@@ -294,12 +301,107 @@ void Final2DFit(
   drawText(Form("N_{Bkg} = %.f #pm %.f",ws->var("N_Bkg")->getVal(), ws->var("N_Bkg")->getError() ),text_x+0.5,text_y-y_diff*2,text_color,text_size);
   drawText(Form("b_{J/#psi} = %.4f #pm %.4f",ws->var("b_Jpsi")->getVal(),ws->var("b_Jpsi")->getError()),text_x+0.5,text_y-y_diff*3,text_color,text_size);
 
+  TPad *pad_G_2 = new TPad("pad_G_2", "pad_G_2", 0, 0.006, 0.98, 0.227);
+  RooPlot* frameTMP_G = (RooPlot*)myPlot2_G->Clone("TMP_G");
+  RooHist* hpull_G;
+  pullDist(ws, pad_G_2, c_G, frameTMP_G, hpull_G, "data_Ctau", "Ctau_Tot", "ctau3D", nCtauBins, ctauLow, ctauHigh, "#font[12]{l}_{J/#psi} (mm)");
+  printChi2(ws, pad_G_2, frameTMP_G, fitResult, "ctau3D", "data_Ctau", "Ctau_Tot", nCtauErrBins);
+  pad_G_2->Update();
+
+
+
   //RooAbsPdf* pdfFromWS(RooWorkspace* ws, const char* token, const char* thepdfname) {
   //TString pdfname_and_token = TString(thepdfname) + TString(token);
   //RooAbsPdf *ans = (RooAbsPdf*) ws->pdf(pdfname_and_token);
   //return ans;
   //}
   //
+ 
+  TCanvas* c_H =  new TCanvas("canvas_H","My plots",1108,565,550,520);
+  c_H->cd();
+  TPad *pad_H_1 = new TPad("pad_H_1", "pad_H_1", 0, 0.16, 0.98, 1.0);
+  pad_H_1->SetTicks(1,1);
+  pad_H_1->Draw(); pad_H_1->cd();
+  RooPlot* myPlot_H = ws->var("mass")->frame(Bins(nMassBin), Range(2.6,3.5)); // bins
+  myPlot_H->SetTitle("");
+  c_H->cd();
+  c_H->SetLogy();
+  pad_H_1->cd();
+  gPad->SetLogy();
+  //RooAbsReal* fsigregion_model = pdfCTAUMASS_JpsiPR.createIntegral(*ws->var("ctau3D"),NormSet(*ws->var("ctau3D")),Range("ctauRange")); 
+  //The "NormSet(x)" normalizes it to the total number of events to give you the fraction n_signal_region_events/n_total_events
+  //RooArgSet* cloneSet = (RooArgSet*)RooArgSet(*ws->pdf("pdfCTAUMASS_JpsiPR"),"pdfCTAUMASS_JpsiPR").snapshot(kTRUE);
+  //auto clone_mass_pdf = (RooAbsPdf*)cloneSet->find("pdfCTAUMASS_JpsiPR");
+
+  //RooAbsReal* fsigregion_bkg = pdfCTAUMASS_JpsiNoPR.createIntegral(*ws->var("ctau3D"),NormSet(*ws->var("ctau3D")),Range("ctauRange"));
+  //Double_t nsigevents = fsigregion_model->getVal()*(sig_yield.getVal()+bkg_yield.getVal())-fsigregion_bkg->getVal()*bkg_yield.getVal();
+  //Double_t fsig = nsigevents/(fsigregion_model->getVal()*(sig_yield.getVal()+bkg_yield.getVal()));
+
+  //themodel->RooAddPdf::pdfList().find("pdfCTAUMASS_JpsiPR");
+  //RooAbsReal* PR_Frac = *ws->pdf("pdfCTAUMASS_JpsiPR")->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range(-4, 6.5));
+  //RooAbsReal* NP_Frac = *ws->pdf("pdfCTAUMASS_JpsiNoPR")->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range(-4, 6.5));
+
+  RooPlot* myPlot2_H = (RooPlot*)myPlot_H->Clone();
+  myPlot2_H->updateNormVars(RooArgSet(*ws->var("mass"), *ws->var("ctau3D"), *ws->var("ctau3DErr")));
+  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("Mass_Tot"),
+      ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
+      Normalization(normDSTot, RooAbsReal::NumEvent),
+      DrawOption("LF"), NumCPU(nCPU), LineColor(kBlack)
+      );
+  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("Mass_Bkg"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_Bkg") )),
+      ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
+      Normalization(normDSTot, RooAbsReal::NumEvent),
+      FillStyle(1001), FillColor(kAzure-9), VLines(), DrawOption("LCF"), NumCPU(nCPU), LineStyle(kDashed)
+      );
+  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("Mass_JpsiPR"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_JpsiPR"), *ws->pdf("pdfCTAUMASS_Bkg") )),
+      ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
+      Normalization(normDSTot, RooAbsReal::NumEvent),
+      LineColor(kRed+3), Precision(1e-4), NumCPU(nCPU)
+      );
+  ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("Mass_JpsiNoPR"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_JpsiNoPR"), *ws->pdf("pdfCTAUMASS_Bkg"))),
+      ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
+      Normalization(normDSTot, RooAbsReal::NumEvent),
+      LineColor(kGreen+3), Precision(1e-4), NumCPU(nCPU)
+      );
+  ws->data("dsAB")->plotOn(myPlot2_H,Name("data_Mass"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerColor(kBlack), LineColor(kBlack));
+  //ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("PDFLINE"),
+  ////                                     ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
+  ////                                     Normalization(normDSTot, RooAbsReal::NumEvent),
+  ////                                     LineColor(kBlack), NumCPU(32)
+  ////                                     );
+  //ws->saveSnapshot("pdfCTAUMASS_Tot_parFit",*newpars,kTRUE);
+  myPlot2_H->GetYaxis()->SetRangeUser(ws->var("N_Jpsi")->getVal()/100, ws->var("N_Jpsi")->getVal()*10);
+  myPlot2_H->GetXaxis()->SetRangeUser(-4, 6);
+  myPlot2_H->GetXaxis()->SetTitle("m_{#mu^{+}#mu^{-} (GeV/c^{2})}");
+  myPlot2_H->SetFillStyle(4000);
+  myPlot2_H->GetXaxis()->SetLabelSize(0);
+  myPlot2_H->GetXaxis()->SetTitleSize(0);
+  myPlot2_H->Draw();
+  TLegend* leg_H = new TLegend(text_x+0.25,text_y+0.03,text_x+0.38,text_y-0.17); leg_H->SetTextSize(text_size);
+  leg_H->SetTextFont(43);
+  leg_H->SetBorderSize(0);
+  leg_H->AddEntry(myPlot2_H->findObject("data_Mass"),"Data","pe");
+  leg_H->AddEntry(myPlot2_H->findObject("Mass_Tot"),"Total fit","fl");
+  leg_H->AddEntry(myPlot2_H->findObject("Mass_Bkg"),"Background","fl");
+  leg_H->AddEntry(myPlot2_H->findObject("Mass_JpsiPR"),"J/#psi Prompt","l");
+  leg_H->AddEntry(myPlot2_H->findObject("Mass_JpsiNoPR"),"J/#psi Non-Prompt","l");
+  leg_H->Draw("same");
+  drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
+  if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
+  else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
+  drawText(Form("Cent. %d - %d%s", cLow/2, cHigh/2, "%"),text_x,text_y-y_diff*2,text_color,text_size);
+  drawText(Form("N_{J/#psi} = %.f #pm %.f",ws->var("N_Jpsi")->getVal(), ws->var("N_Jpsi")->getError()),text_x+0.5,text_y-y_diff,text_color,text_size);
+  drawText(Form("N_{Bkg} = %.f #pm %.f",ws->var("N_Bkg")->getVal(), ws->var("N_Bkg")->getError() ),text_x+0.5,text_y-y_diff*2,text_color,text_size);
+  drawText(Form("b_{J/#psi} = %.4f #pm %.4f",ws->var("b_Jpsi")->getVal(),ws->var("b_Jpsi")->getError()),text_x+0.5,text_y-y_diff*3,text_color,text_size);
+
+  TPad *pad_H_2 = new TPad("pad_H_2", "pad_H_2", 0, 0.006, 0.98, 0.227);
+  RooPlot* frameTMP_H = (RooPlot*)myPlot2_H->Clone("TMP_H");
+  RooHist* hpull_H;
+  pullDist(ws, pad_H_2, c_H, frameTMP_H, hpull_H, "data_Mass", "Mass_Tot", "mass", nMassBin, massLow, massHigh, "m_{#mu^{+}#mu^{-} (GeV/c^{2})}");
+  printChi2_test(ws, pad_H_2, frameTMP_H, hpull_H, fitResult, "mass", "data_Mass", "Mass_Tot", nMassBin);
+  pad_H_2->Update();
+  printChi2(ws, pad_H_2, frameTMP_H, fitResult, "mass", "data_Mass", "Mass_Tot", nMassBin, false);
+
   const int nCut = 15;
   float IntegralCut[nCut]={0.05,0.06,0.07,0.08,0.09,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
   for(int i = 0; i<nCut; i++){
@@ -327,74 +429,11 @@ void Final2DFit(
   cout << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
   cout << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*ws->var("b_Jpsi")->getVal()/(ws->var("b_Jpsi")->getVal()*NP_Integral->getVal()+(1-ws->var("b_Jpsi")->getVal())*PR_Integral->getVal())<<"\n"<<endl;
   }
- 
-  //RooAbsReal* fsigregion_model = pdfCTAUMASS_JpsiPR.createIntegral(*ws->var("ctau3D"),NormSet(*ws->var("ctau3D")),Range("ctauRange")); 
-  //The "NormSet(x)" normalizes it to the total number of events to give you the fraction n_signal_region_events/n_total_events
-  //RooArgSet* cloneSet = (RooArgSet*)RooArgSet(*ws->pdf("pdfCTAUMASS_JpsiPR"),"pdfCTAUMASS_JpsiPR").snapshot(kTRUE);
-  //auto clone_mass_pdf = (RooAbsPdf*)cloneSet->find("pdfCTAUMASS_JpsiPR");
-
-  //RooAbsReal* fsigregion_bkg = pdfCTAUMASS_JpsiNoPR.createIntegral(*ws->var("ctau3D"),NormSet(*ws->var("ctau3D")),Range("ctauRange"));
-  //Double_t nsigevents = fsigregion_model->getVal()*(sig_yield.getVal()+bkg_yield.getVal())-fsigregion_bkg->getVal()*bkg_yield.getVal();
-  //Double_t fsig = nsigevents/(fsigregion_model->getVal()*(sig_yield.getVal()+bkg_yield.getVal()));
-
-  //themodel->RooAddPdf::pdfList().find("pdfCTAUMASS_JpsiPR");
-  //RooAbsReal* PR_Frac = *ws->pdf("pdfCTAUMASS_JpsiPR")->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range(-4, 6.5));
-  //RooAbsReal* NP_Frac = *ws->pdf("pdfCTAUMASS_JpsiNoPR")->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range(-4, 6.5));
-
-  //RooPlot* myPlot2_H = (RooPlot*)myPlot_H->Clone();
-  //myPlot2_H->updateNormVars(RooArgSet(*ws->var("mass"), *ws->var("ctau3D"), *ws->var("ctau3DErr")));
-  //ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("PDF"),
-  //    ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
-  //    Normalization(normDSTot, RooAbsReal::NumEvent),
-  //    FillStyle(1001), FillColor(kViolet+6), VLines(), DrawOption("LF"), NumCPU(12), LineColor(kBlack),
-  //    );
-  //ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("BKG"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_Bkg") )),
-  //    ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
-  //    Normalization(normDSTot, RooAbsReal::NumEvent),
-  //    FillStyle(1001), FillColor(kAzure-9), VLines(), DrawOption("LCF"), NumCPU(12), LineStyle(kDashed)
-  //    );
-  //ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("JPSIPR"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_JpsiPR") )),
-  //    ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
-  //    Normalization(normDSTot, RooAbsReal::NumEvent),
-  //    LineColor(kRed+3), Precision(1e-5), NumCPU(12)
-  //    );
-  //ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("JPSINOPR"),Components(RooArgSet( *ws->pdf("pdfCTAUMASS_JpsiNoPR"))),
-  //    ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
-  //    Normalization(normDSTot, RooAbsReal::NumEvent),
-  //    LineColor(kGreen+3), Precision(1e-5), NumCPU(12)
-  //    );
-  //ws->data("dsAB")->plotOn(myPlot2_H,Name("dOS"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerColor(kBlack), LineColor(kBlack));
-  ////ws->pdf("pdfCTAUMASS_Tot")->plotOn(myPlot2_H,Name("PDFLINE"),
-  ////                                     ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dsAB"), kTRUE),
-  ////                                     Normalization(normDSTot, RooAbsReal::NumEvent),
-  ////                                     LineColor(kBlack), NumCPU(32)
-  ////                                     );
-  //ws->saveSnapshot("pdfCTAUMASS_Tot_parFit",*newpars,kTRUE);
-  //myPlot2_H->GetYaxis()->SetRangeUser(10e-2, 10e8);
-  //myPlot2_H->GetXaxis()->SetRangeUser(-4, 6);
-  //myPlot2_H->GetXaxis()->SetTitle("m_{#mu^{+}#mu^{-} (GeV/c^{2})}");
-  //myPlot2_H->Draw();
-  //TLegend* leg_H = new TLegend(text_x+0.25,text_y+0.03,text_x+0.38,text_y-0.17); leg_H->SetTextSize(text_size);
-  //leg_H->SetTextFont(43);
-  //leg_H->SetBorderSize(0);
-  //leg_H->AddEntry(myPlot2_H->findObject("dOS"),"Data","pe");
-  //leg_H->AddEntry(myPlot2_H->findObject("PDF"),"Total fit","fl");
-  //leg_H->AddEntry(myPlot2_H->findObject("BKG"),"Background","fl");
-  //leg_H->AddEntry(myPlot2_H->findObject("JPSIPR"),"J/#psi Prompt","l");
-  //leg_H->AddEntry(myPlot2_H->findObject("JPSINOPR"),"J/#psi Non-Prompt","l");
-  //leg_H->Draw("same");
-  //drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
-  //if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
-  //else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
-  //drawText(Form("Cent. %d - %d%s", cLow/2, cHigh/2, "%"),text_x,text_y-y_diff*2,text_color,text_size);
-  //drawText(Form("N_{J/#psi} = %.f #pm %.f",ws->var("N_Jpsi")->getVal(), ws->var("N_Jpsi")->getError()),text_x+0.5,text_y-y_diff,text_color,text_size);
-  //drawText(Form("N_{Bkg} = %.f #pm %.f",ws->var("N_Bkg")->getVal(), ws->var("N_Bkg")->getError() ),text_x+0.5,text_y-y_diff*2,text_color,text_size);
-  //drawText(Form("b_{J/#psi} = %.4f #pm %.4f",ws->var("b_Jpsi")->getVal(),ws->var("b_Jpsi")->getError()),text_x+0.5,text_y-y_diff*3,text_color,text_size);
 
   c_G->Update();
-  c_G->SaveAs(Form("../figs/2DFit_1203/2DFit_1203_Ctau_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
-  //c_H->Update();
-  //c_H->SaveAs(Form("../figs/2DFit_1203/2DFit_1203_Mass_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
+  c_G->SaveAs(Form("../figs/2DFit/2DFit_1203_Ctau_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
+  c_H->Update();
+  c_H->SaveAs(Form("../figs/2DFit/2DFit_1203_Mass_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
   TString outFileName;
   if (whichModel){
     outFileName = Form("../roots/2DFit_1203/test_Sim_BSplit_altfitresults_Jpsi_%s_%s.root",bCont.Data(),kineLabel.Data());
