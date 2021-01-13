@@ -24,8 +24,8 @@ using namespace std;
 using namespace RooFit;
 
 void CtauTrue(
-    float ptLow=8, float ptHigh=12,
-    float yLow=0, float yHigh=2.4,
+    float ptLow=3, float ptHigh=4.5,
+    float yLow=1.6, float yHigh=2.4,
     int cLow=20, int cHigh=120,
     float muPtCut=0.0,
     bool whichModel=0,  // Nominal=0, Alternative=1
@@ -35,8 +35,8 @@ void CtauTrue(
     )
 {
   gStyle->SetEndErrorSize(0);
-  gSystem->mkdir("../roots/2DFit_1203/");
-  gSystem->mkdir("../figs/2DFit_1203/");
+  gSystem->mkdir("../roots/2DFit_1127/");
+  gSystem->mkdir("../figs/2DFit_1127/");
 
   TString bCont;
   if(PR==0) bCont="Prompt";
@@ -129,7 +129,7 @@ void CtauTrue(
 
   pad_D_1->cd();
   gPad->SetLogy();
-  RooFitResult* fitCtauTrue = ws->pdf("TrueModel_Tot")->fitTo(*reducedDS_MC, SumW2Error(false), Range("-1e-6, 6"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(3), Save());
+  RooFitResult* fitCtauTrue = ws->pdf("TrueModel_Tot")->fitTo(*reducedDS_MC, SumW2Error(false), Range("-1, 6"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(3), Save());
   RooPlot* myPlot2_D = (RooPlot*)myPlot_D->Clone();
   ws->data("reducedDS_MC")->plotOn(myPlot2_D,Name("MCHist_Tot"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerSize(.7), Binning(nCtauTrueBins));
   ws->pdf("TrueModel_Tot")->plotOn(myPlot2_D,Name("MCpdf_Tot"), Normalization(ws->data("reducedDS_MC")->sumEntries(), RooAbsReal::NumEvent),
@@ -150,22 +150,54 @@ void CtauTrue(
   drawText(Form("#lambdaDSS = %.4f #pm %.4f", ws->var("lambdaDSS")->getVal(), ws->var("lambdaDSS")->getError() ),text_x+0.5,text_y-y_diff*2,text_color,text_size);
 
   TPad *pad_D_2 = new TPad("pad_D_2", "pad_D_2", 0, 0.006, 0.98, 0.227);
-  RooPlot* frameTMP_D = (RooPlot*)myPlot2_D->Clone("TMP");
-  RooHist* hpull_D;
-  pullDist(ws, pad_D_2, c_D, frameTMP_D, hpull_D, "MCHist_Tot", "MCpdf_Tot", "ctau3Dtrue", nCtauTrueBins, -1, 6, "#font[12]{l}_{J/#psi} MC True (mm)");
-  printChi2_test(ws, pad_D_2, frameTMP_D, hpull_D, fitCtauTrue, "ctau3Dtrue", "MCHist_Tot", "MCpdf_Tot", nCtauTrueBins);
+  c_D->cd();
+  pad_D_2->Draw();
+  pad_D_2->cd();
+  pad_D_2->SetTopMargin(0); // Upper and lower plot are joined
+  pad_D_2->SetBottomMargin(0.67);
+  pad_D_2->SetBottomMargin(0.4);
+  pad_D_2->SetFillStyle(4000);
+  pad_D_2->SetFrameFillStyle(4000);
+  pad_D_2->SetTicks(1,1);
 
-  TLine *lD = new TLine(-1, 0, 6.5, 0);
+  RooPlot* frameTMP = (RooPlot*)myPlot2_D->Clone("TMP");
+  RooHist* hpull_D = frameTMP->pullHist("MCHist_Tot","MCpdf_Tot", true);
+  hpull_D->SetMarkerSize(0.8);
+  RooPlot* pullFrame_D = ws->var("ctau3Dtrue")->frame(Title("Pull Distribution"), Bins(nCtauTrueBins), Range(-1, 6)) ;
+  pullFrame_D->addPlotable(hpull_D,"PX");
+  pullFrame_D->SetTitle("");
+  pullFrame_D->SetTitleSize(0);
+  pullFrame_D->GetYaxis()->SetTitleOffset(0.3) ;
+  pullFrame_D->GetYaxis()->SetTitle("Pull") ;
+  pullFrame_D->GetYaxis()->SetTitleSize(0.15) ;
+  pullFrame_D->GetYaxis()->SetLabelSize(0.15) ;
+  pullFrame_D->GetYaxis()->SetRangeUser(-7,7);
+  pullFrame_D->GetYaxis()->CenterTitle();
+  pullFrame_D->GetYaxis()->SetTickSize(0.04);
+  pullFrame_D->GetYaxis()->SetNdivisions(404);
+
+  pullFrame_D->GetXaxis()->SetTitle("#font[12]{l}_{J/#psi} MC True (mm)");
+  //pullFrame_D->GetXaxis()->SetRangeUser(-1, 7);
+  pullFrame_D->GetXaxis()->SetTitleOffset(1.05) ;
+  pullFrame_D->GetXaxis()->SetLabelOffset(0.04) ;
+  pullFrame_D->GetXaxis()->SetLabelSize(0.15) ;
+  pullFrame_D->GetXaxis()->SetTitleSize(0.15) ;
+  pullFrame_D->GetXaxis()->CenterTitle();
+  pullFrame_D->GetXaxis()->SetTickSize(0.03);
+  pullFrame_D->Draw() ;
+
+  printChi2(ws, pad_D_2, frameTMP, fitCtauTrue, "ctau3DTrue", "MCHist_Tot", "MCpdf_Tot", nCtauTrueBins, false);
+
+  TLine *lD = new TLine(-1, 0, 6., 0);
   lD->SetLineStyle(1);
   lD->Draw("same");
-  //printChi2(ws, pad_D_2, frameTMP_D, fitCtauTrue, "ctau3Dtrue", "MCHist_Tot", "MCpdf_Tot", nCtauTrueBins, false);
   pad_D_2->Update();
 
   c_D->Update();
-  c_D->SaveAs(Form("../figs/2DFit_1203/ctauTrue_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
+  c_D->SaveAs(Form("../figs/2DFit_1127/ctauTrue_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
 
   //TH1 *h1 = (TH1*)TrueModel_Tot->createHistogram("ctau3Dtrue",50,50);
-  TFile *outFile = new TFile(Form("../roots/2DFit_1203/CtauTrueResult_%s_%s.root",bCont.Data(),kineLabel.Data()),"RECREATE");
+  TFile *outFile = new TFile(Form("../roots/2DFit_1127/CtauTrueResult_%s_%s.root",bCont.Data(),kineLabel.Data()),"RECREATE");
   RooArgSet* fitargs = new RooArgSet();
   fitargs->add(fitCtauTrue->floatParsFinal());
   ctauTrueModel->Write();
