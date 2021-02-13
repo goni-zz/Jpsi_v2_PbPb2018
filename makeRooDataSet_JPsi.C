@@ -25,7 +25,7 @@ double getAccWeight(TH1D* h = 0, double pt = 0);
 double getEffWeight(TH1D* h = 0, double pt = 0);
 void GetHistSqrt(TH1D* h1 =0, TH1D* h2=0);
 
-void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = false, int state=1)
+void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = true, bool fEffW = true, int state=2) //state 0: inclusive, state 1: Prompt, state 2: NonPrompt
 {
   //Basic Setting
   gStyle->SetOptStat(0);
@@ -34,27 +34,56 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
   int iPeriod = 2;
   int iPos = 33;
   TString dimusignString;
+  TString bCont;
+  TString outName;
+  if (state==1) { bCont = "prompt"; outName="PR"; }
+  else if (state==2) {bCont = "nprompt"; outName="NP"; }
 
   //READ Input Skimmed File
   TFile *rf;
   if(isMC){
-    if(state==1) rf = new TFile("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/skimmedFiles/OniaFlowSkim_UpsTrig_DB_isMC1_HFNom_Y1S_190801.root","read");
-    else if(state==2) rf = new TFile("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/skimmedFiles/OniaFlowSkim_UpsTrig_DB_isMC1_HFNom_Y2S_190801.root","read");
+    if(state==1) rf = new TFile("/work2/Oniatree/JPsi/skimmed_file/OniaFlowSkim_JpsiTrig_isMC1_Prompt_HFNom_200407.root","read");
+    else if(state==2) rf = new TFile("/work2/Oniatree/JPsi/skimmed_file/OniaFlowSkim_JpsiTrig_isMC1_NonPrompt_HFNom_200407.root","read");
   }
-  else if(!isMC) rf = new TFile("/work2/Oniatree/JPsi/skimmed_file/OniaFlowSkim_JpsiTrig_JPsi_isMC0_HFNom_200618_RooDataSet.root","read");
+  //else if(!isMC) rf = new TFile("./skimmedFiles/OniaFlowSkim_JpsiTrig_AllPD_isMC0_HFNom_200407.root","read");
+  else if(!isMC) rf = new TFile("./skimmedFiles/OniaFlowSkim_JpsiTrig_DBAllPD_isMC0_HFNom_201127.root","read");
 //  else if(!isMC) rf = new TFile("OniaFlowSkim_JpsiTrig_JPsi_isMC0_HFNom_200619_RooDataSet_test100k.root","read");
   TTree *tree = (TTree*) rf -> Get("mmepevt");
 
   
   //Get Correction histograms
-  bool isTnP = false;
-  TFile *fEff = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Efficiency/mc_eff_vs_pt_TnP%d_PtW1_OfficialMC_Y%dS_muPtCut3.5.root",isTnP,state),"read");
-  TH1D* hEffPt[3];
-  hEffPt[0] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_Cent010",isTnP)); 
-  hEffPt[1] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_Cent1050",isTnP)); 
-  hEffPt[2] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_Cent5090",isTnP)); 
-  TFile *fAcc = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Acceptance/acceptance_wgt_%dS_pt0_50_20190813_dNdptWeighted.root",state),"read");
-  TH1D* hAccPt = (TH1D*) fAcc -> Get(Form("hptAccNoW%dS",state)); 
+  bool isTnP = true;
+  bool isPtW = true;
+//  TFile *fEff = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Efficiency/mc_eff_vs_pt_TnP%d_PtW1_OfficialMC_Y%dS_muPtCut3.5.root",isTnP,state),"read");
+  TFile *fEff = new TFile(Form("mc_eff_vs_pt_cent_rap_%s_pbpb_Jpsi.root",bCont.Data()),"read");
+  TH1D* hEffPt[12];
+  hEffPt[0] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy0_0p6",isTnP,isPtW));
+  hEffPt[1] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy0p6_1p2",isTnP,isPtW));
+  hEffPt[2] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy1p2_1p6",isTnP,isPtW));
+  hEffPt[3] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy1p6_2p4",isTnP,isPtW));
+  hEffPt[4] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy0_0p6",isTnP,isPtW));
+  hEffPt[5] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy0p6_1p2",isTnP,isPtW));
+  hEffPt[6] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy1p2_1p6",isTnP,isPtW));
+  hEffPt[7] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy1p6_2p4",isTnP,isPtW));
+  hEffPt[8] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy0_0p6",isTnP,isPtW));
+  hEffPt[9] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy0p6_1p2",isTnP,isPtW));
+  hEffPt[10] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy1p2_1p6",isTnP,isPtW));
+  hEffPt[11] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy1p6_2p4",isTnP,isPtW));
+//  TFile *fAcc = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Acceptance/acceptance_wgt_%dS_pt0_50_20190813_dNdptWeighted.root",state),"read");
+  TFile *fAcc = new TFile(Form("mc_Acc_vs_pt_cent_rap_%s_pbpb_Jpsi_PtW1.root",bCont.Data()),"read");
+  TH1D* hAccPt[12];
+  hAccPt[0] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy0_0p6",isPtW));
+  hAccPt[1] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy0p6_1p2",isPtW));
+  hAccPt[2] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy1p2_1p6",isPtW));
+  hAccPt[3] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy1p6_2p4",isPtW));
+  hAccPt[4] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy0_0p6",isPtW));
+  hAccPt[5] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy0p6_1p2",isPtW));
+  hAccPt[6] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy1p2_1p6",isPtW));
+  hAccPt[7] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy1p6_2p4",isPtW));
+  hAccPt[8] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy0_0p6",isPtW));
+  hAccPt[9] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy0p6_1p2",isPtW));
+  hAccPt[10] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy1p2_1p6",isPtW));
+  hAccPt[11] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy1p6_2p4",isPtW));
 
 
   //SetBranchAddress
@@ -150,10 +179,12 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
   RooRealVar* evtWeight = new RooRealVar("weight","corr weight", 0, 10000,"");
   RooRealVar* recoQQ = new RooRealVar("recoQQsign","qq sign",-1,3,"");
   RooRealVar* ctau3DVar = new RooRealVar("ctau3D","ctau3D dimuon",-20,20,"cm");
-  RooRealVar* ctau3DErrVar = new RooRealVar("ctau3DErr","ctau3DErr dimuon",0,16,"cm");
+  RooRealVar* ctau3DErrVar = new RooRealVar("ctau3DErr","ctau3DErr dimuon",0,0.5,"cm");
+  RooRealVar* ctau3DResVar = new RooRealVar("ctau3DRes","ctau3D Resolution dimuon",-20,20,"cm");
+  RooRealVar* ctau3DSignVar = new RooRealVar("ctau3DSign","ctau3D Significance dimuon",-20,20,"cm");
   RooRealVar* NumDimu = new RooRealVar("NumDimu","number of dimuon",0,100,"");
   RooArgSet* argSet    = new RooArgSet(*massVar, *ptVar, *yVar, *pt1Var, *pt2Var, *eta1Var, *eta2Var,*evtWeight);
-  argSet->add(*cBinVar); argSet->add(*recoQQ); argSet->add(*NumDimu); argSet->add(*ctau3DVar); argSet->add(*ctau3DErrVar);
+  argSet->add(*cBinVar); argSet->add(*recoQQ); argSet->add(*NumDimu); argSet->add(*ctau3DVar); argSet->add(*ctau3DErrVar); argSet->add(*ctau3DResVar);
   
   RooDataSet* dataSet  = new RooDataSet("dataset", " a dataset", *argSet);
 
@@ -197,11 +228,45 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
         if(! ((double)pt[j]<50 && abs((double)y[j])<2.4 && IsAcceptanceQQ(pt1[j],eta1[j])&&IsAcceptanceQQ(pt2[j],eta2[j])) ) continue;
         weight_acc = 1;
         weight_eff = 1;
-        if(fAccW){weight_acc = getAccWeight(hAccPt, pt[j]);} 
+        if(fAccW){ 
+          if(cBin<20) {
+			  if ( abs((double)y[j])<0.6) { weight_acc = getAccWeight(hAccPt[0], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_acc = getAccWeight(hAccPt[1], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_acc = getAccWeight(hAccPt[2], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_acc = getAccWeight(hAccPt[3], pt[j]); }
+		  }
+          if(cBin>=20 && cBin<100){
+			  if ( abs((double)y[j])<0.6) { weight_acc = getAccWeight(hAccPt[4], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_acc = getAccWeight(hAccPt[5], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_acc = getAccWeight(hAccPt[6], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_acc = getAccWeight(hAccPt[7], pt[j]); }
+		  }
+          if(cBin>=100 && cBin<180){ 
+			  if ( abs((double)y[j])<0.6) { weight_acc = getAccWeight(hAccPt[8], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_acc = getAccWeight(hAccPt[9], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_acc = getAccWeight(hAccPt[10], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_acc = getAccWeight(hAccPt[11], pt[j]); }
+		  }
+        }
         if(fEffW){ 
-          if(cBin<20) weight_eff = getEffWeight(hEffPt[0], pt[j]);
-          if(cBin>=20 && cBin<100) weight_eff = getEffWeight(hEffPt[1], pt[j]);
-          if(cBin>=100 && cBin<180) weight_eff = getEffWeight(hEffPt[2], pt[j]);
+          if(cBin<20) {
+			  if ( abs((double)y[j])<0.6) { weight_eff = getEffWeight(hEffPt[0], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_eff = getEffWeight(hEffPt[1], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_eff = getEffWeight(hEffPt[2], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_eff = getEffWeight(hEffPt[3], pt[j]); }
+		  }
+          if(cBin>=20 && cBin<100){
+			  if ( abs((double)y[j])<0.6) { weight_eff = getEffWeight(hEffPt[4], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_eff = getEffWeight(hEffPt[5], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_eff = getEffWeight(hEffPt[6], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_eff = getEffWeight(hEffPt[7], pt[j]); }
+		  }
+          if(cBin>=100 && cBin<180){ 
+			  if ( abs((double)y[j])<0.6) { weight_eff = getEffWeight(hEffPt[8], pt[j]); }
+			  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_eff = getEffWeight(hEffPt[9], pt[j]); }
+			  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_eff = getEffWeight(hEffPt[10], pt[j]); }
+			  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_eff = getEffWeight(hEffPt[11], pt[j]); }
+		  }
         }
         double weight_ = weight * weight_eff * weight_acc;
         recoQQ->setVal((int)recoQQsign[j]);     
@@ -215,6 +280,8 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
         cBinVar->setVal( (double)cBin ) ;
 		ctau3DVar->setVal( (double)ctau3D[j] ) ;
 		ctau3DErrVar->setVal( (double)ctau3DErr[j] ) ;
+		ctau3DResVar->setVal( (double)ctau3D[j]/ctau3DErr[j] ) ;
+		ctau3DSignVar->setVal( (double)ctau3DErr[j]/ctau3D[j] ) ;
         evtWeight->setVal( (double)weight_ ) ;
         NumDimu->setVal((int)nDimu);
         dataSet->add( *argSet);
@@ -225,8 +292,10 @@ void makeRooDataSet_JPsi(bool isMC = false, bool fAccW = false, bool fEffW = fal
   cout << "more than one dimuon : " << nDimu_more << endl;
   cout << "one dimuon : " << nDimu_one << endl;
   
-  TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_JPsi%dSW_20200619.root",isMC,state),"recreate");
-  wf->cd();
+  
+  if (isMC && state==1) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_PR_JPsi_20201123.root",isMC),"recreate");  wf->cd();}
+  else if (isMC && state==2) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_BtoJPsi_20201123.root",isMC),"recreate");  wf->cd();}
+  else if (!isMC) {TFile *wf = new TFile(Form("skimmedFiles/OniaRooDataSet_isMC%d_JPsi_%sw_Effw%d_Accw%d_PtW%d_TnP%d_20201216.root",isMC,outName.Data(),fEffW,fAccW,isPtW,isTnP),"recreate");  wf->cd();}
  dataSet->Write();
 }
     
@@ -247,12 +316,16 @@ void GetHistSqrt(TH1D* h1, TH1D* h2){
 
 double getAccWeight(TH1D* h, double pt){
   double binN = h->FindBin(pt);
-  double weight_ = 1./(h->GetBinContent(binN));
+  TF1 *acc1 = (TF1*)h->FindObject("f1");
+  double acc = acc1->Eval(pt);
+  double weight_ = 1./acc;
   return weight_;
 } 
 
 double getEffWeight(TH1D *h, double pt){
   double binN = h->FindBin(pt);
-  double weight_ = 1./(h->GetBinContent(binN));
+  TF1 *eff1 = (TF1*)h->FindObject("f1");
+  double eff = eff1->Eval(pt);
+  double weight_ = 1./eff;
   return weight_;
 } 
