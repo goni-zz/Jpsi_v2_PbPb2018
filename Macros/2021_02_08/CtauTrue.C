@@ -1,7 +1,7 @@
 #include <iostream>
-#include "rootFitHeaders.h"
-#include "commonUtility.h"
-#include "JpsiUtility.h"
+#include "../rootFitHeaders.h"
+#include "../commonUtility.h"
+#include "../JpsiUtility.h"
 #include <RooGaussian.h>
 #include <RooFormulaVar.h>
 #include <RooCBShape.h>
@@ -12,9 +12,9 @@
 #include "TText.h"
 #include "TArrow.h"
 #include "TFile.h"
-#include "cutsAndBin.h"
-#include "CMS_lumi_v2mass.C"
-#include "tdrstyle.C"
+#include "../cutsAndBin.h"
+#include "../CMS_lumi_v2mass.C"
+#include "../tdrstyle.C"
 #include "RooDataHist.h"
 #include "RooCategory.h"
 #include "RooSimultaneous.h"
@@ -35,8 +35,8 @@ void CtauTrue(
     )
 {
   gStyle->SetEndErrorSize(0);
-  gSystem->mkdir("../roots/2DFit_1127/");
-  gSystem->mkdir("../figs/2DFit_1127/");
+  gSystem->mkdir("../roots/2DFit_20210208/CtauTrue",kTRUE);
+  gSystem->mkdir("../figs/2DFit_20210208/CtauTrue",kTRUE);
   nCtauTrueBins = 140;
 
   TString bCont;
@@ -61,7 +61,7 @@ void CtauTrue(
 
   //f1 = new TFile("../OniaRooDataSet_NonPrompt_GenInReco_3_6p5_201005.root");
   //f2 = new TFile("../OniaRooDataSet_NonPrompt_GenInReco_6p5_50_201005.root");
-  f1 = new TFile("../OniaRooDataSet_NonPrompt_GenInReco_20210203.root");
+  f1 = new TFile("../skimmedFiles/OniaRooDataSet_NonPrompt_GenInReco_20210203.root");
   if(PR==2) {
     kineCutMC = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5" ,ptLow, ptHigh, yLow, yHigh);
   }
@@ -225,11 +225,11 @@ void CtauTrue(
   pad_D_2->Update();
 
   c_D->Update();
-  c_D->SaveAs(Form("ctauTrue_%s_%s_DSSExp.png",bCont.Data(),kineLabel.Data()));
+  c_D->SaveAs(Form("../figs/2DFit_20210208/CtauTrue/ctauTrue_%s_%s_DSSExp.png",bCont.Data(),kineLabel.Data()));
   //c_D->SaveAs(Form("../figs/2DFit_1127/ctauTrue_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
 
   //TH1 *h1 = (TH1*)TrueModel_Tot->createHistogram("ctau3Dtrue",50,50);
-  TFile *outFile = new TFile(Form("CtauTrueResult_%s_%s.root",bCont.Data(),kineLabel.Data()),"RECREATE");
+  TFile *outFile = new TFile(Form("../roots/2DFit_20210208/CtauTrue/CtauTrueResult_%s_%s.root",bCont.Data(),kineLabel.Data()),"RECREATE");
   RooArgSet* fitargs = new RooArgSet();
   fitargs->add(fitCtauTrue->floatParsFinal());
   ctauTrueModel->Write();
