@@ -1,7 +1,7 @@
 #include <iostream>
-#include "../rootFitHeaders.h"
-#include "../commonUtility.h"
-#include "../JpsiUtility.h"
+#include "rootFitHeaders.h"
+#include "commonUtility.h"
+#include "JpsiUtility.h"
 #include <RooGaussian.h>
 #include <RooFormulaVar.h>
 #include <RooCBShape.h>
@@ -12,9 +12,9 @@
 #include "TText.h"
 #include "TArrow.h"
 #include "TFile.h"
-#include "../cutsAndBin.h"
-#include "../CMS_lumi_v2mass.C"
-#include "../tdrstyle.C"
+#include "cutsAndBin.h"
+#include "CMS_lumi_v2mass.C"
+#include "tdrstyle.C"
 #include "RooDataHist.h"
 #include "RooCategory.h"
 #include "RooSimultaneous.h"
@@ -24,7 +24,7 @@ using namespace std;
 using namespace RooFit;
 
 void CtauTrue(
-    float ptLow=3, float ptHigh=4.5,
+    float ptLow=15, float ptHigh=50,
     float yLow=1.6, float yHigh=2.4,
     int cLow=20, int cHigh=120,
     float muPtCut=0.0,
@@ -35,8 +35,9 @@ void CtauTrue(
     )
 {
   gStyle->SetEndErrorSize(0);
-  gSystem->mkdir("../roots/2DFit_20210208/CtauTrue", kTRUE);
-  gSystem->mkdir("../figs/2DFit_20210208/CtauTrue", kTRUE);
+  gSystem->mkdir("../roots/2DFit_1127/");
+  gSystem->mkdir("../figs/2DFit_1127/");
+  nCtauTrueBins = 140;
 
   TString bCont;
   if(PR==0) bCont="Prompt";
@@ -58,64 +59,46 @@ void CtauTrue(
   TString BkgCut;
   TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
-  //f1 = new TFile("../skimmedFiles/OniaRooDataSet_NonPrompt_GenInReco_3_6p5_201005.root");
-  //f2 = new TFile("../skimmedFiles/OniaRooDataSet_NonPrompt_GenInReco_6p5_50_201005.root");
-  //f1 = new TFile("../skimmedFiles/OniaRooDataSet_NonPrompt_GenInReco_pt_3_6p5.root");
-  //f2 = new TFile("../skimmedFiles/OniaRooDataSet_NonPrompt_GenInReco_pt_6p5_50.root");
-  //f1 = new TFile("../skimmedFiles/OniaRooDataSet_NonPrompt_GenInReco_3_6p5_20210129.root");
-  //f2 = new TFile("../skimmedFiles/OniaRooDataSet_NonPrompt_GenInReco_6p5_50_20210129.root");
-  f1 = new TFile("../skimmedFiles/OniaRooDataSet_NonPrompt_GenInReco.root");
-  f2 = new TFile("../skimmedFiles/OniaRooDataSet_NonPrompt_GenInReco.root");
+  //f1 = new TFile("../OniaRooDataSet_NonPrompt_GenInReco_3_6p5_201005.root");
+  //f2 = new TFile("../OniaRooDataSet_NonPrompt_GenInReco_6p5_50_201005.root");
+  f1 = new TFile("../OniaRooDataSet_NonPrompt_GenInReco_20210203.root");
   if(PR==2) {
     kineCutMC = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5" ,ptLow, ptHigh, yLow, yHigh);
   }
   else if(PR==0) {
     kineCutMC = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f &&  mass>2.6 && mass<3.5 && ctau3Dtrue<%.2f",ptLow, ptHigh, yLow, yHigh, ctauCut);
   }
+  // SigCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
+  //BkgCut  = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && ((mass>2.6 && mass <= 2.8) || (mass>=3.2&&mass<3.5)) && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
   TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) ) &&";//2018 acceptance cut
 
-  //kineCutMC = accCut+kineCutMC;
-  kineCutMC = kineCutMC;
+  kineCutMC = accCut+kineCutMC;
+  //SigCut = SigCut;
+  //BkgCut = BkgCut;
 
+  //RooDataSet *datasetMC = (RooDataSet*)f2->Get("dataset");
   RooDataSet *datasetMC;
-  if(ptHigh <= 6.5) {datasetMC = (RooDataSet*)f1->Get("dataset");}
-  else {datasetMC = (RooDataSet*)f2->Get("dataset");}
+  //if(ptHigh <= 6.5) {datasetMC = (RooDataSet*)f1->Get("dataset");}
+  //else {datasetMC = (RooDataSet*)f2->Get("dataset");}
+  datasetMC = (RooDataSet*)f1->Get("dataset");
 
   RooWorkspace *ws = new RooWorkspace("workspace");
   RooWorkspace *wsmc = new RooWorkspace("workspaceMC");
   wsmc->import(*datasetMC);
-
   //wsmc->import(*datasetMC2);
   RooCategory tp("tp","tp");
   tp.defineType("C");
   //tp.defineType("D");
   RooDataSet *datasetMCW = new RooDataSet("datasetW","A sample",RooArgSet(*(wsmc->var("ctau3Dtrue")), *(wsmc->var("mass")), *(wsmc->var("pt")), *(wsmc->var("y")), *(wsmc->var("weight")), *(wsmc->var("pt1")), *(wsmc->var("pt2")), *(wsmc->var("eta1")), *(wsmc->var("eta2"))), Import(*datasetMC), WeightVar(*wsmc->var("weight")));
-  wsmc->import(*datasetMCW);
-  RooDataSet *reducedDS_MC = (RooDataSet*)datasetMCW->reduce(RooArgSet(*(wsmc->var("ctau3Dtrue")), *(wsmc->var("mass")), *(wsmc->var("pt")), *(wsmc->var("y"))), kineCutMC.Data() );
-  //RooDataSet *reducedDS_MC = (RooDataSet*)datasetMC->reduce(RooArgSet(*(wsmc->var("ctau3Dtrue")), *(wsmc->var("mass")), *(wsmc->var("pt")), *(wsmc->var("y"))), kineCutMC.Data() );
+  RooDataSet *reducedDS_MC = (RooDataSet*)datasetMC->reduce(RooArgSet(*(wsmc->var("ctau3Dtrue")), *(wsmc->var("mass")), *(wsmc->var("pt")), *(wsmc->var("y"))), kineCutMC.Data() );
   //RooDataSet* reducedDS_MC = new RooDataSet("reducedDS_MC","reducedDS_MC",RooArgSet(*(wsmc->var("ctau3Dtrue")), *(wsmc->var("mass")), *(wsmc->var("pt")), *(wsmc->var("y"))),Index(tp),Import("C",*datasetMC1),Import("D",*datasetMC2));
   reducedDS_MC->SetName("reducedDS_MC");
   reducedDS_MC->Print();
   ws->import(*reducedDS_MC);
-  RooDataSet *reducedDS_MC_NoW = (RooDataSet*)datasetMC->reduce(RooArgSet(*(wsmc->var("ctau3Dtrue")), *(wsmc->var("mass")), *(wsmc->var("pt")), *(wsmc->var("y"))), kineCutMC.Data() );
-  reducedDS_MC_NoW->SetName("reducedDS_MC_NoW");
-  reducedDS_MC_NoW->Print();
-  ws->import(*reducedDS_MC_NoW);
-  //ws->var("ctau3Dtrue")->setRange(0, 5);
-
-  //Double_t ctauTrueMax; Double_t ctauTrueMin;
-  //ws->data("reducedDS_MC")->getRange(*ws->var("ctau3Dtrue"), ctauTrueMin, ctauTrueMax);
-  //ctauTrueMin -= 0.00001;  ctauTrueMax += 0.00001;
-  //cout << "Range from data: ctauTrueMin: " << ctauTrueMin << "  ctauTrueMax: " << ctauTrueMax << endl;
-  //ws->var("ctau3Dtrue")->setRange("CtauTrueWindow", ctauTrueMin, ctauTrueMax);
-  //Double_t ctau3DTrueMax; Double_t ctau3DTrueMin;
-  //ctau3DTrueMax = (double)(ceil(ctauTrueMax));
-  //ctau3DTrueMin = (double)(floor(ctauTrueMin));
-  Double_t ctau3DTrueMin=-1; Double_t ctau3DTrueMax =6;
-
-  //ws->var("ctau3Dtrue")->setRange("ctauTrueRange", ctauTrueMin, ctauTrueMax);
-  ws->var("ctau3Dtrue")->setRange(ctau3DTrueMin, ctau3DTrueMax);
-  ws->var("ctau3Dtrue")->setRange("ctauTrueRange", ctau3DTrueMin, ctau3DTrueMax);
+  //ws->var("ctau3Dtrue")->setRange("ctauTrueRange", -0.1, 6.);
+  //ws->var("ctau3Dtrue")->setRange("ctauTrueRange", -1.0, 6.);
+  ws->var("ctau3Dtrue")->setRange("ctauTrueRange", 0.0, 6.);
+  //ws->var("ctau3Dtrue")->setRange("ctauTrueRange", 0.0, 6.);
   ws->var("ctau3Dtrue")->Print();
 
   //***********************************************************************
@@ -124,86 +107,61 @@ void CtauTrue(
   cout << endl << "************ Start MC Ctau True Fit ***************" << endl << endl;
   //MC NP ctau true
   double entries_True = ws->data("reducedDS_MC")->numEntries();
-  ws->factory(Form("N_Jpsi_MC[%.12f,%.12f,%.12f]", entries_True, 0., entries_True*2));
-  ws->factory("lambdaDSS[0.8, 0.001, 2.0]");
-  ws->factory("lambdaDSS2[0.9, 0.001, 2.0]");
-  ws->factory("lambdaDSS3[1., 0.001, 2.0]");
-  ws->factory("fDSS[0.8, 0., 1.]");
-  ws->factory("fDSS2[0.8, 0., 1.]");
-  ws->factory("f[0.8, 0., 1.]");
-  ws->factory("sigmaMC[0.001, 0.000000001, 1.0]");
-  ws->factory("ctauMC[0.0, 0.0, 0.0]");
+  ws->factory(Form("N_Jpsi_MC[%.1f,%.1f,%.1f]", entries_True, entries_True*0.1, entries_True*10.1));
+  //ws->factory(Form("N_Jpsi_MC[%.12f,%.12f,%.12f]", entries_True, entries_True*0.9, entries_True*1.1));
+  ws->factory("lambdaDSS[0.1, 1e-6, 10.]");
+  //ws->factory("lambdaDSS[0.8, 0.482, 0.981]");
+  //ws->factory("lambdaDSS2[-1.5, -0.608, -1.81]");
+  ws->factory("lambdaDSS2[-0.2, -10.0, 10.]");
+  ws->factory("lambdaDSS3[-0.2, -5.0, 5.0]");
+  ws->factory("fr[0.5, 0., 1.]"); 
+  ws->factory("fr2[0.5, 0., 1.]"); 
   // create the PDF
-  ws->factory(Form("TruthModel::%s(%s)", "pdfCTAUTRUERES", "ctau3Dtrue"));
+  ws->factory(Form("TruthModel::%s(%s)", "TruthModel_ctauTrue", "ctau3Dtrue"));
+  ws->factory(Form("RooExponential::%s(%s,%s)", "Expo1", "ctau3Dtrue","lambdaDSS2"));
+  ws->factory(Form("RooExponential::%s(%s,%s)", "Expo2", "ctau3Dtrue","lambdaDSS3"));
+  ws->factory(Form("Decay::%s(%s, %s, %s, RooDecay::SingleSided)", "ctauTruePdf", "ctau3Dtrue", "lambdaDSS", "TruthModel_ctauTrue"));
+  ws->factory(Form("AddModel::%s({%s, %s}, %s)", "TwoExps", "Expo1", "Expo2", "fr"));
+  ws->factory(Form("AddModel::%s({%s, %s}, %s)", "DSSExp", "Expo1", "ctauTruePdf", "fr2"));
 
-  //ws->factory(Form("GaussModel::%s(%s, %s, %s, One, One)", "pdfCTAUTRUERES", "ctau3Dtrue", "ctauMC","sigmaMC"));
+  RooAddPdf* TrueModel_Tot = new RooAddPdf("TrueModel_Tot");
 
-  //ws->factory(Form("Decay::%s(%s, %s, %s, RooDecay::SingleSided)", "ctauTruePdf", "ctau3Dtrue",  
-  //      "lambdaDSS", 
-  //      "pdfCTAUTRUERES"));
-  ws->factory(Form("Decay::%s(%s, %s, %s, RooDecay::SingleSided)", "pdfCTAUTRUEDSS1",
-        "ctau3Dtrue",
-        "lambdaDSS",
-        "pdfCTAUTRUERES"));
-
-  ws->factory(Form("Decay::%s(%s, %s, %s, RooDecay::SingleSided)", "pdfCTAUTRUEDSS2",
-        "ctau3Dtrue",
-        "lambdaDSS2",
-        "pdfCTAUTRUERES"));
-
-  ws->factory(Form("Decay::%s(%s, %s, %s, RooDecay::SingleSided)", "pdfCTAUTRUEDSS3",
-        "ctau3Dtrue",
-        "lambdaDSS3",
-        "pdfCTAUTRUERES"));
-
-  ws->factory(Form("AddModel::%s({%s , %s}, %s)", "pdfCTAUTRUE1", "pdfCTAUTRUEDSS1", "pdfCTAUTRUEDSS2", "fDSS"));
-  ws->factory(Form("AddModel::%s({%s , %s}, %s)", "pdfCTAUTRUE2", "pdfCTAUTRUEDSS2", "pdfCTAUTRUEDSS3", "fDSS2"));
-  ws->factory(Form("AddModel::%s({%s , %s}, %s)", "pdfCTAUTRUE", "pdfCTAUTRUE1", "pdfCTAUTRUE2", "f"));
-  ws->factory(Form("RooExtendPdf::%s(%s,%s)", "pdfCTAUTRUETot","pdfCTAUTRUE", "N_Jpsi_MC"));
-
-  RooAbsPdf *ctauTrueModel = ctauTrueModel = new RooAddPdf("TrueModel_Tot", "TrueModel_Tot", *ws->pdf("pdfCTAUTRUETot"), *ws->var("N_Jpsi_MC"));
+  ws->var("ctau3Dtrue")->setRange(0.001, 6);
+  //ws->var("ctau3Dtrue")->setRange(0.01, 6);
+  RooAbsPdf *ctauTrueModel = ctauTrueModel = new RooAddPdf("TrueModel_Tot", "TrueModel_Tot", *ws->pdf("DSSExp"), *ws->var("N_Jpsi_MC"));
+  //RooAbsPdf *ctauTrueModel = ctauTrueModel = new RooAddPdf("TrueModel_Tot", "TrueModel_Tot", *ws->pdf("ctauTruePdf"), *ws->var("N_Jpsi_MC"));
+  //RooAbsPdf *ctauTrueModel = ctauTrueModel = new RooAddPdf("TrueModel_Tot", "TrueModel_Tot", *ws->pdf("Expo1"), *ws->var("N_Jpsi_MC"));
+  //RooAbsPdf *ctauTrueModel = ctauTrueModel = new RooAddPdf("TrueModel_Tot", "TrueModel_Tot", *ws->pdf("TwoExps"), *ws->var("N_Jpsi_MC"));
+  //RooAbsPdf *ctauTrueModel = ctauTrueModel = new RooAddPdf("TrueModel_Tot", "TrueModel_Tot", *ws->pdf("ctauTruePdfAdd"), *ws->var("N_Jpsi_MC"));
   ws->import(*ctauTrueModel);
-  ws->pdf("TrueModel_Tot")->setNormRange("CtauTrueRange");
   //TH1 *hCTrue = (TH1*)ctauTrueModel->createHistogram("ctau3Dtrue",50,50);
 
-  RooDataSet* dataToFit = (RooDataSet*)reducedDS_MC->reduce(Form("ctau3Dtrue>=%.f&&ctau3Dtrue<%.f",ctau3DTrueMin,ctau3DTrueMax))->Clone("reducedDS_MC");
-  ws->import(*dataToFit, Rename("dataToFit"));
-  TCanvas* c_D =  new TCanvas("canvas_D","My plots",4,565,550,520);
+  TCanvas* c_D =  new TCanvas("canvas_D","My plots",4,4,550,520);
   c_D->cd();
   TPad *pad_D_1 = new TPad("pad_D_1", "pad_D_1", 0, 0.16, 0.98, 1.0);
   pad_D_1->SetTicks(1,1);
   pad_D_1->Draw(); pad_D_1->cd();
-
-  bool isWeighted = ws->data("dataToFit")->isWeighted();
-  pad_D_1->cd();
-  gPad->SetLogy();
-  //RooFitResult* fitCtauTrue = ws->pdf("TrueModel_Tot")->fitTo(*reducedDS_MC, SumW2Error(true), Range(ctau3DTrueMin, ctau3DTrueMax), Extended(kTRUE), NumCPU(nCPU), PrintLevel(3), Save());
-  RooFitResult* fitCtauTrue = ws->pdf("TrueModel_Tot")->fitTo(*dataToFit, Save(), SumW2Error(isWeighted), Extended(kTRUE), NumCPU(nCPU), Range("ctauTrueRange"), PrintLevel(-1));
-  fitCtauTrue->Print("v");
-  //int nBins = min(int( round((ctau3DTrueMax - ctau3DTrueMin)/0.1) ), 1000);
-  int nBins = min(int( round((ws->var("ctau3Dtrue")->getMax() - ws->var("ctau3Dtrue")->getMin())/0.1) ), 100);
-  RooPlot* myPlot_D = wsmc->var("ctau3Dtrue")->frame(Bins(nBins), Range(ctau3DTrueMin, ctau3DTrueMax)); // bins
+  //RooPlot* myPlot_D = wsmc->var("ctau3Dtrue")->frame(Bins(nCtauTrueBins), Range(0.0, 6)); // bins
+  RooPlot* myPlot_D = ws->var("ctau3Dtrue")->frame(Bins(nCtauTrueBins), Range(-1, 6)); // bins
   //ws->data("reducedDS_MC")->plotOn(myPlot_D,Name("mcHist_D"));
   myPlot_D->SetTitle("");
+
+
+  pad_D_1->cd();
+  gPad->SetLogy();
+  RooFitResult* fitCtauTrue = ws->pdf("TrueModel_Tot")->fitTo(*reducedDS_MC, SumW2Error(false), Range("0.001, 6.0"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(3), Save());
+  //RooFitResult* fitCtauTrue = ws->pdf("TrueModel_Tot")->fitTo(*reducedDS_MC, SumW2Error(false), Range("-1, 6.0"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(3), Save());
+
+  fitCtauTrue->Print("v");
+  //RooFitResult* fitCtauTrue = ws->pdf("TrueModel_Tot")->fitTo(*reducedDS_MC, SumW2Error(false), Range("-1, 6"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(3), Save());
   RooPlot* myPlot2_D = (RooPlot*)myPlot_D->Clone();
-  ws->data("reducedDS_MC_NoW")->plotOn(myPlot2_D,Name("MCHist_Tot_NoW"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerColor(kBlue+2), MarkerSize(.7));
-  ws->data("reducedDS_MC")->plotOn(myPlot2_D,Name("MCHist_Tot"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerSize(.7));
-  ws->pdf("TrueModel_Tot")->plotOn(myPlot2_D,Name("MCpdf_Tot"), 
-      Normalization(ws->data("reducedDS_MC")->sumEntries(), RooAbsReal::NumEvent), 
+  ws->data("reducedDS_MC")->plotOn(myPlot2_D,Name("MCHist_Tot"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerSize(.7), Binning(nCtauTrueBins));
+  ws->pdf("TrueModel_Tot")->plotOn(myPlot2_D,Name("MCpdf_Tot"), Normalization(ws->data("reducedDS_MC")->sumEntries(), RooAbsReal::NumEvent),
       Precision(1e-4), LineColor(kRed+2), NormRange("ctauTrueRange"), Range("ctauTrueRange"));
-  //myPlot2_D->GetYaxis()->SetRangeUser(10e-2, ws->data("reducedDS_MC")->sumEntries()*10);
-  TH1* h = ws->data("reducedDS_MC")->createHistogram("hist", *ws->var("ctau3Dtrue"), Binning(myPlot2_D->GetNbinsX(),myPlot2_D->GetXaxis()->GetXmin(),myPlot2_D->GetXaxis()->GetXmax()));
-  Double_t YMax = h->GetBinContent(h->GetMaximumBin());
-  // Double_t YMin = min( h->GetBinContent(h->FindFirstBinAbove(0.0)), h->GetBinContent(h->FindLastBinAbove(0.0)) );
-  Double_t YMin = 1e99;
-  for (int i=1; i<=h->GetNbinsX(); i++) if (h->GetBinContent(i)>0) YMin = min(YMin, h->GetBinContent(i));
-
-  Double_t Yup(0.),Ydown(0.);
-    Ydown = YMin/(TMath::Power((YMax/YMin), (0.1/0.6)));
-    Yup = YMax*TMath::Power((YMax/YMin), (0.3/0.6));
-
-  myPlot2_D->GetYaxis()->SetRangeUser(Ydown,Yup);
-  myPlot2_D->GetXaxis()->SetRangeUser(-1, 7);
+  myPlot2_D->GetYaxis()->SetRangeUser(10e-2, ws->data("reducedDS_MC")->sumEntries()*10);
+  myPlot2_D->GetXaxis()->SetRangeUser(-1.0, 6.0);
+  //myPlot2_D->GetXaxis()->SetRangeUser(0.0, 6.0);
+  //myPlot2_D->GetXaxis()->SetRangeUser(-1, 7);
   myPlot2_D->GetXaxis()->CenterTitle();
   myPlot2_D->GetXaxis()->SetTitle("#font[12]{l}_{J/#psi} MC True (mm)");
   myPlot2_D->SetFillStyle(4000);
@@ -212,26 +170,12 @@ void CtauTrue(
   myPlot2_D->GetXaxis()->SetTitleSize(0);
   myPlot2_D->Draw();
 
-  TLegend* leg_D = new TLegend(text_x+0.25,text_y+0.04,text_x+0.4,text_y-0.1); leg_D->SetTextSize(text_size);
-  leg_D->SetTextFont(43);
-  leg_D->SetBorderSize(0);
-  leg_D->AddEntry(myPlot2_D->findObject("MCHist_Tot"),"Data","pe");
-  leg_D->AddEntry(myPlot2_D->findObject("MCHist_Tot_NoW"),"Data w/o WF","pe");
-  leg_D->AddEntry(myPlot2_D->findObject("MCpdf_Tot"),"Total fit","fl");
-  //leg_D->AddEntry(myPlot2_E->findObject("test"),"?? PDF","l");
-  leg_D->Draw("same");
-
-  drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",ptLow, ptHigh ),text_x,text_y,text_color,text_size);
-  if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
-  else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
-  drawText(Form("Cent. %d - %d%s", cLow/2, cHigh/2, "%"),text_x,text_y-y_diff*2,text_color,text_size);
-
   drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",ptLow, ptHigh ),text_x+0.5,text_y,text_color,text_size);
   if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x+0.5,text_y-y_diff,text_color,text_size);
   else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x+0.5,text_y-y_diff,text_color,text_size);
-  drawText(Form("#lambdaDSS = %.4f #pm %.4f", ws->var("lambdaDSS")->getVal(), ws->var("lambdaDSS")->getError() ),text_x+0.5,text_y-y_diff*2,text_color,text_size);
-  drawText(Form("#lambdaDSS2 = %.4f #pm %.4f", ws->var("lambdaDSS2")->getVal(), ws->var("lambdaDSS2")->getError() ),text_x+0.5,text_y-y_diff*3,text_color,text_size);
-  drawText(Form("#lambdaDSS3 = %.4f #pm %.4f", ws->var("lambdaDSS3")->getVal(), ws->var("lambdaDSS3")->getError() ),text_x+0.5,text_y-y_diff*4,text_color,text_size);
+  drawText(Form("#lambdaDSS_{1} = %.3f #pm %.3f", ws->var("lambdaDSS")->getVal(), ws->var("lambdaDSS")->getError() ),text_x+0.5,text_y-y_diff*2,text_color,text_size);
+  drawText(Form("#lambdaDSS_{2} = %.3f #pm %.3f", ws->var("lambdaDSS2")->getVal(), ws->var("lambdaDSS2")->getError() ),text_x+0.5,text_y-y_diff*3,text_color,text_size);
+  drawText("Two Exponential",text_x,text_y,text_color,text_size);
 
   TPad *pad_D_2 = new TPad("pad_D_2", "pad_D_2", 0, 0.006, 0.98, 0.227);
   c_D->cd();
@@ -245,9 +189,10 @@ void CtauTrue(
   pad_D_2->SetTicks(1,1);
 
   RooPlot* frameTMP = (RooPlot*)myPlot2_D->Clone("TMP");
-  RooHist* hpull_D = frameTMP->pullHist(0,0, true);
+  RooHist* hpull_D = frameTMP->pullHist("MCHist_Tot","MCpdf_Tot", true);
   hpull_D->SetMarkerSize(0.8);
-  RooPlot* pullFrame_D = ws->var("ctau3Dtrue")->frame(Title("Pull Distribution"), Range(ctau3DTrueMin, ctau3DTrueMax)) ;
+  //RooPlot* pullFrame_D = ws->var("ctau3Dtrue")->frame(Title("Pull Distribution"), Bins(nCtauTrueBins), Range(0.0, 6)) ;
+  RooPlot* pullFrame_D = ws->var("ctau3Dtrue")->frame(Title("Pull Distribution"), Bins(nCtauTrueBins), Range(-1, 6)) ;
   pullFrame_D->addPlotable(hpull_D,"PX");
   pullFrame_D->SetTitle("");
   pullFrame_D->SetTitleSize(0);
@@ -261,7 +206,8 @@ void CtauTrue(
   pullFrame_D->GetYaxis()->SetNdivisions(404);
 
   pullFrame_D->GetXaxis()->SetTitle("#font[12]{l}_{J/#psi} MC True (mm)");
-  //pullFrame_D->GetXaxis()->SetRangeUser(-1, 7);
+  pullFrame_D->GetXaxis()->SetRangeUser(-1, 6);
+  //pullFrame_D->GetXaxis()->SetRangeUser(0, 6);
   pullFrame_D->GetXaxis()->SetTitleOffset(1.05) ;
   pullFrame_D->GetXaxis()->SetLabelOffset(0.04) ;
   pullFrame_D->GetXaxis()->SetLabelSize(0.15) ;
@@ -270,25 +216,30 @@ void CtauTrue(
   pullFrame_D->GetXaxis()->SetTickSize(0.03);
   pullFrame_D->Draw() ;
 
-  printChi2(ws, pad_D_2, frameTMP, fitCtauTrue, "ctau3DTrue", "MCHist_Tot", "MCpdf_Tot", nBins, false);
+  printChi2(ws, pad_D_2, frameTMP, fitCtauTrue, "ctau3DTrue", "MCHist_Tot", "MCpdf_Tot", nCtauTrueBins, false);
 
+  //TLine *lD = new TLine(0.0, 0, 6., 0);
   TLine *lD = new TLine(-1, 0, 6., 0);
   lD->SetLineStyle(1);
   lD->Draw("same");
   pad_D_2->Update();
 
   c_D->Update();
-  c_D->SaveAs(Form("../figs/2DFit_20210208/CtauTrue/ctauTrue_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
+  c_D->SaveAs(Form("ctauTrue_%s_%s_DSSExp.png",bCont.Data(),kineLabel.Data()));
+  //c_D->SaveAs(Form("../figs/2DFit_1127/ctauTrue_%s_%s.pdf",bCont.Data(),kineLabel.Data()));
 
   //TH1 *h1 = (TH1*)TrueModel_Tot->createHistogram("ctau3Dtrue",50,50);
-  TFile *outFile = new TFile(Form("../roots/2DFit_20210208/CtauTrue/CtauTrueResult_%s_%s.root",bCont.Data(),kineLabel.Data()),"RECREATE");
+  TFile *outFile = new TFile(Form("CtauTrueResult_%s_%s.root",bCont.Data(),kineLabel.Data()),"RECREATE");
   RooArgSet* fitargs = new RooArgSet();
   fitargs->add(fitCtauTrue->floatParsFinal());
   ctauTrueModel->Write();
+  myPlot2_D->SetName("hist");
+  myPlot2_D->Write();
   outFile->Close();
   //TFile *hFile = new TFile(Form("ctauTreuHist_%s.root",kineLabel.Data()),"recreate");
   //hCTrue->Write();
   //hFile->Close();
   cout << endl << "************ Finished MC Ctau True Fit ***************" << endl << endl;
+
 
 }
