@@ -1,7 +1,7 @@
 #include <iostream>
-#include "../rootFitHeaders.h"
-#include "../commonUtility.h"
-#include "../JpsiUtility.h"
+#include "../../rootFitHeaders.h"
+#include "../../commonUtility.h"
+#include "../../JpsiUtility.h"
 #include <RooGaussian.h>
 #include <RooFormulaVar.h>
 #include <RooCBShape.h>
@@ -12,9 +12,9 @@
 #include "TText.h"
 #include "TArrow.h"
 #include "TFile.h"
-#include "../cutsAndBin.h"
-#include "../CMS_lumi_v2mass.C"
-#include "../tdrstyle.C"
+#include "../../cutsAndBin.h"
+#include "../../CMS_lumi_v2mass.C"
+#include "../../tdrstyle.C"
 #include "RooDataHist.h"
 #include "RooCategory.h"
 #include "RooSimultaneous.h"
@@ -54,9 +54,9 @@ void CtauBkg(
   TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, muPtCut, cLow, cHigh);
 
   //f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi_w_Effw0_Accw0_PtW1_TnP1_202020210208.root");
-  fMass = new TFile(Form("../roots/2DFit_20210208/Mass/MassFitResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
-  fCErr = new TFile(Form("../roots/2DFit_20210208/CtauErr/CtauErrResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
-  fCRes = new TFile(Form("../roots/2DFit_20210208/CtauRes/CtauResResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
+  fMass = new TFile(Form("../../roots/2DFit_20210208/Mass/MassFitResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
+  fCErr = new TFile(Form("../../roots/2DFit_20210208/CtauErr/CtauErrResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
+  fCRes = new TFile(Form("../../roots/2DFit_20210208/CtauRes/CtauResResult_%s_%s.root",bCont.Data(),kineLabel.Data()));
 
   RooDataSet *datasetMass = (RooDataSet*)fMass->Get("datasetMass");
   RooAddPdf* pdfMASS_Tot = (RooAddPdf*)fMass->Get("pdfMASS_Tot");
@@ -107,13 +107,13 @@ void CtauBkg(
   //ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 1.]");
   //ws->factory("lambdaDF_Bkg[0.3, 1e-6, 1.]");
   //ws->factory("lambdaDSS_Bkg[0.5, 1e-6, 1.]");
-  //if(ptLow==3&&ptHigh==4.5){
-  //  ws->factory("b_Bkg[0.45, 0., 1.]");//NP fraction for bkg
-  //  ws->factory("fDFSS[0.81, 0., 1.]");
-  //  ws->factory("fDLIV[0.89, 0., 1.]");
-  //  ws->factory("lambdaDDS_Bkg[0.5, 1e-8, 10.]");
-  //  ws->factory("lambdaDF_Bkg[0.01, 1e-8, 10.]");
-  //  ws->factory("lambdaDSS_Bkg[0.09, 1e-8, 10.]");}
+  if(ptLow==3&&ptHigh==4.5){
+    ws->factory("b_Bkg[0.45, 0., 1.]");//NP fraction for bkg
+    ws->factory("fDFSS[0.81, 0., 1.]");
+    ws->factory("fDLIV[0.89, 0., 1.]");
+    ws->factory("lambdaDDS_Bkg[0.3, 1e-8, 10.]");
+    ws->factory("lambdaDF_Bkg[0.01, 1e-8, 10.]");
+    ws->factory("lambdaDSS_Bkg[0.6, 1e-8, 10.]");}
   if(ptLow==4.5&&ptHigh==6.5){
     ws->factory("b_Bkg[0.3, 0., 1.]");//NP fraction for bkg
     ws->factory("fDFSS[0.5, 0., 1.]");
@@ -225,11 +225,11 @@ void CtauBkg(
   RooProdPdf pdfPR("pdfCTAU_BkgPR", "", *ws->pdf("pdfCTAUERR_Bkg"), Conditional( *ws->pdf("pdfCTAUCOND_BkgPR"), RooArgList(*ws->var("ctau3D")) ));
   //RooProdPdf pdfPR("pdfCTAU_BkgPR", "", *ws->pdf(Form((useTotctauErrPdf?"pdfCTAUERRTot_Tot_%s":"pdfCTAUERR_Bkg_%s"), (isPbPb?"PbPb":"PP"))), Conditional( *ws->pdf(Form("pdfCTAUCOND_BkgPR_%s", (isPbPb?"PbPb":"PP"))), RooArgList(*ws->var("ctau")) ));
   ws->import(pdfPR);
-  RooProdPdf pdfNoPR("pdfCTAU_BkgNoPR", "", *ws->pdf("pdfCTAUERR_Bkg"), Conditional( *ws->pdf("pdfCTAUCOND_BkgNoPR"), RooArgList(*ws->var("ctau")) ));
+  RooProdPdf pdfNoPR("pdfCTAU_BkgNoPR", "", *ws->pdf("pdfCTAUERR_Bkg"), Conditional( *ws->pdf("pdfCTAUCOND_BkgNoPR"), RooArgList(*ws->var("ctau3D")) ));
   ///RooProdPdf pdfNoPR(Form("pdfCTAU_BkgNoPR_%s", (isPbPb?"PbPb":"PP")), "", *ws->pdf(Form((useTotctauErrPdf?"pdfCTAUERRTot_Tot_%s":"pdfCTAUERR_Bkg_%s"), (isPbPb?"PbPb":"PP"))), Conditional( *ws->pdf(Form("pdfCTAUCOND_BkgNoPR_%s", (isPbPb?"PbPb":"PP"))), RooArgList(*ws->var("ctau")) ));
   ws->import(pdfNoPR);
   ws->factory(Form("SUM::%s(%s*%s, %s)", "pdfCTAU_Bkg", "b_Bkg", "pdfCTAU_BkgNoPR", "pdfCTAU_BkgPR"));
-  RooAbsPdf *pdfCTAU_Bkg_Tot = new RooAddPdf("pdfCTAU_Bkg_Tot", "pdfCTAU_Bkg_Tot", RooArgList(*ws->pdf("pdfCTAU_Bkg"), RooArgList(*ws->var("N_Bkg")));
+  RooAbsPdf *pdfCTAU_Bkg_Tot = new RooAddPdf("pdfCTAU_Bkg_Tot", "pdfCTAU_Bkg_Tot", RooArgList(*ws->pdf("pdfCTAU_Bkg")), RooArgList(*ws->var("N_Bkg")));
   ws->import(*pdfCTAU_Bkg_Tot);
  
   //ws.pdf(Form("%s_Tot_%s", pdfName.c_str(), (isPbPb?"PbPb":"PP")))->setNormRange("CtauWindow");
