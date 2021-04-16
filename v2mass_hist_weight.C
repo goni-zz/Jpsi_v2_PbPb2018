@@ -26,13 +26,14 @@ double getEffWeight(TH1D* h = 0, double pt = 0);
 void GetHistSqrt(TH1D* h1 =0, TH1D* h2=0);
 void GetHistBkg(TH1D* h1 =0, TH1D* h2=0);
 
-void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
-    float ptLow =  12, float ptHigh =  50,
-    float yLow = 1.6, float yHigh = 2.4,
-    float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, bool fAccW = false, bool fEffW = false, bool isMC = false, int dtype = 1, 
-    float ctauCut =0.2,
+void v2mass_hist_weight(int cLow = 20, int cHigh = 120,
+    double ptLow =  6.5, double ptHigh =  7.5,
+    double yLow = 0, double yHigh = 2.4,
+    float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, bool fAccW = true, bool fEffW = true, bool isMC = false, int dtype = 1, 
 	int weight_PR = 0, // PR : 0, NP : 1
-    int PR=2) //PR 0: PR, 1: NP, 2: Inc.
+    int PR=2,
+	int ctauCut = 0 //-1:Left, 0:Central, 1:Right 2:w/o cut
+	) //PR 0: PR, 1: NP, 2: Inc.
 {
   //Basic Setting
   //gStyle->SetOptStat(0);
@@ -51,6 +52,7 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   TString sample;
   TString bCont;
   TString wName;
+  TString cutName;
 
   if(PR==0) bCont="Prompt";
   else if(PR==1) bCont="NonPrompt";
@@ -58,6 +60,34 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
 
   if(weight_PR==0) wName="prompt";
   else if(weight_PR==1) wName="nprompt";
+
+  if(ctauCut==-1) cutName="ctauL";
+  else if(ctauCut==0) cutName="ctauC";
+  else if(ctauCut==1) cutName="ctauR";
+  else if(ctauCut==2) cutName="woCut";
+
+
+  Double_t ctauLeft, ctauRight, ctauLow, ctauHigh;
+  //Forward Rapidity
+  if(yLow==1.6&&yHigh==2.4){
+    if(ptLow==3&&ptHigh==4.5)        { ctauLeft=0.25; ctauRight=0.115; cout << "ctauLeft : " << ctauLeft << endl;} 
+    else if(ptLow==4.5&&ptHigh==6.5) { ctauLeft=0.17; ctauRight=0.14;}
+    else if(ptLow==6.5&&ptHigh==9)   { ctauLeft=0.07; ctauRight=0.1;}
+    else if(ptLow==9&&ptHigh==12)    { ctauLeft=0.01; ctauRight=0.1;}
+    else if(ptLow==12&&ptHigh==50)   { ctauLeft=0.01; ctauRight=0.065;}
+  }
+  ////All Rapidity
+  else if(yLow==0 && yHigh==2.4){
+    if(ptLow==6.5&&ptHigh==7.5)    	{ ctauLeft=0.043; ctauRight=0.082; }
+    else if(ptLow==7.5&&ptHigh==9)  { ctauLeft=0.048; ctauRight=0.11; }
+    else if(ptLow==9&&ptHigh==10) 	{ ctauLeft=0.028; ctauRight=0.07; }
+    else if(ptLow==10&&ptHigh==12) 	{ ctauLeft=0.004; ctauRight=0.066; }
+    else if(ptLow==12&&ptHigh==15) 	{ ctauLeft=0.014; ctauRight=0.26; }
+    else if(ptLow==15&&ptHigh==50) 	{ ctauLeft=0.03; ctauRight=0.037; }
+  }
+
+  ctauLow = min(ctauLeft,ctauRight);
+  ctauHigh = max(ctauLeft,ctauRight);
 
   cout<<"Data type: "<<dtype<<endl;
 
@@ -86,38 +116,22 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   //TString f1 = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaFlowSkim_BJpsiTrig_DBPD_isMC1_HFNom_200217.root";
 
   //Get Correction histograms
-  bool isTnP = false;
-  bool isPtW = false;
+  bool isTnP = true;
+  bool isPtW = true;
   //  TFile *fEff = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Efficiency/mc_eff_vs_pt_TnP%d_PtW1_OfficialMC_Y%dS_muPtCut3.5.root",isTnP,state),"read");
-  TFile *fEff = new TFile(Form("mc_eff_vs_pt_cent_rap_%s_pbpb_Jpsi.root",wName.Data()),"read");
-  TH1D* hEffPt[12];
-  hEffPt[0] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy0_0p6",isTnP,isPtW));
-  hEffPt[1] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy0p6_1p2",isTnP,isPtW));
-  hEffPt[2] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy1p2_1p6",isTnP,isPtW));
-  hEffPt[3] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent0to20_absy1p6_2p4",isTnP,isPtW));
-  hEffPt[4] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy0_0p6",isTnP,isPtW));
-  hEffPt[5] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy0p6_1p2",isTnP,isPtW));
-  hEffPt[6] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy1p2_1p6",isTnP,isPtW));
-  hEffPt[7] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent20to100_absy1p6_2p4",isTnP,isPtW));
-  hEffPt[8] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy0_0p6",isTnP,isPtW));
-  hEffPt[9] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy0p6_1p2",isTnP,isPtW));
-  hEffPt[10] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy1p2_1p6",isTnP,isPtW));
-  hEffPt[11] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent100to180_absy1p6_2p4",isTnP,isPtW));
-  //  TFile *fAcc = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Acceptance/acceptance_wgt_%dS_pt0_50_20190813_dNdptWeighted.root",state),"read");
-  TFile *fAcc = new TFile(Form("mc_Acc_vs_pt_cent_rap_%s_pbpb_Jpsi_PtW1.root",wName.Data()),"read");
-  TH1D* hAccPt[12];
-  hAccPt[0] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy0_0p6",isPtW));
-  hAccPt[1] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy0p6_1p2",isPtW));
-  hAccPt[2] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy1p2_1p6",isPtW));
-  hAccPt[3] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent0to20_absy1p6_2p4",isPtW));
-  hAccPt[4] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy0_0p6",isPtW));
-  hAccPt[5] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy0p6_1p2",isPtW));
-  hAccPt[6] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy1p2_1p6",isPtW));
-  hAccPt[7] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent20to100_absy1p6_2p4",isPtW));
-  hAccPt[8] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy0_0p6",isPtW));
-  hAccPt[9] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy0p6_1p2",isPtW));
-  hAccPt[10] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy1p2_1p6",isPtW));
-  hAccPt[11] = (TH1D*) fAcc -> Get(Form("mc_Acc_vs_pt_PtW%d_cent100to180_absy1p6_2p4",isPtW));
+  TFile *fEff = new TFile(Form("./Eff_Acc/mc_eff_vs_pt_cent_0_to_200_rap_%s_pbpb_Jpsi_PtW%d_tnp%d_drawsame2.root",wName.Data(),isPtW,isTnP),"read");
+  TH1D* hEffPt[15];
+  hEffPt[0] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent_0_to_200_absy0_0p6",isTnP,isPtW));
+  hEffPt[1] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent_0_to_200_absy0p6_1p2",isTnP,isPtW));
+  hEffPt[2] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent_0_to_200_absy1p2_1p6",isTnP,isPtW));
+  hEffPt[3] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent_0_to_200_absy1p6_1p8",isTnP,isPtW));
+  hEffPt[4] = (TH1D*) fEff -> Get(Form("mc_eff_vs_pt_TnP%d_PtW%d_cent_0_to_200_absy1p8_2p4",isTnP,isPtW));
+//  TFile *fAcc = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/UpsilonPbPb2018_v2/Acceptance/acceptance_wgt_%dS_pt0_50_20190813_dNdptWeighted.root",state),"read");
+  TFile *fAcc = new TFile("./Eff_Acc/Acc_WeightVariation_20210407.root","read");
+  TH1D* hAccPt[6];
+  hAccPt[0] = (TH1D*) fAcc -> Get("hAccPt_2021_ally_wt");
+  hAccPt[1] = (TH1D*) fAcc -> Get("hAccPt_2021_midy_wt");
+  hAccPt[2] = (TH1D*) fAcc -> Get("hAccPt_2021_Fory_wt");
 
   //SetBranchAddress
   const int nMaxDimu = 1000;
@@ -206,49 +220,6 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   tree -> SetBranchAddress("qydimu", qydimu, &b_qydimu);
   tree -> SetBranchAddress("weight", &weight, &b_weight);
 
-  //PR
-  //if(PR==0){
-  //  if(ptLow==3&&ptHigh==4)        ctauCut=0.0625;
-  //  if(ptLow==3&&ptHigh==4.5)      ctauCut=0.0595;
-  //  else if(ptLow==4&&ptHigh==5)   ctauCut=0.0525;
-  //  else if(ptLow==4.5&&ptHigh==6.5)   ctauCut=0.0485;
-  //  else if(ptLow==5&&ptHigh==6.5) ctauCut=0.0455;
-  //  else if(ptLow==6.5&&ptHigh==8) ctauCut=0.0405;
-  //  else if(ptLow==6.5&&ptHigh==9) ctauCut=0.0395;
-  //  else if(ptLow==8&&ptHigh==12)  ctauCut=0.0335;
-  //  else if(ptLow==8&&ptHigh==15)  ctauCut=0.0315;
-  //  else if(ptLow==9&&ptHigh==12)  ctauCut=0.0325;
-  //  else if(ptLow==9&&ptHigh==15)  ctauCut=0.0305;
-  //  else if(ptLow==12&&ptHigh==20) ctauCut=0.0265;
-  //  else if(ptLow==12&&ptHigh==30) ctauCut=0.0255;
-  //  else if(ptLow==15&&ptHigh==30) ctauCut=0.0235;
-  //  else if(ptLow==0&&ptHigh==30)  ctauCut=0.0765;
-  //  else if(cLow==0&&cHigh==20)    ctauCut=0.0385;
-  //  else if(cLow==20&&cHigh==40)   ctauCut=0.0375;
-  //  else if(cLow==40&&cHigh==60)   ctauCut=0.0375;
-  //  else if(cLow==60&&cHigh==80)   ctauCut=0.0375;
-  //  else if(cLow==60&&cHigh==120)  ctauCut=0.0375;
-  //  else if(cLow==80&&cHigh==100)  ctauCut=0.0365;
-  //  else if(cLow==100&&cHigh==180) ctauCut=0.0365;
-  //  else if(cLow==120&&cHigh==180) ctauCut=0.0365;}//All
-  ////NP
-  //else if(PR==1){
-  //  if(ptLow==3.0&&ptHigh==6.5)    ctauCut=0.0975;
-  //  else if(ptLow==3&&ptHigh==4)   ctauCut=0.1235;
-  //  else if(ptLow==3&&ptHigh==4.5) ctauCut=0.1155;
-  //  else if(ptLow==4&&ptHigh==6.5) ctauCut=0.0935;
-  //  else if(ptLow==4.5&&ptHigh==6) ctauCut=0.0965;
-  //  else if(ptLow==4.5&&ptHigh==6.5) ctauCut=0.0935;
-  //  else if(ptLow==6.5&&ptHigh==8) ctauCut=0.0785;
-  //  else if(ptLow==6.5&&ptHigh==9) ctauCut=0.0755;
-  //  else if(ptLow==8&&ptHigh==12)  ctauCut=0.0655;
-  //  else if(ptLow==9&&ptHigh==12)  ctauCut=0.0635;
-  //  else if(ptLow==9&&ptHigh==15)  ctauCut=0.0605;
-  //  else if(ptLow==12&&ptHigh==30) ctauCut=0.0505;
-  //  else if(ptLow==10&&ptHigh==15) ctauCut=0.0585;
-  //  else if(ptLow==15&&ptHigh==30) ctauCut=0.0455;
-  //  else if(ptLow==15&&ptHigh==50) ctauCut=0.0455;
-  //  else if(ptLow==0&&ptHigh==30)  ctauCut=0.0765;}//All
   //crosscheck+tnp+genweight
   //  else if(PR==1){
   //  else if(ptLow==3&&ptHigh==4.5) ctauCut=0.1135;
@@ -256,7 +227,7 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   //  else if(ptLow==6.5&&ptHigh==9) ctauCut=0.0755;
   //  else if(ptLow==9&&ptHigh==12)  ctauCut=0.0635;
   //  else if(ptLow==12&&ptHigh==30) ctauCut=0.0495;}
-  cout<<"pt["<<ptLow<<" - "<<ptHigh<<" GeV/c], "<<"ctau cut: "<<ctauCut<<endl;
+//  cout<<"pt["<<ptLow<<" - "<<ptHigh<<" GeV/c], "<<"ctau cut: "<<ctauCut<<endl;
 
   const int nMassBin = 12;
 
@@ -315,7 +286,7 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   TH1D* h_v2_den_q3 = new TH1D("h_v2_num_q3",";m_{#mu^{+}#mu^{-}};#LTQ_{2A}Q_{2C}^{*}#GT",nMassBin,massBin);
   TH1D* h_v2_den_q4 = new TH1D("h_v2_num_q4",";m_{#mu^{+}#mu^{-}};#LTQ_{2B}Q_{2C}^{*}#GT",nMassBin,massBin);
 
-  TH1D* h_mass = new TH1D("h_mass",";m_{#mu^{+}#mu^{-}};Counts/(0.02 GeV)",120,massLow,massHigh);
+  TH1D* h_mass = new TH1D("h_mass",";m_{#mu^{+}#mu^{-}};Counts/(0.02 GeV)",36,massLow,massHigh);
   TH1D* h_decayL = new TH1D("h_decayL",";l_{J/#psi(mm)};Counts/(0.03 mm)",4000,-1,3);
   //TH1D* h_ljpsi_bkg = new TH1D("h_ljpsi_bkg",";l_{J/#psi(mm)};Counts/(0.03 mm)",1050,-1.5,2);
 
@@ -355,111 +326,92 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
 
   //Begin Loop
   for(int i=0; i<nEvt; i++){
-    tree->GetEntry(i);
-    if(!(cBin>=cLow||cBin<=cHigh)) continue;
-    if(fabs(vz)>=15) continue;
-    // Fill Dimuon Loop
-    for(int j=0; j<nDimu; j++){
-      if(pt[j]>ptLow&&pt[j]<ptHigh&&recoQQsign[j]==0&&mass[j]>=massLow&&mass[j]<=massHigh&&abs(y[j])>yLow&&abs(y[j])<yHigh&&
-          //abs(eta1[j])>1.6&&abs(eta1[j])<2.4&&abs(eta2[j])>1.6&&abs(eta2[j])<2.4&&
-			  ( ((abs(eta1[j]) <= 1.2) && (pt1[j] >=3.5)) || ((abs(eta2[j]) <= 1.2) && (pt2[j] >=3.5)) ||
-				((abs(eta1[j]) > 1.2) && (abs(eta1[j]) <= 2.1) && (pt1[j] >= 5.47-1.89*(abs(eta1[j])))) || ((abs(eta2[j]) > 1.2)  && (abs(eta2[j]) <= 2.1) && (pt2[j] >= 5.47-1.89*(abs(eta2[j])))) ||
-				((abs(eta1[j]) > 2.1) && (abs(eta1[j]) <= 2.4) && (pt1[j] >= 1.5)) || ((abs(eta2[j]) > 2.1)  && (abs(eta2[j]) <= 2.4) && (pt2[j] >= 1.5)) )
-		){
-		  //        if ((PR==0||PR==1) && ctau3D[j]>ctauCut) continue;
-		  weight_acc=1;
-		  weight_eff=1;
-		  if(fAccW){
-			  if(cBin<20) {
-				  if ( abs((double)y[j])<0.6) { weight_acc = getAccWeight(hAccPt[0], pt[j]); }
-				  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_acc = getAccWeight(hAccPt[1], pt[j]); }
-				  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_acc = getAccWeight(hAccPt[2], pt[j]); }
-				  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_acc = getAccWeight(hAccPt[3], pt[j]); }
-			  }
-			  if(cBin>=20 && cBin<100){
-				  if ( abs((double)y[j])<0.6) { weight_acc = getAccWeight(hAccPt[4], pt[j]); }
-				  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_acc = getAccWeight(hAccPt[5], pt[j]); }
-				  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_acc = getAccWeight(hAccPt[6], pt[j]); }
-				  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_acc = getAccWeight(hAccPt[7], pt[j]); }
-			  }
-			  if(cBin>=100 && cBin<180){
-				  if ( abs((double)y[j])<0.6) { weight_acc = getAccWeight(hAccPt[8], pt[j]); }
-				  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_acc = getAccWeight(hAccPt[9], pt[j]); }
-				  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_acc = getAccWeight(hAccPt[10], pt[j]); }
-				  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_acc = getAccWeight(hAccPt[11], pt[j]); }
+	  tree->GetEntry(i);
+	  if(cBin>cLow&&cBin<cHigh){ 
+		  if(fabs(vz)<15){
+			  // Fill Dimuon Loop
+			  for(int j=0; j<nDimu; j++){
+				  if(pt[j]>ptLow&&pt[j]<ptHigh&&recoQQsign[j]==0&&mass[j]>massLow&&mass[j]<massHigh&&abs(y[j])>yLow&&abs(y[j])<yHigh&&
+						  //abs(eta1[j])>1.6&&abs(eta1[j])<2.4&&abs(eta2[j])>1.6&&abs(eta2[j])<2.4&&
+						  ( ((abs(eta1[j]) <= 1.2) && (pt1[j] >=3.5)) || ((abs(eta2[j]) <= 1.2) && (pt2[j] >=3.5)) ||
+							((abs(eta1[j]) > 1.2) && (abs(eta1[j]) <= 2.1) && (pt1[j] >= 5.47-1.89*(abs(eta1[j])))) || ((abs(eta2[j]) > 1.2)  && (abs(eta2[j]) <= 2.1) && (pt2[j] >= 5.47-1.89*(abs(eta2[j])))) ||
+							((abs(eta1[j]) > 2.1) && (abs(eta1[j]) <= 2.4) && (pt1[j] >= 1.5)) || ((abs(eta2[j]) > 2.1)  && (abs(eta2[j]) <= 2.4) && (pt2[j] >= 1.5)) )
+					){
+					  if (ctauCut==-1 && ctau3D[j]>ctauLeft) continue;
+					  else if (ctauCut==1 && ctau3D[j]<ctauRight) continue;
+					  else if (ctauCut==0 && ctau3D[j]<ctauLow && ctau3D[j]>ctauHigh) continue;
+					  //        if ((PR==0||PR==1) && ctau3D[j]>ctauCut) continue;
+					  weight_acc=1;
+					  weight_eff=1;
+					  if(fAccW){
+						  if ( abs((double)y[j])<2.4 ) { weight_acc = getAccWeight(hAccPt[1], pt[j]); }
+						  //			  if ( abs((double)y[j])<1.6 ) { weight_acc = getAccWeight(hAccPt[1], pt[j]); }
+						  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) { weight_acc = getAccWeight(hAccPt[2], pt[j]); }
+						  //			  if (mass[j]>3.0&&mass[j]<3.06) {cout << "Acc Weight : " << (double)1.0/weight_acc << " y : " << y[j] << " pT : " << pt[j] << endl;}
+					  }
+					  if(fEffW){
+						  //			  if ( abs((double)y[j])<2.4) { weight_eff = getEffWeight(hEffPt[1], pt[j]); }
+						  if ( abs((double)y[j])<0.6) { 
+							  if(getEffWeight(hEffPt[0], pt[j])==0) {weight_eff=hEffPt[0]->GetBinContent(0);}
+							  else  weight_eff = getEffWeight(hEffPt[0], pt[j]); }
+						  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) { weight_eff = getEffWeight(hEffPt[1], pt[j]); }
+						  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) { weight_eff = getEffWeight(hEffPt[2], pt[j]); }
+						  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<1.8 ) { weight_eff = getEffWeight(hEffPt[3], pt[j]); }
+						  else if ( abs((double)y[j])>=1.8 && abs((double)y[j])<2.4 ) { weight_eff = getEffWeight(hEffPt[4], pt[j]); }
+					  }
+					  double weight_ = weight * weight_eff * weight_acc;
+					  for(int imbin=0; imbin<nMassBin; imbin++){
+						  if(mass[j]>=massBin[imbin] && mass[j]<massBin[imbin+1]){
+							  v2_1[imbin][count[imbin]] = (qxa[j]*qxdimu[j] + qya[j]*qydimu[j])*weight_;
+							  v2_2[imbin][count[imbin]] = (qxa[j]*qxb[j] + qya[j]*qyb[j])*weight_;
+							  v2_3[imbin][count[imbin]] = (qxa[j]*qxc[j] + qya[j]*qyc[j])*weight_;
+							  v2_4[imbin][count[imbin]] = (qxb[j]*qxc[j] + qyb[j]*qyc[j])*weight_;
+							  v2_1_raw[imbin][count[imbin]] = (qxa[j]*qxdimu[j] + qya[j]*qydimu[j]);
+							  v2_2_raw[imbin][count[imbin]] = (qxa[j]*qxb[j] + qya[j]*qyb[j]);
+							  v2_3_raw[imbin][count[imbin]] = (qxa[j]*qxc[j] + qya[j]*qyc[j]);
+							  v2_4_raw[imbin][count[imbin]] = (qxb[j]*qxc[j] + qyb[j]*qyc[j]);
+
+							  v2_1_avg[imbin] += v2_1[imbin][count[imbin]];
+							  v2_2_avg[imbin] += v2_2[imbin][count[imbin]];
+							  v2_3_avg[imbin] += v2_3[imbin][count[imbin]];
+							  v2_4_avg[imbin] += v2_4[imbin][count[imbin]];
+
+							  weight_dimu[imbin][count[imbin]] = weight_;
+
+							  count[imbin]++;
+							  weight_s[imbin] += weight_;
+						  }
+					  }
+					  if(mass[j]>=mass_low_SB1 && mass[j]<mass_high_SB1){
+						  h_v2_1[0]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
+						  h_v2_2[0]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
+						  h_v2_3[0]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
+						  h_v2_4[0]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
+						  h_ljpsi[0]->Fill(ctau3D[j]);
+					  }
+					  else if(mass[j]>=mass_low_SB2 && mass[j]<mass_high_SB2){
+						  h_v2_1[1]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
+						  h_v2_2[1]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
+						  h_v2_3[1]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
+						  h_v2_4[1]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
+						  h_ljpsi[1]->Fill(ctau3D[j]);
+					  }
+					  else if(mass[j]>=mass_low_SB && mass[j]<mass_high_SB){
+						  h_v2_1[2]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
+						  h_v2_2[2]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
+						  h_v2_3[2]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
+						  h_v2_4[2]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
+						  h_ljpsi[2]->Fill(ctau3D[j]);
+					  }
+					  h_decayL->Fill(ctau3D[j]);
+					  massVar->setVal((double)mass[j]);
+					  weightVar->setVal((double)weight_);
+					  dataSet->add(*argSet);
+					  h_mass->Fill(mass[j],weight_);
+				  }
 			  }
 		  }
-		  if(fEffW){
-			  if(cBin<20) {
-				  if ( abs((double)y[j])<0.6) { weight_eff = getEffWeight(hEffPt[0], pt[j]); }
-				  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_eff = getEffWeight(hEffPt[1], pt[j]); }
-				  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_eff = getEffWeight(hEffPt[2], pt[j]); }
-				  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_eff = getEffWeight(hEffPt[3], pt[j]); }
-			  }
-			  if(cBin>=20 && cBin<100){
-				  if ( abs((double)y[j])<0.6) { weight_eff = getEffWeight(hEffPt[4], pt[j]); }
-				  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_eff = getEffWeight(hEffPt[5], pt[j]); }
-				  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_eff = getEffWeight(hEffPt[6], pt[j]); }
-				  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_eff = getEffWeight(hEffPt[7], pt[j]); }
-			  }
-			  if(cBin>=100 && cBin<180){
-				  if ( abs((double)y[j])<0.6) { weight_eff = getEffWeight(hEffPt[8], pt[j]); }
-				  else if ( abs((double)y[j])>=0.6 && abs((double)y[j])<1.2 ) {weight_eff = getEffWeight(hEffPt[9], pt[j]); }
-				  else if ( abs((double)y[j])>=1.2 && abs((double)y[j])<1.6 ) {weight_eff = getEffWeight(hEffPt[10], pt[j]); }
-				  else if ( abs((double)y[j])>=1.6 && abs((double)y[j])<2.4 ) {weight_eff = getEffWeight(hEffPt[11], pt[j]); }
-			  }
-		  }
-		double weight_ = weight * weight_eff * weight_acc;
-        for(int imbin=0; imbin<nMassBin; imbin++){
-          if(mass[j]>=massBin[imbin] && mass[j]<massBin[imbin+1]){
-            v2_1[imbin][count[imbin]] = (qxa[j]*qxdimu[j] + qya[j]*qydimu[j])*weight_;
-            v2_2[imbin][count[imbin]] = (qxa[j]*qxb[j] + qya[j]*qyb[j])*weight_;
-            v2_3[imbin][count[imbin]] = (qxa[j]*qxc[j] + qya[j]*qyc[j])*weight_;
-            v2_4[imbin][count[imbin]] = (qxb[j]*qxc[j] + qyb[j]*qyc[j])*weight_;
-            v2_1_raw[imbin][count[imbin]] = (qxa[j]*qxdimu[j] + qya[j]*qydimu[j]);
-            v2_2_raw[imbin][count[imbin]] = (qxa[j]*qxb[j] + qya[j]*qyb[j]);
-            v2_3_raw[imbin][count[imbin]] = (qxa[j]*qxc[j] + qya[j]*qyc[j]);
-            v2_4_raw[imbin][count[imbin]] = (qxb[j]*qxc[j] + qyb[j]*qyc[j]);
-
-            v2_1_avg[imbin] += v2_1[imbin][count[imbin]];
-            v2_2_avg[imbin] += v2_2[imbin][count[imbin]];
-            v2_3_avg[imbin] += v2_3[imbin][count[imbin]];
-            v2_4_avg[imbin] += v2_4[imbin][count[imbin]];
-
-			weight_dimu[imbin][count[imbin]] = weight_;
-
-            count[imbin]++;
-			weight_s[imbin] += weight_;
-          }
-        }
-        if(mass[j]>=mass_low_SB1 && mass[j]<mass_high_SB1){
-          h_v2_1[0]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
-          h_v2_2[0]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
-          h_v2_3[0]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
-          h_v2_4[0]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
-          h_ljpsi[0]->Fill(ctau3D[j]);
-        }
-        else if(mass[j]>=mass_low_SB2 && mass[j]<mass_high_SB2){
-          h_v2_1[1]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
-          h_v2_2[1]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
-          h_v2_3[1]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
-          h_v2_4[1]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
-          h_ljpsi[1]->Fill(ctau3D[j]);
-        }
-        else if(mass[j]>=mass_low_SB && mass[j]<mass_high_SB){
-          h_v2_1[2]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
-          h_v2_2[2]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
-          h_v2_3[2]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
-          h_v2_4[2]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
-          h_ljpsi[2]->Fill(ctau3D[j]);
-        }
-        h_decayL->Fill(ctau3D[j]);
-        massVar->setVal((double)mass[j]);
-		weightVar->setVal((double)weight_);
-        dataSet->add(*argSet);
-        h_mass->Fill(mass[j],weight_);
-      }
-    }
+	  }
   }
   cout<<"How many Jpsi??: "<<float(h_mass->GetEntries())<<endl;
 
@@ -604,7 +556,7 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
 
   float pos_x = 0.43;
   float pos_x_mass = 0.73;
-  float pos_y = 0.75;
+  float pos_y = 0.7;
   float pos_y_diff = 0.071;
   int text_color = 1;
   float text_size = 16;
@@ -624,17 +576,18 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   g_mass->GetXaxis()->SetLabelSize(0);
   g_mass->Draw("AP");
   if(ptLow==0) drawText(Form("p_{T}^{#mu#mu} < %.f GeV/c",ptHigh ),pos_x_mass,pos_y,text_color,text_size);
-  else if(ptLow ==6.5) drawText(Form("%.1f < p_{T}^{#mu#mu} < %.f GeV/c",(float)ptLow, ptHigh ),pos_x_mass,pos_y,text_color,text_size);
+  else if(ptLow ==6.5) drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",(float)ptLow, ptHigh ),pos_x_mass,pos_y,text_color,text_size);
   else if(ptHigh==6.5) drawText(Form("%.f < p_{T}^{#mu#mu} < %.1f GeV/c",(float)ptLow, ptHigh ),pos_x_mass,pos_y,text_color,text_size);
-  else if(ptLow!=0) drawText(Form("%.f < p_{T}^{#mu#mu} < %.f GeV/c",(float)ptLow, ptHigh ),pos_x_mass,pos_y,text_color,text_size);
+  else if(ptLow!=0) drawText(Form("%.1f < p_{T}^{#mu#mu} < %.1f GeV/c",(float)ptLow, ptHigh ),pos_x_mass,pos_y,text_color,text_size);
   if(yLow==0) drawText(Form("|y^{#mu#mu}| < %.1f",yHigh ), pos_x_mass,pos_y-pos_y_diff,text_color,text_size);
   else if(yLow!=0) drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh ), pos_x_mass,pos_y-pos_y_diff,text_color,text_size);
   drawText(Form("p_{T}^{#mu} > %.1f GeV/c", SiMuPtCut ), pos_x_mass,pos_y-pos_y_diff*2,text_color,text_size);
   drawText("|#eta^{#mu}| < 2.4", pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
   drawText(Form("Centrality %d-%d%s",cLow/2,cHigh/2,perc.Data()),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);
   //    drawText(Form("L_{J/psi} < %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
-  if(PR==0){drawText(Form("L_{J/psi} %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);}
-  else if(PR==1){drawText(Form("L_{J/psi} %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);}
+  if(ctauCut==-1){drawText(Form("L_{J/psi} < %.4f", ctauLeft),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);}
+  else if(ctauCut==1){drawText(Form("L_{J/psi} > %.4f", ctauRight),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);}
+  else if(ctauCut==0){drawText(Form("%.4f < L_{J/psi} < %.4f", ctauLeft, ctauRight),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);}
   pad2->SetTopMargin(0);
   pad2->SetBottomMargin(0.17);
   pad2->SetLeftMargin(0.19);
@@ -653,7 +606,7 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   pad1->Draw();
   pad2->Draw();
   //gSystem->mkdir(Form("figs/q_vector",sample.Data()),1);
-  c_mass_v2->SaveAs(Form("figs/v2mass_hist/v2Mass_%s_%s.pdf", bCont.Data(), kineLabel.Data()));
+  c_mass_v2->SaveAs(Form("figs/v2mass_hist/v2Mass_%s_%s_%s.pdf", bCont.Data(), kineLabel.Data(),cutName.Data()));
 
   TCanvas* c_decayL = new TCanvas("c_decayL","",600,600);
   c_decayL->SetLogy();
@@ -667,7 +620,7 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   h_decayL->Draw("P");
   //lcut->Draw("same");
   c_decayL->Update();
-  c_decayL->SaveAs(Form("figs/decayL/decayL_%s_%s.pdf", bCont.Data(), kineLabel.Data()));
+  c_decayL->SaveAs(Form("figs/decayL/decayL_%s_%s_%s.pdf", bCont.Data(), kineLabel.Data(),cutName.Data()));
 
   TCanvas* c_mass = new TCanvas("c_mass","",600,600);
   c_mass->cd();
@@ -680,11 +633,11 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   drawText("|#eta^{#mu}| < 2.4", pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
   drawText(Form("Centrality %d-%d%s",cLow/2,cHigh/2,perc.Data()),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);
   //   drawText(Form("L_{J/psi} < %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
-  drawText(Form("L_{J/psi} > %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
+//  drawText(Form("L_{J/psi} > %.4f", ctauCut),pos_x_mass,pos_y-pos_y_diff*5,text_color,text_size);
   //CMS_lumi_v2mass(c_mass,iPeriod,iPos,0);
   CMS_lumi_v2mass(c_mass,iPeriod,iPos);
   c_mass->Update();
-  c_mass->SaveAs(Form("figs/mass_dist/MassDist_%s_%s.pdf", bCont.Data(), kineLabel.Data()));
+  c_mass->SaveAs(Form("figs/mass_dist/MassDist_%s_%s_%s.pdf", bCont.Data(), kineLabel.Data(),cutName.Data()));
 
   TLegend *leg_v2_1 = new TLegend(0.38,0.64,0.77,0.9);
   TLegend *leg_v2_2 = new TLegend(0.38,0.64,0.77,0.9);
@@ -755,7 +708,7 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   h_v2_1[0]->Draw("hist same");
   leg_v2_1->Draw("same");
   leg_v2_1->SetFillStyle(0);
-  c_qq_1->SaveAs(Form("figs/q_vector/c_qqa_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d.pdf",bCont.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP));
+  c_qq_1->SaveAs(Form("figs/q_vector/c_qqa_%s_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d_%s.pdf",bCont.Data(), kineLabel.Data(),wName.Data(),fEffW,fAccW,isPtW,isTnP,cutName.Data()));
 
   TCanvas *c_qq_2 = new TCanvas("c_qaqb","",600,600);
   c_qq_2->cd();
@@ -763,7 +716,7 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   h_v2_2[1]->Draw("hist same");
   h_v2_2[0]->Draw("hist same");
   leg_v2_2->Draw("same");
-  c_qq_2->SaveAs(Form("figs/q_vector/c_qaqb_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d.pdf",bCont.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP));
+  c_qq_2->SaveAs(Form("figs/q_vector/c_qaqb_%s_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d_%s.pdf",bCont.Data(), kineLabel.Data(),wName.Data(),fEffW,fAccW,isPtW,isTnP,cutName.Data()));
 
   TCanvas *c_qq_3 = new TCanvas("c_qaqc","",600,600);
   c_qq_3->cd();
@@ -771,7 +724,7 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   h_v2_3[1]->Draw("hist same");
   h_v2_3[0]->Draw("hist same");
   leg_v2_3->Draw("same");
-  c_qq_3->SaveAs(Form("figs/q_vector/c_qaqc_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d.pdf",bCont.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP));
+  c_qq_3->SaveAs(Form("figs/q_vector/c_qaqc_%s_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d_%s.pdf",bCont.Data(), kineLabel.Data(),wName.Data(),fEffW,fAccW,isPtW,isTnP,cutName.Data()));
 
   TCanvas *c_qq_4 = new TCanvas("c_qbqc","",600,600);
   c_qq_4->cd();
@@ -779,14 +732,15 @@ void v2mass_hist_weight(int cLow = 0, int cHigh = 200,
   h_v2_4[1]->Draw("hist same");
   h_v2_4[0]->Draw("hist same");
   leg_v2_4->Draw("same");
-  c_qq_4->SaveAs(Form("figs/q_vector/c_qbqc_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d.pdf",bCont.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP));
+  c_qq_4->SaveAs(Form("figs/q_vector/c_qbqc_%s_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d_%s.pdf",bCont.Data(), kineLabel.Data(),wName.Data(),fEffW,fAccW,isPtW,isTnP,cutName.Data()));
 
-  TFile *wf = new TFile(Form("roots/v2mass_hist/Jpsi_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d.root", bCont.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP),"recreate");
+  TFile *wf = new TFile(Form("roots/v2mass_hist/Jpsi_%s_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d_%s.root", bCont.Data(), kineLabel.Data(),wName.Data(),fEffW,fAccW,isPtW,isTnP,cutName.Data()),"recreate");
   wf->cd();
   h_v2_final->Write();
   h_decayL->Write();
   g_mass->Write();
   h_mass->Write();
+
 }
 
 void GetHistSqrt(TH1D* h1, TH1D* h2){
@@ -816,11 +770,10 @@ void GetHistBkg(TH1D* h1, TH1D* h2){
 
 double getAccWeight(TH1D* h, double pt){
   double binN = h->FindBin(pt);
-  TF1 *acc1 = (TF1*)h->FindObject("f1");
-  double acc = acc1->Eval(pt);
-  double weight_ = 1./acc;
+  double weight_ = 1./(h->GetBinContent(binN));
   return weight_;
 }
+
 
 double getEffWeight(TH1D *h, double pt){
   double binN = h->FindBin(pt);
@@ -829,3 +782,4 @@ double getEffWeight(TH1D *h, double pt){
   double weight_ = 1./eff;
   return weight_;
 }
+
