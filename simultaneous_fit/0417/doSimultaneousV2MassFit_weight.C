@@ -21,12 +21,12 @@
 #include <Math/WrappedMultiTF1.h>
 #include <Math/ChebyshevPol.h>
 #include <HFitInterface.h>
-#include "../commonUtility.h"
-#include "../cutsAndBin.h"
-#include "../HiEvtPlaneList.h"
-#include "../Style.h"
-#include "../tdrstyle.C"
-#include "../CMS_lumi_v2mass.C"
+#include "../../commonUtility.h"
+#include "../../cutsAndBin.h"
+#include "../../HiEvtPlaneList.h"
+#include "../../Style.h"
+#include "../../tdrstyle.C"
+#include "../../CMS_lumi_v2mass.C"
 
 //}}}
 
@@ -118,13 +118,12 @@ Double_t TotalYield(Double_t* x, Double_t* par)
   if(JPsi_t2 <= -alpha){
     JPsi_2 = a*TMath::Power((b-JPsi_t2),-n);
   }
-  
 
   return N1*(frac*JPsi_1 + (1-frac)*JPsi_2)
     //+ Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
     //+ Nbkg*(TMath::Exp(-x[0]/Bkgp0));
-	//+ Nbkg*(ROOT::Math::Chebyshev2(x[0],Bkgp0,Bkgp1,Bkgp2));
-	+ Nbkg*(Bkgp0 + Bkgp1*x[0] + Bkgp2*(2.0*x[0]*x[0] - 1.0));
+    //+ Nbkg*(ROOT::Math::Chebyshev2(x[0],Bkgp0,Bkgp1,Bkgp2));
+    + Nbkg*(Bkgp0 + Bkgp1*x[0] + Bkgp2*(2.0*x[0]*x[0] - 1.0));
 }
 
 //totalYieldSig{{{
@@ -173,6 +172,83 @@ Double_t TotalYieldSig(Double_t* x, Double_t* par)
   }
 
   return N1*(frac*JPsi_1 + (1-frac)*JPsi_2);
+}
+
+Double_t Totalvnpol1JPsi(Double_t* x, Double_t* par)
+{
+  //Double_t N1 = par[0];
+  //Double_t Nbkg = par[1];
+  //Double_t mean = par[2];
+  //Double_t sigma = par[3];
+  //Double_t alpha = par[4];
+  //Double_t n = par[5];
+  //Double_t ratio = par[6];
+  //Double_t frac = par[7];
+  //Double_t Bkgmean = par[8];
+  //Double_t Bkgsigma = par[9];
+  //Double_t Bkgp0 = par[10];
+  //Double_t c = par[11];
+  //Double_t c1 = par[12];
+  //Double_t c2 = par[13];
+  //Double_t c3 = par[14];
+  Double_t N1 = par[0];
+  Double_t Nbkg = par[1];
+  Double_t mean = par[2];
+  Double_t sigma = par[3];
+  Double_t alpha = par[4];
+  Double_t n = par[5];
+  Double_t ratio = par[6];
+  Double_t frac = par[7];
+  Double_t Bkgp0 = par[8];
+  Double_t Bkgp1 = par[9];
+  Double_t Bkgp2 = par[10];
+  Double_t c = par[11];
+  Double_t c1 = par[12];
+  Double_t c2 = par[13];
+  Double_t c3 = par[14];
+
+  Double_t sigma1S_2 = sigma*ratio;
+
+  //t2 > t1
+  Double_t JPsi_t1 = (x[0]-mean)/sigma;
+  Double_t JPsi_t2 = (x[0]-mean)/sigma1S_2;
+  if (alpha < 0)
+  {
+
+    cout << "ERROR ::: alpha variable negative!!!! " << endl;
+    return -1;
+  }
+
+  Double_t absAlpha = fabs((Double_t)alpha);
+  Double_t a = TMath::Power(n/absAlpha,n)*exp(-absAlpha*absAlpha/2.);
+  Double_t b = n/absAlpha - absAlpha;
+
+  Double_t JPsi_1 = -1;
+  Double_t JPsi_2 = -1;
+
+  if(JPsi_t1 > -alpha){
+    JPsi_1 = exp(-JPsi_t1*JPsi_t1/2.);
+  }
+  else if(JPsi_t1 <= -alpha){
+    JPsi_1 = a*TMath::Power((b-JPsi_t1),-n);
+  }
+
+  if(JPsi_t2 > -alpha){
+    JPsi_2 = exp(-JPsi_t2*JPsi_t2/2.);
+  }
+  else if(JPsi_t2 <= -alpha){
+    JPsi_2 = a*TMath::Power((b-JPsi_t2),-n);
+  }
+  Double_t SigM = N1*(frac*JPsi_1 + (1-frac)*JPsi_2);
+  Double_t SigM1s = N1*(JPsi_1);
+  //Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
+  //Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0));
+  //Double_t BkgM = Nbkg*(ROOT::Math::Chebyshev2(x[0],Bkgp0,Bkgp1,Bkgp2));
+  Double_t BkgM = Nbkg*(Bkgp0 + Bkgp1*x[0] + Bkgp2*(2.0*x[0]*x[0] - 1.0));
+
+  //return c*(SigM1s/(SigM+BkgM)) + (1 - SigM/(SigM+BkgM))*(c3 + c2*x[0] + c1*x[0]*x[0]);
+  return c*(SigM1s/(SigM+BkgM)) + (1 - SigM/(SigM+BkgM))*(c2 + c1*x[0]);
+
 }
 
 //totalvn pol2 bkg Jpsi{{{
@@ -227,7 +303,7 @@ Double_t Totalvnpol2JPsi(Double_t* x, Double_t* par)
 
   Double_t JPsi_1 = -1;
   Double_t JPsi_2 = -1;
-  
+
   if(JPsi_t1 > -alpha){
     JPsi_1 = exp(-JPsi_t1*JPsi_t1/2.);
   }
@@ -273,7 +349,7 @@ Double_t Totalvnpol3JPsi(Double_t* x, Double_t* par)
   Double_t c3 = par[16];
   Double_t c4 = par[17];
   Double_t sigma1S_2 = sigma*ratio;
-  
+
   //t2 > t1
   Double_t JPsi_t1 = (x[0]-mean)/sigma;
   Double_t JPsi_t2 = (x[0]-mean)/sigma1S_2;
@@ -304,7 +380,7 @@ Double_t Totalvnpol3JPsi(Double_t* x, Double_t* par)
   else if(JPsi_t2 <= -alpha){
     JPsi_2 = a*TMath::Power((b-JPsi_t2),-n);
   }
-  
+
   Double_t SigM = N1*(frac*JPsi_1 + (1-frac)*JPsi_2);
   //Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
   Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0)/2.);
@@ -315,6 +391,14 @@ Double_t Totalvnpol3JPsi(Double_t* x, Double_t* par)
 //}}}
 
 //pol2 bkg{{{
+Double_t pol1bkg(Double_t* x, Double_t* par)
+{
+  Double_t c1 = par[0];
+  Double_t c2 = par[1];
+
+  return c1*x[0]+c2;
+}
+
 Double_t pol2bkg(Double_t* x, Double_t* par)
 {
   Double_t c1 = par[0];
@@ -338,14 +422,15 @@ Double_t pol3bkg(Double_t* x, Double_t* par)
 //}}}
 
 void doSimultaneousV2MassFit_weight(
-    float ptLow =  6.5, float ptHigh = 9,
-    float yLow = 1.6, float yHigh = 2.4,
-	int cLow = 20, int cHigh = 120,
-	int ctauCut=-1,
-	int weight_PR = 0, //PR : 0, NP : 1
-	bool fEffW=true, bool fAccW=true, bool isPtW=true, bool isTnP=true,
-    float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, int ibkg_vn_sel = fpol2, int PR=2
-	)
+    float ptLow =  6.5, float ptHigh = 7.5,
+    float yLow = 0, float yHigh = 2.4,
+    int cLow = 20, int cHigh = 120,
+    int ctauCut=-1,
+    int weight_PR = 0, //PR : 0, NP : 1
+    bool fEffW=true, bool fAccW=true, bool isPtW=true, bool isTnP=true,
+    float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, 
+    int ibkg_vn_sel = fpol1, int PR=2
+    )
 {
 
   TString bCont, wName, cutName;
@@ -370,10 +455,11 @@ void doSimultaneousV2MassFit_weight(
 
   TString kineLabel = getKineLabel (ptLow, ptHigh, yLow, yHigh, SiMuPtCut, cLow, cHigh) ;
   TString dimusignString;
+  TString kineLabelTot;
   if(dimusign) dimusignString = "OS";
   else if(!dimusign) dimusignString = "SS";
 
-  kineLabel = kineLabel + Form("_m%.1f-%.1f",massLow,massHigh) + "_" + dimusignString;
+  kineLabelTot = kineLabel + Form("_m%.1f-%.1f",massLow,massHigh) + "_" + dimusignString;
 
   TF1* fyieldtot;
   TF1* fvntot;
@@ -383,7 +469,8 @@ void doSimultaneousV2MassFit_weight(
 
   int nParmV_;
   int nParBkg;
-  if(ibkg_vn_sel == fpol2) {nParmV_ = 15; nParBkg = 3;} 
+  if(ibkg_vn_sel == fpol1) {nParmV_ = 15; nParBkg = 2;} 
+  else if(ibkg_vn_sel == fpol2) {nParmV_ = 15; nParBkg = 3;} 
   else if(ibkg_vn_sel == fpol3) {nParmV_ = 18; nParBkg = 4;}
   else{
     cout << "ERROR ::: No Selection for v2 background function!!!!" << endl;
@@ -392,7 +479,7 @@ void doSimultaneousV2MassFit_weight(
 
   //Get yield distribution{{{
   //TFile* rf = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/upsilonV2/plots/MassV2_190506/Ups_%s.root",kineLabel.Data()),"read");
-  TFile* rf = new TFile(Form("../roots/v2mass_hist/Jpsi_%s_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d_%s.root", bCont.Data(), kineLabel.Data(),wName.Data(),fEffW,fAccW,isPtW,isTnP,cutName.Data()),"read");
+  TFile* rf = new TFile(Form("../../roots/v2mass_hist/Jpsi_%s_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d_%s.root", bCont.Data(), kineLabelTot.Data(),wName.Data(),fEffW,fAccW,isPtW,isTnP,cutName.Data()),"read");
   //TFile* rf = new TFile("../../Outputs/makeV2Hist_RD/Jpsi_pt6.5-30.0_y0.0-2.4_muPt0.0_centrality20-120_m2.6-3.5_OS.root","read");
   TH1D* h_v2_SplusB = (TH1D*) rf->Get("h_v2_SplusB");  
   TGraphAsymmErrors* g_mass = (TGraphAsymmErrors*) rf->Get("g_mass");  
@@ -401,7 +488,8 @@ void doSimultaneousV2MassFit_weight(
   //define function for simultaneous fitting{{{
   TF1* fmass_total = new TF1("fmass_total", TotalYield, massLow, massHigh, nParmM);
   TF1* fvn_simul;
-  if(ibkg_vn_sel == fpol2) fvn_simul = new TF1("fvn_simul", Totalvnpol2JPsi, massLow, massHigh, nParmV_);
+  if(ibkg_vn_sel == fpol1) fvn_simul = new TF1("fvn_simul", Totalvnpol1JPsi, massLow, massHigh, nParmV_);
+  else if(ibkg_vn_sel == fpol2) fvn_simul = new TF1("fvn_simul", Totalvnpol2JPsi, massLow, massHigh, nParmV_);
   else if(ibkg_vn_sel == fpol3) fvn_simul = new TF1("fvn_simul", Totalvnpol3JPsi, massLow, massHigh, nParmV_);
   //}}}
 
@@ -436,28 +524,27 @@ void doSimultaneousV2MassFit_weight(
   //}}}
 
   //Get fitting parameter{{{
-  Double_t N1_ = 2e+4;
-  Double_t Nbkg_ = 4e+5;
+  Double_t N1_ = 2e+6;
+  Double_t Nbkg_ = 4e+6;
   Double_t mean_ = pdgMass.JPsi;
-  Double_t sigma_ = 7.6827e-02;
+  Double_t sigma_ = 0.04;
   //Double_t alpha_ = 1.526;
-  Double_t alpha_ = 1.87;
-  Double_t n_ = 2.81;
+  Double_t alpha_ = 2.1;
+  Double_t n_ = 1.55;
   //Double_t n_ = 2.2;
-  Double_t ratio_ = 0.32;
+  Double_t ratio_ = 0.35;
   Double_t frac_ = 0.419;
   //Double_t Bkgmean_ = 7.99882;
   //Double_t Bkgsigma_ = 1.12746;
-  Double_t Bkgp0_ = 0.02621;
-  Double_t Bkgp1_ = -0.0412;
+  Double_t Bkgp0_ = 0.4;
+  Double_t Bkgp1_ = 0.4;
   Double_t Bkgp2_ = 0.0146131;
-  Double_t c_ = 0.04911;
+  Double_t c_ = 0.06511;
   Double_t c1_ = 0.0036981;
   Double_t c2_ = -0.00234097;
   Double_t c3_ = 0.003312;
   //Double_t c4_ = -0.11964;
   //}}}
-
 
   Double_t par0[nParmV];
 
@@ -478,36 +565,62 @@ void doSimultaneousV2MassFit_weight(
   //par0[14] = c3_;
   //par0[15] = c4_;
   //}}}
-  par0[0] = N1_;
-  par0[1] = Nbkg_;
-  par0[2] = mean_;
-  par0[3] = sigma_;
-  par0[4] = alpha_;
-  par0[5] = n_;
-  par0[6] = ratio_;
-  par0[7] = frac_;
-  par0[8] = Bkgp0_;
-  par0[9] = Bkgp1_;
-  par0[10] = Bkgp2_;
+  
+  //par0[0] = N1_;
+  //par0[1] = Nbkg_;
+  //par0[2] = mean_;
+  //par0[3] = sigma_;
+  //par0[4] = alpha_;
+  //par0[5] = n_;
+  //par0[6] = ratio_;
+  //par0[7] = frac_;
+  //par0[8] = Bkgp0_;
+  //par0[9] = Bkgp1_;
+  //par0[10] = Bkgp2_;
+  //par0[11] = c_;
+  //par0[12] = c1_;
+  //par0[13] = c2_;
+  //par0[14] = c3_;
+  //par0[13] = c4_;
+
+  TString DATE = "Corr";
+  TFile* fMass;
+  fMass = new TFile(Form("../../Macros/2021_04_22/roots/2DFit_%s/Mass/MassFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, isPtW, isTnP));
+  RooDataSet *datasetMass = (RooDataSet*)fMass->Get("datasetMass");
+  RooAddPdf  *pdfMASS_Tot = (RooAddPdf*)fMass->Get("pdfMASS_Tot");
+  RooWorkspace *ws = new RooWorkspace("workspace");
+  ws->import(*datasetMass);
+
+  par0[0] = ws->var("N_Jpsi")->getVal();
+  par0[1] = ws->var("N_Bkg")->getVal();
+  par0[2] = ws->var("m_{J/#Psi}")->getVal();
+  par0[3] = ws->var("sigma_1_A")->getVal();
+  par0[4] = ws->var("alpha_1_A")->getVal();
+  par0[5] = ws->var("n_1_A")->getVal();
+  par0[6] = ws->var("x_A")->getVal();
+  par0[7] = ws->var("f")->getVal();
+  par0[8] = ws->var("sl1")->getVal();
+  par0[9] = ws->var("sl2")->getVal();
   par0[11] = c_;
   par0[12] = c1_;
   par0[13] = c2_;
-  par0[14] = c3_;
-  //par0[13] = c4_;
-
 
   //combined function condition{{{
   //Double_t parLimitLow[nParmV]  = {     0,        0, mean_ -0.02, 0.01, 1.301, 1.351, 0, 0,  0,   0,  0, -0.2, -5, -5, -4, -4};
   //Double_t parLimitHigh[nParmV] = {N1_*10, Nbkg_*10, mean_ +0.02, 0.08, 4.8, 4.8, 1, 1, 25,  15, 25,  0.2,  5,  5,  4,  4};
   //Double_t parLimitLow[nParmV]  = {      0,     0, mean_ -0.02,  0.01,   1.2,   1.2, 0, 0,       0,        0,     0,    0, -5, -5, -4, -4};
   //Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   9.8,   9.8, 1, 1,      25,       25,    25,  0.3,  5,  5,  4,  4};
-  //                                    N1,      NBkg,   Jpsi mass, sigma, alpha,     n, x, f, Bkgmean, Bkgsigma, Bkgp0,    c, c1, c2, c3, c4;
-  Double_t parLimitLow[nParmV]  = {     0,        0,   mean_ -0.02,  0.01,   1.2,   1.2, 0,  0,   -2.0,   -2.0,  -2.0,   0, -4, -4, -4 };
-  Double_t parLimitHigh[nParmV] = { N1_*5,  Nbkg_*5,   mean_ +0.02,  0.08,   9.8,   9.8, 1,  1,    2.0,    2.0,   2.0, 0.3,  4,  4,  4};
+  //                                 N1,     NBkg,   Jpsi mass, sigma, alpha,   n, x,  f, Bkgmean, Bkgsigma, Bkgp0,   c, c1, c2, c3, c4;
+  Double_t parLimitLow[nParmV]  = {    0,       0, mean_ -0.02,  0.01,   1.0, 0.4, 0,  0,    -5.0,     -5.0,  -5.0,   0, -4, -4, -4 };
+  Double_t parLimitHigh[nParmV] = {N1_*5, Nbkg_*5, mean_ +0.02,  0.08,   4.1, 3.1, 1,  1,     5.0,      5.0,   5.0, 1.1,  4,  4,  4};
   //                                    N1,    NBkg,     Jpsi mass, sigma, alpha,     n, x,  f,  Bkgp0,  Bkgp1, Bkgp2,   c, c1, c2, c3;
   fitter.Config().SetParamsSettings(nParmV_, par0);
   for(int ipar = 0; ipar<nParmV_; ipar++){
-    fitter.Config().ParSettings(ipar).SetLimits(parLimitLow[ipar],parLimitHigh[ipar]);
+    if(ipar<11){
+    fitter.Config().ParSettings(ipar).SetLimits(par0[ipar],par0[ipar]);
+    }
+    else fitter.Config().ParSettings(ipar).SetLimits(parLimitLow[ipar],parLimitHigh[ipar]);
+    //fitter.Config().ParSettings(ipar).SetLimits(parLimitLow[ipar],parLimitHigh[ipar]);
   }
   fitter.Config().MinimizerOptions().SetPrintLevel(0);
   fitter.Config().SetMinimizer("Minuit2","Migrad");
@@ -517,21 +630,20 @@ void doSimultaneousV2MassFit_weight(
   ROOT::Fit::FitResult result = fitter.Result();
   result.Print(std::cout);
 
-
   cout << "****************************************" << endl;
   cout << "	" << "	Upper Limit" << "	" << "Lower Limit" << endl;
   // Print Parameter and Parameter Limits
-  for(int i=0; i<15; i++){
-      cout << "par[" << i << "]	:	" << parLimitHigh[i] << "	" <<"	" << parLimitLow[i] << endl;
+  for(int i=11; i<15; i++){
+    cout << "par[" << i << "]	:	" << parLimitHigh[i] << "	" <<"	" << parLimitLow[i] << endl;
   }
   cout << " " << endl;
 
   /*
-  if (PR==2) {TString fitRestxt = Form("../roots/v2mass_fit/SimFitResult_%s_%s.txt",bCont.Data(),kineLabel.Data());}
-  else if (PR==0 || PR==1) {TString fitRestxt = Form("../roots/v2mass_fit/SimFitResult_%s_%s_ctau_%.2f.txt",bCont.Data(),kineLabel.Data(),ctauCut);}
-  ofstream outputFile(fitRestxt.Data());
-  result.Print(outputFile);
-  outputFile.close();*/
+     if (PR==2) {TString fitRestxt = Form("../roots/v2mass_fit/SimFitResult_%s_%s.txt",bCont.Data(),kineLabel.Data());}
+     else if (PR==0 || PR==1) {TString fitRestxt = Form("../roots/v2mass_fit/SimFitResult_%s_%s_ctau_%.2f.txt",bCont.Data(),kineLabel.Data(),ctauCut);}
+     ofstream outputFile(fitRestxt.Data());
+     result.Print(outputFile);
+     outputFile.close();*/
 
   //Yield fitting result{{{
   fmass_total->SetFitResult(result, iparmass);
@@ -539,7 +651,7 @@ void doSimultaneousV2MassFit_weight(
   g_mass->GetListOfFunctions()->Add(fmass_total);
 
   //TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*( TMath::Exp(-x/[3])*(TMath::Erf((x-[1])/(TMath::Sqrt(2)*[2]))+1)/2. )", massLow, massHigh);
-//  TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*(TMath::Exp(-x/[1]))", massLow, massHigh);
+  //  TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*(TMath::Exp(-x/[1]))", massLow, massHigh);
   TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*([1]+[2]*x+[3]*(2.0*x*x-1.0))", massLow, massHigh);
   fyield_bkg->FixParameter(0, fmass_total->GetParameter(1));
   fyield_bkg->FixParameter(1, fmass_total->GetParameter(8));
@@ -569,11 +681,20 @@ void doSimultaneousV2MassFit_weight(
   fyield_sig->FixParameter(4, fvn_simul->GetParameter(5));
   fyield_sig->FixParameter(5, fvn_simul->GetParameter(6));
   fyield_sig->FixParameter(6, fvn_simul->GetParameter(7));
-  
+
   g_mass->GetListOfFunctions()->Add(fyield_sig);
 
   TF1* fvn_bkg;
-  if(ibkg_vn_sel == fpol2){
+  if(ibkg_vn_sel == fpol1){
+    fvn_bkg = new TF1("fvn_bkg",pol1bkg, massLow, massHigh, nParBkg);
+    //fvn_bkg->FixParameter(0, fvn_simul->GetParameter(12));
+    //fvn_bkg->FixParameter(1, fvn_simul->GetParameter(13));
+    //fvn_bkg->FixParameter(2, fvn_simul->GetParameter(14));
+    fvn_bkg->FixParameter(0, fvn_simul->GetParameter(12));
+    fvn_bkg->FixParameter(1, fvn_simul->GetParameter(13));
+    fvn_bkg->FixParameter(2, fvn_simul->GetParameter(14));
+  }
+  else if(ibkg_vn_sel == fpol2){
     fvn_bkg = new TF1("fvn_bkg",pol2bkg, massLow, massHigh, nParBkg);
     //fvn_bkg->FixParameter(0, fvn_simul->GetParameter(12));
     //fvn_bkg->FixParameter(1, fvn_simul->GetParameter(13));
@@ -599,15 +720,15 @@ void doSimultaneousV2MassFit_weight(
   h_v2_SplusB->GetListOfFunctions()->Add(fvn_simul);
   h_v2_SplusB->GetListOfFunctions()->Add(fvn_bkg);
 
-  v2 = fvn_simul->GetParameter(9);
-  v2e = fvn_simul->GetParError(9);
+  v2 = fvn_simul->GetParameter(11);
+  v2e = fvn_simul->GetParError(11);
 
   // Drawing 
   fyield_bkg->SetLineColor(kBlue);
   fyield_bkg->SetLineStyle(kDashed);
   fyield_bkg->SetLineWidth(3);
-//  fyield_bkg->SetFillStyle(3344);
-//  fyield_bkg->SetFillColor(kAzure-9);
+  //  fyield_bkg->SetFillStyle(3344);
+  //  fyield_bkg->SetFillColor(kAzure-9);
   fyield_sig->SetFillStyle(3004);
   fyield_sig->SetFillColor(kRed);
   fmass_total->SetLineColor(kBlack);
@@ -632,13 +753,13 @@ void doSimultaneousV2MassFit_weight(
   h_v2_SplusB->GetXaxis()->SetLimits(massLow,massHigh);
   SetHistStyle(h_v2_SplusB,0,0);
   SetGraphStyle2(g_mass,0,0);
-  
+
   g_mass->SetMarkerSize(1);
   g_mass->SetMinimum(0);
   g_mass->GetXaxis()->SetLimits(massLow,massHigh);
   g_mass->GetXaxis()->SetRangeUser(massLow,massHigh);
   g_mass->GetYaxis()->SetTitleOffset(1.7);
-  g_mass->GetYaxis()->SetTitle("Events/(0.02GeV/c^{2})");
+  g_mass->GetYaxis()->SetTitle("Events/(0.025GeV/c^{2})");
   g_mass->GetYaxis()->SetLabelSize(0.055);
   g_mass->GetXaxis()->SetLabelSize(0.055);
   g_mass->GetXaxis()->SetTitleSize(0.07);
@@ -653,7 +774,7 @@ void doSimultaneousV2MassFit_weight(
   float pos_y = 0.76;
   float pos_y_diff = 0.071;
   int text_color = 1;
-  float text_size = 16;
+  float text_size = 18;
   TString perc = "%";
 
   TLegend *leg1 = new TLegend(0.75,0.55,0.95,0.75);
@@ -668,6 +789,7 @@ void doSimultaneousV2MassFit_weight(
   TPad* pad1 = new TPad("pad1","pad1",0,0.5,1.0,1.0);
   TPad* pad2 = new TPad("pad2","pad2",0,0.0,1.0,0.5);
   c_mass_v2->cd();
+  pad1->SetLogy();
   pad1->SetTicks(1,1);
   pad1->SetBottomMargin(0);
   pad1->SetLeftMargin(0.19);
@@ -726,7 +848,7 @@ void doSimultaneousV2MassFit_weight(
   h_v2_SplusB->GetXaxis()->SetTickLength(sizeTick/tickScaleX);
   h_v2_SplusB->Draw("P");
   jumSun(massLow,0,massHigh,0,1,1);
-  drawText(Form("v_{2}^{S} = %.3f #pm %.3f",v2,v2e),pos_x_mass,pos_y,text_color,text_size);
+  drawText(Form("v_{2}^{S} = %.3f #pm %.3f",v2,v2e),pos_x_mass+0.45,pos_y+pos_y_diff*2,text_color,text_size+2);
   CMS_lumi_v2mass(pad1,iPeriod,iPos);  
   pad1->Update();
   pad2->Update();
@@ -734,7 +856,7 @@ void doSimultaneousV2MassFit_weight(
   pad1->Draw();
   pad2->Draw();
   c_mass_v2->Update();
-  if (PR==2) {c_mass_v2->SaveAs(Form("../figs/v2mass_fit/v2Mass_%s_%s_%s.pdf",bCont.Data(), kineLabel.Data(),cutName.Data()));}
+  if (PR==2) {c_mass_v2->SaveAs(Form("../../figs/v2mass_fit/v2Mass_%s_%s_%s.pdf",bCont.Data(), kineLabel.Data(),cutName.Data()));}
   //if (PR==0||PR==1) {c_mass_v2->SaveAs(Form("../figs/v2mass_fit/v2Mass_%s_%s_ctau_%.2f.pdf",bCont.Data(), kineLabel.Data(),ctauCut));}
   /*
      Double_t xmass[200];
@@ -830,8 +952,8 @@ void doSimultaneousV2MassFit_weight(
   lt1->DrawLatex(0.5, 0.38, Form("Chi2/ndf = %.f/%d", Chi2v2, Ndfv2));
   //}}}
   */
-  if (PR==2) {TFile *wf = new TFile(Form("../roots/v2mass_fit/SimFitResult_%s_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d.root", bCont.Data(), kineLabel.Data(),wName.Data(),fEffW,fAccW,isPtW,isTnP),"recreate"); wf->cd();}
-//  else if (PR==0 || PR==1) {TFile *wf = new TFile(Form("../roots/v2mass_fit/SimFitResult_%s_%s_ctau_%.2f.root",bCont.Data(), kineLabel.Data(), ctauCut),"recreate"); wf->cd();}
+  if (PR==2) {TFile *wf = new TFile(Form("../../roots/v2mass_fit/SimFitResult_%s_%s_%s_Eff%d_Acc%d_PtW%d_TnP%d.root", bCont.Data(), kineLabel.Data(),wName.Data(),fEffW,fAccW,isPtW,isTnP),"recreate"); wf->cd();}
+  //  else if (PR==0 || PR==1) {TFile *wf = new TFile(Form("../roots/v2mass_fit/SimFitResult_%s_%s_ctau_%.2f.root",bCont.Data(), kineLabel.Data(), ctauCut),"recreate"); wf->cd();}
   //store individual function{{{
   fyieldtot = (TF1*) fmass_total->Clone();
   fyieldtot->SetName("massfit");
@@ -855,4 +977,4 @@ void doSimultaneousV2MassFit_weight(
   v2plot->SetTitle("");
   v2plot->SetName("v2vspt");
   v2plot->Write();
-}
+  }
