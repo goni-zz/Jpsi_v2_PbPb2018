@@ -27,12 +27,13 @@ void Final2DFit_Corr(
     float ptLow=3, float ptHigh=4.5,
     float yLow=1.6, float yHigh=2.4,
     int cLow=20, int cHigh=120,
+    TString DATE="Corr",
     int PRw=1, bool fEffW = true, bool fAccW = true, bool isPtW = true, bool isTnP = true
     )
 {
-  TString DATE="Corr";
+
   gStyle->SetEndErrorSize(0);
-  gSystem->mkdir(Form("roots/2DFit_%s/Final",DATE.Data()), kTRUE);
+  gSystem->mkdir(Form("roots/2DFit_%s/Final",DATE.Data()),kTRUE);
   gSystem->mkdir(Form("figs/2DFit_%s/Final", DATE.Data()),kTRUE);
 
   TString fname;
@@ -53,12 +54,12 @@ void Final2DFit_Corr(
   TString kineCut; TString OS;
   TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
 
-  f1 = new TFile(Form("../../skimmedFiles/OniaRooDataSet_isMC0_JPsi_%sw_Effw%d_Accw%d_PtW%d_TnP%d_20210407.root",fname.Data(),fEffW,fAccW,isPtW,isTnP));
+  f1 = new TFile(Form("../../skimmedFiles/OniaRooDataSet_isMC0_JPsi_%sw_Effw%d_Accw%d_PtW%d_TnP%d_20210426.root",fname.Data(),fEffW,fAccW,isPtW,isTnP));
   fMass = new TFile(Form("roots/2DFit_%s/Mass/MassFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP));
   fCErr = new TFile(Form("roots/2DFit_%s/CtauErr/CtauErrResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP));
   fCRes = new TFile(Form("roots/2DFit_%s/CtauRes/CtauResResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP));
   fCBkg = new TFile(Form("roots/2DFit_%s/CtauBkg/CtauBkgResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP));
-  fCTrue = new TFile(Form("../../roots/2DFit_%s/CtauTrue/CtauTrueResult_Inclusive_%s.root",DATE.Data(),kineLabel.Data()));
+  fCTrue = new TFile(Form("../roots/2DFit_%s/CtauTrue/CtauTrueResult_Inclusive_%s.root","210503",kineLabel.Data()));
 
   OS="recoQQsign==0 &&";
   TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) ) &&";//2018 acceptance cut
@@ -81,11 +82,11 @@ void Final2DFit_Corr(
   ws->import(*dataw_Bkg);
   double ctauErrMin;
   double ctauErrMax;
-//  ws->data("dataw_Bkg")->getRange(*ws->var("ctau3DErr"), ctauErrMin, ctauErrMax);
-  if (ptLow==15 && ptHigh==50){
-  ctauErrMin = 0.00777696;
-  ctauErrMax = 0.0505447;}
-  else {ctauErrMin = ws->var("ctau3DErr")->getMin();  ctauErrMax = ws->var("ctau3DErr")->getMax();}
+  //ws->data("dataw_Bkg")->getRange(*ws->var("ctau3DErr"), ctauErrMin, ctauErrMax);
+  //if (ptLow==15 && ptHigh==50){
+  //ctauErrMin = 0.00777696;
+  //ctauErrMax = 0.0505447;}
+  ctauErrMin = ws->var("ctau3DErr")->getMin();  ctauErrMax = ws->var("ctau3DErr")->getMax();
   ws->import(*dataset); //total
   ws->import(*datasetMass);
   ws->import(*pdfMASS_Tot);
@@ -110,12 +111,10 @@ void Final2DFit_Corr(
   RooDataSet *dsTot = (RooDataSet*)datasetW->reduce(*argSet, kineCut.Data() );
   //RooDataSet *dsTot = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), kineCut.Data());
   //RooDataSet *dsToFit = (RooDataSet*)dataset->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y"))), Form("ctau3DErr>=%.6f&&ctau3DErr<=%.6f&&%s", ctauErrMin, ctauErrMax, kineCut.Data()) );
-  RooDataSet* dsToFit = (RooDataSet*)dsTot->reduce(Form("ctau3DErr>=%.6f&&ctau3DErr<=%.6f",ctauErrMin, ctauErrMax))->Clone("dsTot");
-//  RooDataSet* dsToFit = (RooDataSet*)dsTot->reduce(Form("ctau3DErr>=0.0126009&&ctau3DErr<=0.09"))->Clone("dsTot");
-  dsToFit->SetName("dsToFit");
+  //RooDataSet* dsToFit = (RooDataSet*)dsTot->reduce(Form("ctau3DErr>=%.6f&&ctau3DErr<=%.6f",0.009, 0.3))->Clone("dsTot");
+  //RooDataSet* dsToFit = (RooDataSet*)dsTot->reduce(Form("ctau3DErr>=0.0126009&&ctau3DErr<=0.09"))->Clone("dsTot");
   dsTot->SetName("dsTot");
   ws->import(*dsTot);
-  ws->import(*dsToFit);
   ws->var("mass")->setRange(massLow, massHigh);
   ws->var("ctau3D")->setRange(ctauLow, ctauHigh);
   ws->var("ctau3D")->setRange("ctauRange", ctauLow, ctauHigh);
@@ -171,19 +170,20 @@ void Final2DFit_Corr(
   //PR
   ws->factory(Form("SUM::%s(%s)", "pdfCTAUCOND_JpsiPR", "pdfCTAURES"));
   //3-4.5
-  if(ptLow==3&&ptHigh==4.5){ws->factory("b_Jpsi[0.1, 0.101, 0.35]");}//NP fraction for Sig
-  else if(ptLow==4.5&&ptHigh==6.5){ws->factory("b_Jpsi[0.2, 1e-6, 1.]");}//NP fraction for Sig
-  else if(ptLow==6.5&&ptHigh==9){ws->factory("b_Jpsi[0.19, 0.19, .4]");}//NP fraction for Sig
-  else if(ptLow==6.5&&ptHigh==8.5&&yHigh==0.6){ws->factory("b_Jpsi[0.27, 0.21, .29]");}//NP fraction for Sig
-  else if(ptLow==6.5&&ptHigh==7.5){ws->factory("b_Jpsi[0.25, 0.11, 0.51]");}//NP fraction for Sig
-  else if(ptLow==7.5&&ptHigh==9){ws->factory("b_Jpsi[0.27, 0.21, .5]");}//NP fraction for Sig
-  else if(ptLow==9&&ptHigh==10){ws->factory("b_Jpsi[0.27, 0.0, 1.]");}//NP fraction for Sig
-  else if(ptLow==9&&ptHigh==12){ws->factory("b_Jpsi[0.29, 0.27, 0.43]");}//NP fraction for Sig
-  else if(ptLow==10&&ptHigh==12){ws->factory("b_Jpsi[0.3368, 0.25, 0.34]");}//NP fraction for Sig
-  else if(ptLow==12&&ptHigh==15){ws->factory("b_Jpsi[0.43, 0.3, 0.45]");}//NP fraction for Sig
-  else if(ptLow==15&&ptHigh==50){ws->factory("b_Jpsi[0.48, 0.41, 0.53]");}//NP fraction for Sig
-  else if(ptLow==12&&ptHigh==50){ws->factory("b_Jpsi[0.49, 0.4, 0.6]");}//NP fraction for Sig
-  //ws->factory("b_Jpsi[0.27, 1e-8, 1.]");//NP fraction for Sig
+  //if(ptLow==3&&ptHigh==4.5){ws->factory("b_Jpsi[0.09, 1e-8, 1]");}//NP fraction for Sig
+  //else if(ptLow==4.5&&ptHigh==6.5){ws->factory("b_Jpsi[0.2, 1e-6, 1.]");}//NP fraction for Sig
+  //else if(ptLow==6.5&&ptHigh==9){ws->factory("b_Jpsi[0.19, 0.19, .4]");}//NP fraction for Sig
+  //else if(ptLow==6.5&&ptHigh==8.5&&yHigh==0.6){ws->factory("b_Jpsi[0.27, 0.21, .29]");}//NP fraction for Sig
+  //else if(ptLow==6.5&&ptHigh==7.5)ws->factory("b_Jpsi[0.2487, 1e-8, .2988]");//NP fraction for Sig
+  //else if(ptLow==7.5&&ptHigh==9){ws->factory("b_Jpsi[0.27, 0.21, .5]");}//NP fraction for Sig
+  //else if(ptLow==9&&ptHigh==10){ws->factory("b_Jpsi[0.27, 0.0, 1.]");}//NP fraction for Sig
+  //else if(ptLow==9&&ptHigh==12){ws->factory("b_Jpsi[0.29, 0.27, 0.43]");}//NP fraction for Sig
+  //else if(ptLow==10&&ptHigh==12){ws->factory("b_Jpsi[0.3368, 0.25, 0.34]");}//NP fraction for Sig
+  if(ptLow==12&&ptHigh==15){ws->factory("b_Jpsi[0.4057, 0.38, 0.4725]");}//NP fraction for Sig
+  //else if(ptLow==15&&ptHigh==50){ws->factory("b_Jpsi[0.48, 0.41, 0.53]");}//NP fraction for Sig
+  //else if(ptLow==12&&ptHigh==50){ws->factory("b_Jpsi[0.49, 0.4, 0.6]");}//NP fraction for Sig
+  //else ws->factory("b_Jpsi[0.1, 1e-8, 1]");//NP fraction for Sig
+  ws->factory("b_Jpsi[0.461, 1e-8, 0.5]");//NP fraction for Sig
 
   //RooProdPdf pdfbkgPR("pdfCTAU_BkgPR", "", *ws->pdf("pdfCTAUERR_Bkg"),
   //    Conditional( *ws->pdf("pdfCTAUCOND_BkgPR"), RooArgList(*ws->var("ctau3D"))));
@@ -277,11 +277,13 @@ void Final2DFit_Corr(
   c_G->SetLogy();
   pad_G_1->cd();
 
+  RooDataSet* dsToFit = (RooDataSet*)dsTot->reduce(Form("ctau3DErr>=%.6f&&ctau3DErr<=%.6f",ctauErrMin, ctauErrMax))->Clone("dsTot");
+  dsToFit->SetName("dsToFit");
+  ws->import(*dsToFit);
   //double normDSTot = ws->data("dsToFit")->sumEntries()/ws->data("dsTot")->sumEntries();
   //cout<<normDSTot<<": "<<ws->data("dsToFit")->sumEntries()<<"/"<<ws->data("dsTot")->sumEntries()<<endl;
   double normDSTot = (ws->var("N_Jpsi_Mean")->getVal()+ws->var("N_Bkg_Mean")->getVal())/ws->data("dsToFit")->sumEntries();
   cout<<normDSTot<<": "<<ws->var("N_Jpsi_Mean")->getVal()+ws->var("N_Bkg_Mean")->getVal()<<"/"<<ws->data("dsToFit")->sumEntries()<<endl;
-  //double normDSTot = ws->data("dsToFit")->sumEntries();
   //double normBkg = ws->data("dsToFit")->sumEntries()*normDSTot/ws->data("dataw_Bkg")->sumEntries();
   //double normJpsi =ws->data("dsToFit")->sumEntries()*normDSTot/ws->data("dataw_Sig")->sumEntries();
 
@@ -451,66 +453,141 @@ void Final2DFit_Corr(
   pad_H_2->Update();
   printChi2(ws, pad_H_2, frameTMP_H, fitResult, "mass", "data_Mass", "Mass_Tot", nMassBin, false);
 
-  const int nCut = 26;
-  float IntegralCut[nCut]={-0.1,-0.08,-0.05,-0.01,0.001,0.01,0.012,0.026,0.03,0.04,0.043,0.05,0.06,0.068,0.07,0.08,0.082,0.14,0.15,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
+  //const int NCUT=20;
+  //float IntegralCut[NCUT]={-1};
+  //for(int i=1; i<21; i++){
+  //  IntegralCut[i]=IntegralCut[i-1]+0.1; //cout<<i<<endl;
+  //}
+  
   cout << "############################################################################" << endl;
   cout << "Find ctauLeft\n" << endl;
 
+  const int NCUT = 21;
+  //float IntegralCut[NCUT]={
+  //  -1,-0.9,-0.8,-0.7,-0.6,
+  //  -0.5,-0.4,-0.3,-0.2,-0.1,0.0,
+  //  0.1,0.2,0.3,0.4,0.5,
+  //  0.6,0.7,0.8,0.9,1.0};
+
+  double IntegralCut[NCUT]={-1.00000};
+  for(int i=1; i<NCUT+1; i++){
+    IntegralCut[i]=IntegralCut[i-1]+0.1; //cout<<i<<endl;
+  }
+
   const int Nctauarr = sizeof(IntegralCut)/sizeof(double);
-  TH1D* outh1 = new TH1D("Fraction1","Fraction;l_{J/#psi};NP J/#psi Fraction",Nctauarr-1,IntegralCut);
-  TH1D* outh2 = new TH1D("Fraction2","Fraction;l_{J/#psi};NP J/#psi Fraction",Nctauarr-1,IntegralCut);
-  TH1D* outh3 = new TH1D("Fraction3","Fraction;l_{J/#psi};NP J/#psi Fraction",Nctauarr-1,IntegralCut);
+  TH1D* outh1 = new TH1D("Fraction1","Fraction (#font[12]{l}_{J/#psi}<Cut);#font[12]{l}_{J/#psi};nonprompt J/#psi Fraction",Nctauarr-1,IntegralCut);
+  TH1D* outh2 = new TH1D("Fraction2","Fraction (#font[12]{l}_{J/#psi}>Cut);#font[12]{l}_{J/#psi};nonprompt J/#psi Fraction",Nctauarr-1,IntegralCut);
+  TH1D* outh3 = new TH1D("Fraction3","Fraction (Cut1<#font[12]{l}_{J/#psi}<Cut2);#font[12]{l}_{J/#psi};nonprompt J/#psi Fraction",Nctauarr-1,IntegralCut);
+  //TH1D* outh3 = new TH1D("Fraction3","Fraction (Cut1<l_{J/#psi}<Cut2;l_{J/#psi};NP J/#psi Fraction",Nctauarr-1,IntegralCut);
+  double temp1;
+  double temperr1;
+  double fraction=ws->var("b_Jpsi")->getVal();
 
-  float temp1;
-  float temperr1;
-
-  outh->SetBinContent(1,temp1);
-  outh->SetBinError(1,temp1err);
-  for(int i = 0; i<nCut; i++){
+  ofstream of1(Form("figs/2DFit_%s/Final/2DFit_Ctau_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d_Left.txt", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP));
+  ofstream of2(Form("figs/2DFit_%s/Final/2DFit_Ctau_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d_Righ.txt", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP));
+  ofstream of3(Form("figs/2DFit_%s/Final/2DFit_Ctau_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d_Cent.txt", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP));
+  for(int i = 0; i<NCUT; i++){
     ws->var("ctau3D")->setRange("ctauLeft", ctauLow, IntegralCut[i]);
     RooAbsPdf* test1 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiPR");
     RooAbsPdf* test2 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiNoPR");
     RooAbsReal* PR_Integral = test1->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauLeft"));
     RooAbsReal* NP_Integral = test2->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauLeft"));
-    temp1=ws->var("b_Jpsi")->getVal();
-    temperr1=ws->var("b_Jpsi")->getError();
+
+    temp1=NP_Integral->getVal()*fraction/(fraction*NP_Integral->getVal()+(1-fraction)*PR_Integral->getVal());
     outh1->SetBinContent(i,temp1);
-    outh1->SetBinError(i,temperr1);
-    cout << "[INFO] ctau Cut: "<<IntegralCut[i]<<endl;
-    cout << "[INFO] PR Integral: "<< PR_Integral->getVal() <<endl;
-    cout << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
-    cout << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*ws->var("b_Jpsi")->getVal()/(ws->var("b_Jpsi")->getVal()*NP_Integral->getVal()+(1-ws->var("b_Jpsi")->getVal())*PR_Integral->getVal())<<"\n"<<endl;
+    of1 << "[INFO] ctau Cut: "<<IntegralCut[i]<<endl;
+    of1 << "[INFO] PR Integral: "<< PR_Integral->getVal() <<endl;
+    of1 << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
+    of1 << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*ws->var("b_Jpsi")->getVal()/(ws->var("b_Jpsi")->getVal()*NP_Integral->getVal()+(1-ws->var("b_Jpsi")->getVal())*PR_Integral->getVal())<<"\n"<<endl;
   }
 
-  cout << "Find ctauRight\n" << endl;
-  for(int i = 0; i<nCut; i++){
+  for(int i = 0; i<NCUT; i++){
     ws->var("ctau3D")->setRange("ctauRight", IntegralCut[i], ctauHigh);
     RooAbsPdf* test1 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiPR");
     RooAbsPdf* test2 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiNoPR");
     RooAbsReal* PR_Integral = test1->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauRight"));
     RooAbsReal* NP_Integral = test2->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauRight"));
-    temp1=ws->var("b_Jpsi")->getVal();
-    temperr1=ws->var("b_Jpsi")->getError();
+
+    temp1=NP_Integral->getVal()*fraction/(fraction*NP_Integral->getVal()+(1-fraction)*PR_Integral->getVal());
     outh2->SetBinContent(i,temp1);
-    outh2->SetBinError(i,temperr1);
-    cout << "[INFO] ctau Cut: "<<IntegralCut[i]<<endl;
-    cout << "[INFO] PR Integral: "<< PR_Integral->getVal() <<endl;
-    cout << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
-    cout << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*ws->var("b_Jpsi")->getVal()/(ws->var("b_Jpsi")->getVal()*NP_Integral->getVal()+(1-ws->var("b_Jpsi")->getVal())*PR_Integral->getVal())<<"\n"<<endl;
+    of2 << "[INFO] ctau Cut: "<<IntegralCut[i]<<endl;
+    of2 << "[INFO] PR Integral: "<< PR_Integral->getVal() <<endl;
+    of2 << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
+    of2 << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*ws->var("b_Jpsi")->getVal()/(ws->var("b_Jpsi")->getVal()*NP_Integral->getVal()+(1-ws->var("b_Jpsi")->getVal())*PR_Integral->getVal())<<"\n"<<endl;
   }
 
-  cout << "Find cut 3\n" << endl;
-  ws->var("ctau3D")->setRange("ctauCent", -0.08, 0.037);
-  RooAbsPdf* test1 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiPR");
-  RooAbsPdf* test2 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiNoPR");
-  RooAbsReal* PR_Integral = test1->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauCent"));
-  RooAbsReal* NP_Integral = test2->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauCent"));
+  for(int i = 0; i<NCUT; i++){
+    ws->var("ctau3D")->setRange("ctauRight", IntegralCut[i], IntegralCut[i+1]);
+    RooAbsPdf* test1 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiPR");
+    RooAbsPdf* test2 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiNoPR");
+    RooAbsReal* PR_Integral = test1->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauRight"));
+    RooAbsReal* NP_Integral = test2->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauRight"));
 
-  cout << "[INFO] PR Integral: "<< PR_Integral->getVal() <<endl;
-  cout << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
-  cout << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*ws->var("b_Jpsi")->getVal()/(ws->var("b_Jpsi")->getVal()*NP_Integral->getVal()+(1-ws->var("b_Jpsi")->getVal())*PR_Integral->getVal())<<"\n"<<endl;
+    temp1=NP_Integral->getVal()*fraction/(fraction*NP_Integral->getVal()+(1-fraction)*PR_Integral->getVal());
+    outh3->SetBinContent(i,temp1);
+    of3 << "[INFO] ctau Cut: "<<IntegralCut[i]<<endl;
+    of3 << "[INFO] PR Integral: "<< PR_Integral->getVal() <<endl;
+    of3 << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
+    of3 << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*ws->var("b_Jpsi")->getVal()/(ws->var("b_Jpsi")->getVal()*NP_Integral->getVal()+(1-ws->var("b_Jpsi")->getVal())*PR_Integral->getVal())<<"\n"<<endl;
+  }
 
+  //RooArgSet *argset = new RooArgSet(*ws->var("ctau3D"),*ws->var("mass"));
+  //RooAbsPdf* test1;
+  //RooAbsPdf* test2;
+  //test1 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiPR");
+  //test2 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiNoPR");
+  //RooAbsReal* PR_Integral;
+  //RooAbsReal* NP_Integral;
+  //double fraction=ws->var("b_Jpsi")->getVal();
+  //for(int i = 0; i<NCUT; i++){
+  //  ws->var("ctau3D")->setRange(ctauLow, IntegralCut[i]);
+  //  ws->var("ctau3D")->setRange("ctauLeft", ctauLow, IntegralCut[i]);
+  //  test1->forceNumInt(kTRUE);
+  //  test2->forceNumInt(kTRUE);
+  //  PR_Integral = (RooAbsPdf*)test1->createIntegral(*argset, NormSet(*argset), Range("ctauLeft"));
+  //  NP_Integral = (RooAbsPdf*)test2->createIntegral(*argset, NormSet(*argset), Range("ctauLeft"));
+  //  //RooAbsReal* PR_Integral = test1->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauLeft"));
+  //  //RooAbsReal* NP_Integral = test2->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauLeft"));
+  //  temp1=NP_Integral->getVal()*fraction/(fraction*NP_Integral->getVal()+(1-fraction)*PR_Integral->getVal());
+  //  //temperr1=ws->var("b_Jpsi")->getError();
+  //  outh1->SetBinContent(i,temp1);
+  //  //outh1->SetBinError(i,temperr1);
+  //  if(PR_Integral->getVal()>=0&&NP_Integral->getVal()>=0){
+  //  cout << "[INFO] ctau Cut: "<<IntegralCut[i]<<endl;
+  //  cout << "[INFO] PR Integral: "<< PR_Integral->getVal() <<endl;
+  //  cout << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
+  //  cout << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*fraction/(fraction*NP_Integral->getVal()+(1-fraction)*PR_Integral->getVal())<<"\n"<<endl;}
+  //}
 
+  //cout << "Find ctauRight\n" << endl;
+  //for(int i = 0; i<NCUT; i++){
+  //  ws->var("ctau3D")->setRange(IntegralCut[i], ctauHigh);
+  //  ws->var("ctau3D")->setRange("ctauRight", IntegralCut[i], ctauHigh);
+  //  //RooAbsReal* PR_Integral = test1->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauRight"));
+  //  //RooAbsReal* NP_Integral = test2->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauRight"));
+  //  PR_Integral = test1->createIntegral(*argset, NormSet(*argset), Range("ctauRight"));
+  //  NP_Integral = test2->createIntegral(*argset, NormSet(*argset), Range("ctauRight"));
+  //  //temperr1=ws->var("b_Jpsi")->getError();
+  //  temp1=NP_Integral->getVal()*fraction/(fraction*NP_Integral->getVal()+(1-fraction)*PR_Integral->getVal());
+  //  outh2->SetBinContent(i,temp1);
+  //  //outh2->SetBinError(i,temperr1);
+  //  if(PR_Integral->getVal()>=0&&NP_Integral->getVal()>=0){
+  //  cout << "[INFO] ctau Cut: "<<IntegralCut[i]<<endl;
+  //  cout << "[INFO] PR Integral: "<< PR_Integral->getVal() <<endl;
+  //  cout << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
+  //  cout << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*fraction/(fraction*NP_Integral->getVal()+(1-fraction)*PR_Integral->getVal())<<"\n"<<endl;}
+  //}
+
+  //cout << "Find cut 3\n" << endl;
+  //ws->var("ctau3D")->setRange("ctauCent", -0.08, 0.037);
+  //test1 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiPR");
+  //test2 = (RooAbsPdf*) ws->pdf("pdfCTAUMASS_JpsiNoPR");
+  //RooAbsReal* PR_Integral = test1->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauCent"));
+  //RooAbsReal* NP_Integral = test2->createIntegral(*ws->var("ctau3D"), NormSet(*ws->var("ctau3D")), Range("ctauCent"));
+
+  //cout << "[INFO] PR Integral: "<< PR_Integral->getVal() <<endl;
+  //cout << "[INFO] NP Integral: "<< NP_Integral->getVal() <<endl;
+  //cout << "[INFO] BJpsi Fraction: "<<NP_Integral->getVal()*ws->var("b_Jpsi")->getVal()/(ws->var("b_Jpsi")->getVal()*NP_Integral->getVal()+(1-ws->var("b_Jpsi")->getVal())*PR_Integral->getVal())<<"\n"<<endl;
 
   c_G->Update();
   c_G->SaveAs(Form("figs/2DFit_%s/Final/2DFit_Ctau_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.pdf", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP));
@@ -518,6 +595,7 @@ void Final2DFit_Corr(
   c_H->SaveAs(Form("figs/2DFit_%s/Final/2DFit_Mass_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.pdf", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP));
   TFile *outFile = new TFile(Form("roots/2DFit_%s/Final/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP),"recreate");
   //ws->Write();
+  outFile->cd();
   outh1->Write();
   outh2->Write();
   outFile->Close();

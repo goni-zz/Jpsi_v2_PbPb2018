@@ -30,7 +30,7 @@ void CtauErr_Corr(
     )
 {
 
-  TString DATE="Corr";
+  TString DATE="210503";
   gStyle->SetEndErrorSize(0);
   gSystem->mkdir(Form("roots/2DFit_%s/CtauErr",DATE.Data()),kTRUE);
   gSystem->mkdir(Form("figs/2DFit_%s/CtauErr",DATE.Data()),kTRUE);

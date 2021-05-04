@@ -30,11 +30,11 @@ void CtauRes_Corr(
     int PRw=1, bool fEffW = true, bool fAccW = true, bool isPtW = true, bool isTnP = true
     )
 {
-  TString DATE="Corr";
+  TString DATE="210503";
 
   gStyle->SetEndErrorSize(0);
-  gSystem->mkdir("roots/2DFit_Corr/CtauRes",kTRUE);
-  gSystem->mkdir("figs/2DFit_Corr/CtauRes",kTRUE);
+  gSystem->mkdir(Form("roots/2DFit_%s/CtauRes",DATE.Data()),kTRUE);
+  gSystem->mkdir(Form("figs/2DFit_%s/CtauRes",DATE.Data()),kTRUE);
 
   TString fname;
   if (PRw==1) fname="PR";
@@ -138,12 +138,13 @@ void CtauRes_Corr(
   cout<<"NBins: "<<hTot->GetNbinsX()<<endl;
   for(int i=0; i<hTot->GetNbinsX(); i++){
     //cout<<"Content: "<<hTot->GetBinContent(i)<<endl;
-    if(hTot->GetBinContent(i)<=0&&hTot->GetBinContent(i+1)<=0){
+    if(hTot->GetBinContent(i)<=1&&hTot->GetBinContent(i+1)<=1){
       //cout<<"#####"<<i<<": "<<hTot->GetBinLowEdge(i+2)<<endl;
       ctauResMin = hTot->GetBinLowEdge(i+2);
     }
     //if(hTot->GetBinContent(i)>1)ctauResMax = hTot->GetBinCenter(i)+hTot->GetBinWidth(i);
   }
+
   ws->var("ctau3DRes")->setRange("ctauResWindow",ctauResMin,0);
   RooDataSet* dataToFit = (RooDataSet*)ctauResCutDS->reduce(Form("ctau3DRes>=%.f&&ctau3DRes<=0",ctauResMin))->Clone("ctauResCutDS");
   ws->import(*dataToFit, Rename("dataToFit"));

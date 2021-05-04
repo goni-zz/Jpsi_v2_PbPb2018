@@ -30,7 +30,7 @@ void MassFit_Corr(
     int PRw=1, bool fEffW = true, bool fAccW = true, bool isPtW = true, bool isTnP = true
     )
 {
-  TString DATE = "Corr";
+  TString DATE = "210503";
   gStyle->SetEndErrorSize(0);
   gSystem->mkdir(Form("roots/2DFit_%s/Mass",DATE.Data()),kTRUE);
   gSystem->mkdir(Form("figs/2DFit_%s/Mass",DATE.Data()),kTRUE);
@@ -50,7 +50,7 @@ void MassFit_Corr(
   TFile* f1; TFile* f2; TFile* f3;
   TString kineCut;
 
-  f1 = new TFile(Form("../../skimmedFiles/OniaRooDataSet_isMC0_JPsi_%sw_Effw%d_Accw%d_PtW%d_TnP%d_20210407.root",fname.Data(),fEffW,fAccW,isPtW,isTnP));
+  f1 = new TFile(Form("../../skimmedFiles/OniaRooDataSet_isMC0_JPsi_%sw_Effw%d_Accw%d_PtW%d_TnP%d_20210426.root",fname.Data(),fEffW,fAccW,isPtW,isTnP));
   //f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi_w_Effw0_Accw0_PtW1_TnP1_20210111.root");
   //f1 = new TFile("../skimmedFiles/OniaRooDataSet_isMC0_JPsi_w_Effw0_Accw0_PtW1_TnP1_2020%s.root");
   kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5 && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
@@ -58,6 +58,8 @@ void MassFit_Corr(
   TString accCut = "( ((abs(eta1) <= 1.2) && (pt1 >=3.5)) || ((abs(eta2) <= 1.2) && (pt2 >=3.5)) || ((abs(eta1) > 1.2) && (abs(eta1) <= 2.1) && (pt1 >= 5.47-1.89*(abs(eta1)))) || ((abs(eta2) > 1.2)  && (abs(eta2) <= 2.1) && (pt2 >= 5.47-1.89*(abs(eta2)))) || ((abs(eta1) > 2.1) && (abs(eta1) <= 2.4) && (pt1 >= 1.5)) || ((abs(eta2) > 2.1)  && (abs(eta2) <= 2.4) && (pt2 >= 1.5)) ) &&";//2018 acceptance cut
 
   TString OS="recoQQsign==0 &&";
+
+  //TString SglMuPt="pt1>0.5&&pt2>0.5"
 
   kineCut = OS+accCut+kineCut;
 
@@ -79,16 +81,31 @@ void MassFit_Corr(
   //***********************************************************************
 
   //         The order is { alpha_1, n_1, sigma_1,  x, f, m_lambda}
-  //pt.6.5-7.5, y.0-2.4, Cent.10-60
-  //double paramslower[6] = {1.0, 0.4, 0.01, 0.0, 0.0,  0.0};
-  //double paramsupper[6] = {4.1, 3.1, 0.9,  1.0, 1.0, 25.0};
-  //double alpha_1_init = 2.1; double n_1_init = 1.55;
+  //pt.6.5-7.5-9.0, y.0-2.4, Cent.10-60
+  //double paramslower[6] = {1.0, 0.1, 0.01, 0.0, 0.0,  0.0};
+  //double paramsupper[6] = {3.1, 3.1, 0.9,  1.0, 1.0, 25.0};
+  //double alpha_1_init = 2.1; double n_1_init = 1.75;
   //double sigma_1_init = 0.04; double x_init = 0.35; double f_init = 0.4;
   //pt.6.5-7.5, y.0-2.4, Cent.10-60
-  double paramslower[6] = {1.0, 0.6, 0.01, 0.0, 0.0,  0.0};
+  //double paramslower[6] = {1.0, 0.6, 0.01, 0.0, 0.0,  0.0};
+  //double paramsupper[6] = {4.1, 3.1, 0.9,  1.0, 1.0, 25.0};
+  //double alpha_1_init = 2.1; double n_1_init = 1.7;
+  //double sigma_1_init = 0.04; double x_init = 0.35; double f_init = 0.4;
+  //pt.3-4.5, y.1.6-2.4, Cent.10-60
+  //double paramslower[6] = {1.1, 0.2, 0.01, 0.0, 0.0,  0.0};
+  //double paramsupper[6] = {5.1, 3.1, 0.9,  1.0, 1.0, 25.0};
+  //double alpha_1_init = 2.1; double n_1_init = 1.75;
+  //double sigma_1_init = 0.04; double x_init = 0.35; double f_init = 0.4;
+  //pt.4.5-6.5, y.1.6-2.4, Cent.10-60
+  double paramslower[6] = {1.1, 0.2, 0.01, 0.0, 0.0,  0.0};
   double paramsupper[6] = {4.1, 3.1, 0.9,  1.0, 1.0, 25.0};
-  double alpha_1_init = 2.1; double n_1_init = 1.7;
+  double alpha_1_init = 2.0; double n_1_init = 1.65;
   double sigma_1_init = 0.04; double x_init = 0.35; double f_init = 0.4;
+  //pt.3-4.5, y.1.6-2.4, Cent.10-60????
+  //double paramslower[6] = {1.1, 0.6, 0.01, 0.0, 0.0,  0.0};
+  //double paramsupper[6] = {4.1, 3.1, 0.9,  1.0, 1.0, 25.0};
+  //double alpha_1_init = 2.1; double n_1_init = 1.4;
+  //double sigma_1_init = 0.04; double x_init = 0.35; double f_init = 0.4;
   //SIGNAL: initial params
   double m_lambda_init = 5;
   //SIGNAL
@@ -110,27 +127,33 @@ void MassFit_Corr(
   pdfMASS_Jpsi = new RooAddPdf("pdfMASS_Jpsi","Signal ",RooArgList(*cb_1_A,*cb_2_A), RooArgList(*f) );
   //BACKGROUND
   RooRealVar m_lambda_A("#lambda_A","m_lambda",  m_lambda_init, paramslower[5], paramsupper[5]);
-  RooRealVar *sl1 = new RooRealVar("sl1","sl1", .5, -10., 10.);
-  RooRealVar *sl2 = new RooRealVar("sl2","sl2", .4, -10., 10.);
-  RooRealVar *sl3 = new RooRealVar("sl3","sl3", .4, -10., 10.);
-  RooRealVar *sl4 = new RooRealVar("sl4","sl4", .4, -10., 10.);
-  //RooRealVar *N_Bkg = new RooRealVar("N_Bkg","fraction of component 1 in bkg",10000,0,1000000);
+  RooRealVar *sl1 = new RooRealVar("sl1","sl1", .1, -2., 2.);
+  RooRealVar *sl2 = new RooRealVar("sl2","sl2", .1, -2., 2.);
+  RooRealVar *sl3 = new RooRealVar("sl3","sl3", .1, -2., 2.);
+  RooRealVar *sl4 = new RooRealVar("sl4","sl4", .4, -5., 5.);
   //THIS IS THE BACKGROUND FUNCTION
   //RooGenericPdf *pdfMASS_bkg = new RooGenericPdf("pdfMASS_bkg","Background","TMath::Exp(-@0/@1)",RooArgList(*(ws->var("mass")),m_lambda_A));
   //RooGenericPdf *pdfMASS_bkg = new RooGenericPdf("pdfMASS_bkg","Background","TMath::Exp(-@0/@1)*@2+@3",RooArgList(*(ws->var("mass")), m_lambda_A, *sl1, *sl2));
   //RooGenericPdf *pdfMASS_bkg = new RooGenericPdf("bkg","Background","@0*@1+@2",RooArgList( *(ws->var("mass")), sl1, cnst1) );
   RooChebychev *pdfMASS_bkg;
-  if(ptLow==3){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3 ));}
-  if(ptLow!=3){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2));}
+  //if(ptLow==3){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2));}
+  //if(ptLow!=3){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2));}
   //  if(ptLow=15){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3));}
-  if(ptLow==6.5&&ptHigh==7.5){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3));}
-  if(ptLow==6&&ptHigh==7){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3));}
-  if(ptLow==20&&ptHigh==50){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3));}
-  if(ptLow==12&&ptHigh==20){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3));}
-  if(cLow==10&&cHigh==20){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2));}
+  if(ptLow<=6.5){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3));}
+  else pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2));
+  //if(ptLow==9&&ptHigh==12){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3));}
+  //if(ptLow==20&&ptHigh==50){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3));}
+  //if(ptLow==12&&ptHigh==15){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2, *sl3));}
+  //if(cLow==10&&cHigh==20){pdfMASS_bkg = new RooChebychev("pdfMASS_bkg","Background",*(ws->var("mass")),RooArgList(*sl1, *sl2));}
   //Build the model
-  RooRealVar *N_Jpsi= new RooRealVar("N_Jpsi","inclusive Jpsi signals",0,10000000);
-  RooRealVar *N_Bkg = new RooRealVar("N_Bkg","fraction of component 1 in bkg",0,10000000);
+  //RooRealVar *N_Jpsi= new RooRealVar("N_Jpsi","inclusive Jpsi signals",0,700000);
+  //RooRealVar *N_Bkg = new RooRealVar("N_Bkg","fraction of component 1 in bkg",0,700000);
+  //3-4.5
+  //RooRealVar *N_Jpsi= new RooRealVar("N_Jpsi","inclusive Jpsi signals",0,2500000);
+  //RooRealVar *N_Bkg = new RooRealVar("N_Bkg","fraction of component 1 in bkg",0,12000000);
+  //4.5-6.5
+  RooRealVar *N_Jpsi= new RooRealVar("N_Jpsi","inclusive Jpsi signals",0,950000);
+  RooRealVar *N_Bkg = new RooRealVar("N_Bkg","fraction of component 1 in bkg",0,2400000);
   RooAddPdf* pdfMASS_Tot = new RooAddPdf("pdfMASS_Tot","Jpsi + Bkg",RooArgList(*pdfMASS_Jpsi, *pdfMASS_bkg),RooArgList(*N_Jpsi,*N_Bkg));
   //pdfMASS_Tot = new RooAddPdf("pdfMASS_Tot","Jpsi + Bkg",RooArgList(*pdfMASS_Jpsi, *bkg_1order),RooArgList(*N_Jpsi,*N_Bkg));
   //pdfMASS_Tot = new RooAddPdf("pdfMASS_Tot","PR Jpsi + NP Jpsi + Bkg",RooArgList(*cb_1_A, *cb_2_A, *bkg),RooArgList(*N_JpsiPR,*N_JpsiNP,*N_Bkg));
@@ -240,7 +263,6 @@ void MassFit_Corr(
 
   outh->SetBinContent(1,temp1);
   outh->SetBinError(1,temp1err);
-
 
   fitMass->Print();
   Double_t theNLL = fitMass->minNll();

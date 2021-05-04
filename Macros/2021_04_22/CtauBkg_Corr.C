@@ -100,31 +100,31 @@ void CtauBkg_Corr(
   ws->factory("lambdaDF_Bkg[ 0.5, 1e-6, 1.]");
   ws->factory("lambdaDSS_Bkg[0.5, 1e-6, 1.]");}
   if(ptLow==3&&ptHigh==4.5){
-  //ws->factory("b_Bkg[0.85, 0., 1.]");//NP fraction for bkg
-  //ws->factory("fDFSS[0.05, 1e-6, 1.8]");
-  //ws->factory("fDLIV[0.05, 1e-6, 1.]");
-  //ws->factory("lambdaDDS_Bkg[0.001, 0., 1.]");
-  //ws->factory("lambdaDF_Bkg[ 0.001, 0.0001, 1.]");
-  //ws->factory("lambdaDSS_Bkg[0.1, 0., 1.]");}
-  ws->factory("b_Bkg[0.1, 0., 0.5]");//NP fraction for bkg
-  ws->factory("fDFSS[0.77, 0., 1.]");
-  ws->factory("fDLIV[0.91, 0., 1.]");
-  ws->factory("lambdaDDS_Bkg[0.0841, 1e-8, 10.]");
-  ws->factory("lambdaDF_Bkg[0.2, 0.05, 10.]");
-  ws->factory("lambdaDSS_Bkg[0.2, 0.1, 10.]");}
+  ws->factory("b_Bkg[0.85, 0., 1.]");//NP fraction for bkg
+  ws->factory("fDFSS[0.05, 1e-6, 1.8]");
+  ws->factory("fDLIV[0.05, 1e-6, 1.]");
+  ws->factory("lambdaDDS_Bkg[0.001, 0., 1.]");
+  ws->factory("lambdaDF_Bkg[ 0.001, 0.0001, 1.]");
+  ws->factory("lambdaDSS_Bkg[0.1, 0., 1.]");}
+  //ws->factory("b_Bkg[0.9, 0., 1.]");//NP fraction for bkg
+  //ws->factory("fDFSS[0.47, 0., 1.]");
+  //ws->factory("fDLIV[0.51, 0., 1.]");
+  //ws->factory("lambdaDDS_Bkg[0.4, 1e-8, 1.]");
+  //ws->factory("lambdaDF_Bkg[0.6, 1e-8, 1.]");
+  //ws->factory("lambdaDSS_Bkg[0.5, 1e-8, 1.]");}
   if(ptLow==4.5&&ptHigh==6.5){
-  ws->factory("b_Bkg[1e-6, 1e-6, 1.]");//NP fraction for bkg
+  ws->factory("b_Bkg[0.6, 1e-6, 1.]");//NP fraction for bkg
   ws->factory("fDFSS[0.6, 1e-6, 1.]");
   ws->factory("fDLIV[0.5, 1e-6, 1.]");
-  ws->factory("lambdaDDS_Bkg[0.12, 1e-6, 1.]");
-  ws->factory("lambdaDF_Bkg[0.01.,1e-6, 1.]");
-  ws->factory("lambdaDSS_Bkg[0.3, 0.1, 1.]");}
+  ws->factory("lambdaDDS_Bkg[0.2, 1e-8, 1.]");
+  ws->factory("lambdaDF_Bkg [0.7, 1e-8, 1.]");
+  ws->factory("lambdaDSS_Bkg[0.3, 1e-8, 1.]");}
   if(ptLow==6.5&&ptHigh==7.5){
   ws->factory("b_Bkg[0.6, 1e-6, 1.]");//NP fraction for bkg
   ws->factory("fDFSS[0.5, 1e-6, 1.]");
   ws->factory("fDLIV[0.5, 1e-6, 1.]");
-  ws->factory("lambdaDDS_Bkg[0.2, 0.0, 1.]");
-  ws->factory("lambdaDF_Bkg[0.3, 0.1, 1.]");
+  ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 1.]");
+  ws->factory("lambdaDF_Bkg[0.3, 1e-6, 1.]");
   ws->factory("lambdaDSS_Bkg[0.5, 1e-6, 1.]");}
   if(ptLow==7.5&&ptHigh==9){
   ws->factory("b_Bkg[0.6, 1e-6, 1.]");//NP fraction for bkg
@@ -137,39 +137,39 @@ void CtauBkg_Corr(
   ws->factory("b_Bkg[0.6, 1e-6, 1.]");//NP fraction for bkg
   ws->factory("fDFSS[0.5, 1e-6, 1.]");
   ws->factory("fDLIV[0.5, 1e-6, 1.]");
-  ws->factory("lambdaDDS_Bkg[0.2, 0.0, 0.4]");
+  ws->factory("lambdaDDS_Bkg[0.2, 0.0, 1.]");
   ws->factory("lambdaDF_Bkg[0.3, 0.1, 1.]");
   ws->factory("lambdaDSS_Bkg[0.5, 1e-6, 1.]");}
   if(ptLow==9&&ptHigh==10){
   ws->factory("b_Bkg[0.5, 1e-6, 1.]");//NP fraction for bkg
   ws->factory("fDFSS[0.5, 1e-6, 1.]");
   ws->factory("fDLIV[0.5, 1e-6, 1.]");
-  ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 0.4]");
+  ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 1.]");
   ws->factory("lambdaDF_Bkg[0.3, 0.1, 1.]");
   ws->factory("lambdaDSS_Bkg[0.5, 1e-6, 1.]");}
   if(ptLow==9&&ptHigh==12){
   ws->factory("b_Bkg[0.5, 1e-6, 1.]");//NP fraction for bkg
   ws->factory("fDFSS[0.5, 1e-6, 1.]");
   ws->factory("fDLIV[0.5, 1e-6, 1.]");
-  ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 0.4]");
+  ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 1.]");
   ws->factory("lambdaDF_Bkg[0.3, 1e-6, 1.]");
   ws->factory("lambdaDSS_Bkg[0.5, 1e-6, 1.]");}
   if(ptLow==10&&ptHigh==12){
   ws->factory("b_Bkg[0.5, 1e-6, 1.]");//NP fraction for bkg
   ws->factory("fDFSS[0.5, 1e-6, 1.]");
   ws->factory("fDLIV[0.5, 1e-6, 1.]");
-  ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 0.4]");
+  ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 1.]");
   ws->factory("lambdaDF_Bkg[0.3, 1e-6, 1.]");
   ws->factory("lambdaDSS_Bkg[0.5, 1e-6, 1.]");}
   if(ptLow==12&&ptHigh==15){
   ws->factory("b_Bkg[0.5, 1e-6, 1.]");//NP fraction for bkg
   ws->factory("fDFSS[0.5, 1e-6, 1.]");
   ws->factory("fDLIV[0.5, 1e-6, 1.]");
-  ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 0.4]");
+  ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 1.]");
   ws->factory("lambdaDF_Bkg[0.3, 1e-6, 1.]");
   ws->factory("lambdaDSS_Bkg[0.5, 1e-6, 1.]");}
   if(ptLow==12&&ptHigh==50){
-  ws->factory("b_Bkg[0.1, 0., 1.]");//NP fraction for bkg
+  ws->factory("b_Bkg[0.5, 0., 1.]");//NP fraction for bkg
   ws->factory("fDFSS[0.5, 1e-6, 1.]");
   ws->factory("fDLIV[0.5, 1e-6, 1.]");
   ws->factory("lambdaDDS_Bkg[0.2, 1e-6, 1.]");
@@ -255,6 +255,7 @@ void CtauBkg_Corr(
   ws->pdf("pdfCTAU_Bkg_Tot")->setNormRange("ctauWindow");
 
   RooDataSet* dataToFit = (RooDataSet*)dataw_Bkg->reduce(Form("ctau3D>=%.f&&ctau3D<=%.f",ctauMin, ctauMax))->Clone("dataw_Bkg");
+  //RooDataSet* dataToFit = (RooDataSet*)dataw_Bkg->reduce(Form("ctau3D>=%.f&&ctau3D<=%.f",-2.0, 4.0))->Clone("dataw_Bkg");
   ws->import(*dataToFit, Rename("dataToFit"));
 
   pad_E_1->cd();
@@ -268,12 +269,13 @@ void CtauBkg_Corr(
 
   bool isWeighted = ws->data("dataw_Bkg")->isWeighted();
   //RooFitResult* fitCtauBkg = ws->pdf("pdfTot_Bkg")->fitTo(*dataw_Bkg, Save(), Range("ctauRange"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(-1));
-  RooFitResult* fitCtauBkg = ws->pdf("pdfTot_Bkg")->fitTo(*dataw_Bkg, Save(), Range("ctauRange"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(-1), SumW2Error(isWeighted));
+  RooFitResult* fitCtauBkg = ws->pdf("pdfTot_Bkg")->fitTo(*dataToFit, Save(), Range("ctauRange"), Extended(kTRUE), NumCPU(nCPU), PrintLevel(-1), SumW2Error(isWeighted));
   ws->import(*fitCtauBkg, "fitCtauBkg");
 
   myPlot2_E->updateNormVars(RooArgSet(*ws->var("mass"), *ws->var("ctau3D"), *ws->var("ctau3DErr"))) ;
 
-  ws->data("dataToFit")->plotOn(myPlot2_E, Name("data_ctauBkg"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerColor(kBlack), LineColor(kBlack), MarkerSize(0.7));
+  ws->data("dataToFit")->plotOn(myPlot2_E, Name("data_ctauBkg"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerColor(kBlue), LineColor(kBlue), MarkerSize(0.7));
+  ws->data("dataw_Bkg")->plotOn(myPlot2_E, Name("data_ctauBkg"), DataError(RooAbsData::SumW2), XErrorSize(0), MarkerColor(kBlack), LineColor(kBlack), MarkerSize(0.7));
   ws->pdf("pdfCTAU_Bkg_Tot")->plotOn(myPlot2_E, Name("ctauBkg_Tot"),  Normalization(normBkg, RooAbsReal::NumEvent), NumCPU(nCPU),
       ProjWData(RooArgSet(*ws->var("ctau3DErr")), *ws->data("dataw_Bkg"), kTRUE),
       FillStyle(1001), FillColor(kAzure-9), VLines(), DrawOption("LCF"), Precision(1e-4));
