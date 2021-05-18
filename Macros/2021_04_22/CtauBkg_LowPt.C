@@ -31,7 +31,7 @@ void CtauBkg_LowPt(
     )
 {
 
-  TString DATE="210503";
+  TString DATE="210507";
   gStyle->SetEndErrorSize(0);
   gSystem->mkdir(Form("roots/2DFit_%s/CtauBkg",DATE.Data()),kTRUE);
   gSystem->mkdir(Form("figs/2DFit_%s/CtauBkg",DATE.Data()),kTRUE);
@@ -242,7 +242,7 @@ void CtauBkg_LowPt(
   //ctauMin=ctauLow;
   //ctauMax=ctauHigh;
 
-  RooDataSet* dataToFit = (RooDataSet*)dataw_Bkg->reduce(Form("ctau3D>=%.f&&ctau3D<=%.f",-2.0, ctauMax))->Clone("dataw_Bkg");
+  RooDataSet* dataToFit = (RooDataSet*)dataw_Bkg->reduce(Form("ctau3D>=%.f&&ctau3D<=%.f",ctauMin, ctauMax))->Clone("dataw_Bkg");
   ws->import(*dataToFit, Rename("dataToFit"));
   pad_E_1->cd();
   gPad->SetLogy();
