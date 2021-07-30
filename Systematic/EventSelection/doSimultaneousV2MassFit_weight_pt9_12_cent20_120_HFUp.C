@@ -538,10 +538,10 @@ Double_t pol3bkg(Double_t* x, Double_t* par)
 }
 //}}}
 
-void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120_HFUp(
+void doSimultaneousV2MassFit_weight_pt9_12_cent20_120_HFUp(
     int ctauCut=-1,
-    float ptLow =  3, float ptHigh = 4.5,
-    float yLow = 1.6, float yHigh = 2.4,
+    float ptLow =  9, float ptHigh = 12,
+    float yLow = 0, float yHigh = 2.4,
     int cLow = 20, int cHigh = 120,
     int weight_PR = 0, //PR : 0, NP : 1
     bool fEffW=true, bool fAccW=true, bool isPtW=true, bool isTnP=true,
@@ -671,17 +671,17 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120_HFUp(
     N1_min = ws->var("N_Jpsi")->getVal()*0; 
     N1_ = 300000; 
     Nbkg_min = 0;//Par0, 1
-    Nbkg_ = 500000;}//Par0, 1
+    Nbkg_ = 400000;}//Par0, 1
   else if(ctauCut==0){
     N1_min = ws->var("N_Jpsi")->getVal()*0; 
-    N1_ = 300000; 
+    N1_ = 90000; 
     Nbkg_min = 0;//Par0, 1
-    Nbkg_ = 700000;}//Par0, 1
+    Nbkg_ = 110000;}//Par0, 1
   else if(ctauCut==1){
     N1_min = 0; 
-    N1_ = 310000; 
+    N1_ = 80000; 
     Nbkg_min = 0;//Par0, 1
-    Nbkg_ = 1000000;}//Par0, 1
+    Nbkg_ = 10000;}//Par0, 1
   Double_t mean_ = pdgMass.JPsi;//Par2
   Double_t alpha_; Double_t n_;//Par4, 5
   Double_t Bkgp0_;  Double_t Bkgp1_;  Double_t Bkgp2_;//par8, 9, 10

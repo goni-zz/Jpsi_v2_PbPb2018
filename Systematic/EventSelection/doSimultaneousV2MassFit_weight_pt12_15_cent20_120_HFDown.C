@@ -538,10 +538,10 @@ Double_t pol3bkg(Double_t* x, Double_t* par)
 }
 //}}}
 
-void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120_HFUp(
+void doSimultaneousV2MassFit_weight_pt12_15_cent20_120_HFDown(
     int ctauCut=-1,
-    float ptLow =  3, float ptHigh = 4.5,
-    float yLow = 1.6, float yHigh = 2.4,
+    float ptLow =  12, float ptHigh = 15,
+    float yLow = 0, float yHigh = 2.4,
     int cLow = 20, int cHigh = 120,
     int weight_PR = 0, //PR : 0, NP : 1
     bool fEffW=true, bool fAccW=true, bool isPtW=true, bool isTnP=true,
@@ -614,13 +614,13 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120_HFUp(
   double bfrac3=Fraction3->GetBinContent((double)Fraction3->FindFirstBinAbove(1e-3));
 
   TFile *rf;
-  if(ctauCut==0) rf = new TFile(Form("../../roots/v2mass_hist_HFUp/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s_HFUp.root",
+  if(ctauCut==0) rf = new TFile(Form("../../roots/v2mass_hist_HFDown/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s_HFDown.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,ctauHigh,cutName.Data()),"read");
-  else if(ctauCut==-1) rf = new TFile(Form("../../roots/v2mass_hist_HFUp/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s_HFUp.root",
+  else if(ctauCut==-1) rf = new TFile(Form("../../roots/v2mass_hist_HFDown/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s_HFDown.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,cutName.Data()),"read");
-  else if(ctauCut==1) rf = new TFile(Form("../../roots/v2mass_hist_HFUp/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s_HFUp.root",
+  else if(ctauCut==1) rf = new TFile(Form("../../roots/v2mass_hist_HFDown/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s_HFDown.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauHigh,cutName.Data()),"read");
-  else if(ctauCut==2) rf = new TFile(Form("../../roots/v2mass_hist_HFUp/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",
+  else if(ctauCut==2) rf = new TFile(Form("../../roots/v2mass_hist_HFDown/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP),"read");
   //TFile* rf = new TFile("../../Outputs/makeV2Hist_RD/Jpsi_pt6.5-30.0_y0.0-2.4_muPt0.0_centrality20-120_m2.6-3.5_OS.root","read");
   TH1D* h_v2_SplusB = (TH1D*) rf->Get("h_v2_SplusB");  
@@ -668,20 +668,20 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120_HFUp(
   Double_t N1_; Double_t Nbkg_;//Par0, 1
   Double_t N1_min; Double_t Nbkg_min;//Par0, 1
   if(ctauCut==-1){
-    N1_min = ws->var("N_Jpsi")->getVal()*0; 
-    N1_ = 300000; 
-    Nbkg_min = 0;//Par0, 1
-    Nbkg_ = 500000;}//Par0, 1
+    N1_min = 0;
+    N1_ = 100000;
+    Nbkg_min = 10;//Par0, 1
+    Nbkg_ = 100000;}//Par0, 1
   else if(ctauCut==0){
-    N1_min = ws->var("N_Jpsi")->getVal()*0; 
-    N1_ = 300000; 
-    Nbkg_min = 0;//Par0, 1
-    Nbkg_ = 700000;}//Par0, 1
+    N1_min = 0;
+    N1_ = 100000;
+    Nbkg_min = 10;//Par0, 1
+    Nbkg_ = 100000;}//Par0, 1
   else if(ctauCut==1){
-    N1_min = 0; 
-    N1_ = 310000; 
+    N1_min = 0;
+    N1_ = 20000;
     Nbkg_min = 0;//Par0, 1
-    Nbkg_ = 1000000;}//Par0, 1
+    Nbkg_ = 400;}//Par0, 1
   Double_t mean_ = pdgMass.JPsi;//Par2
   Double_t alpha_; Double_t n_;//Par4, 5
   Double_t Bkgp0_;  Double_t Bkgp1_;  Double_t Bkgp2_;//par8, 9, 10
@@ -1027,9 +1027,9 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120_HFUp(
   pad1->Draw();
   pad2->Draw();
   //c_mass_v2->Update();
-  if (ctauCut==0) c_mass_v2->SaveAs(Form("figs/EventSelection/%s/v2Mass_%s_ctau_%.5f_%.5f_%s_HFUp.pdf",DATE.Data(),kineLabel.Data(),ctauLow,ctauHigh,cutName.Data()));
-  else if(ctauCut==-1)c_mass_v2->SaveAs(Form("figs/EventSelection/%s/v2Mass_%s_ctau_%.5f_%s_HFUp.pdf",DATE.Data(),kineLabel.Data(),ctauLow,cutName.Data()));
-  else if(ctauCut==1)c_mass_v2->SaveAs(Form("figs/EventSelection/%s/v2Mass_%s_ctau_%.5f_%s_HFUp.pdf",DATE.Data(),kineLabel.Data(),ctauHigh,cutName.Data()));
+  if (ctauCut==0) c_mass_v2->SaveAs(Form("figs/EventSelection/%s/v2Mass_%s_ctau_%.5f_%.5f_%s_HFDown.pdf",DATE.Data(),kineLabel.Data(),ctauLow,ctauHigh,cutName.Data()));
+  else if(ctauCut==-1)c_mass_v2->SaveAs(Form("figs/EventSelection/%s/v2Mass_%s_ctau_%.5f_%s_HFDown.pdf",DATE.Data(),kineLabel.Data(),ctauLow,cutName.Data()));
+  else if(ctauCut==1)c_mass_v2->SaveAs(Form("figs/EventSelection/%s/v2Mass_%s_ctau_%.5f_%s_HFDown.pdf",DATE.Data(),kineLabel.Data(),ctauHigh,cutName.Data()));
   else if(ctauCut==2)c_mass_v2->SaveAs(Form("figs/EventSelection/%s/v2Mass_%s_Inc.pdf",DATE.Data(),kineLabel.Data()));
   //if (PR==0||PR==1) {c_mass_v2->SaveAs(Form("../figs/EventSelection/v2Mass_%s_%s_ctau_%.2f.pdf",bCont.Data(), kineLabel.Data(),ctauCut));}
   /*
@@ -1127,9 +1127,9 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120_HFUp(
   //}}}
   */
   TFile *wf;
-  if (ctauCut==0) {wf = new TFile(Form("roots/EventSelection/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s_HFUp.root", DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,ctauHigh,cutName.Data()),"recreate"); wf->cd();}
-  else if(ctauCut==-1) {wf = new TFile(Form("roots/EventSelection/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s_HFUp.root", DATE.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,cutName.Data()),"recreate"); wf->cd();}
-  else if(ctauCut==1) {wf = new TFile(Form("roots/EventSelection/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s_HFUp.root", DATE.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHigh,cutName.Data()),"recreate"); wf->cd();}
+  if (ctauCut==0) {wf = new TFile(Form("roots/EventSelection/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s_HFDown.root", DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,ctauHigh,cutName.Data()),"recreate"); wf->cd();}
+  else if(ctauCut==-1) {wf = new TFile(Form("roots/EventSelection/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s_HFDown.root", DATE.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,cutName.Data()),"recreate"); wf->cd();}
+  else if(ctauCut==1) {wf = new TFile(Form("roots/EventSelection/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s_HFDown.root", DATE.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHigh,cutName.Data()),"recreate"); wf->cd();}
   //  else if (PR==0 || PR==1) {TFile *wf = new TFile(Form("../roots/EventSelection/SimFitResult_%s_%s_ctau_%.2f.root",bCont.Data(), kineLabel.Data(), ctauCut),"recreate"); wf->cd();}
   //store individual function{{{
   fyieldtot = (TF1*) fmass_total->Clone();
