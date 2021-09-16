@@ -1,0 +1,9 @@
+mv Mass_FixedFitResult_pt12.0-15.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1_62501.root Mass_FixedFitResult_pt12.0-15.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1.root
+mv Mass_FixedFitResult_pt15.0-50.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1_62501.root Mass_FixedFitResult_pt15.0-50.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1.root
+mv Mass_FixedFitResult_pt3.0-4.5_y1.6-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1_62501.root   Mass_FixedFitResult_pt3.0-4.5_y1.6-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1.root
+mv Mass_FixedFitResult_pt3.0-6.5_y1.6-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1_62501.root   Mass_FixedFitResult_pt3.0-6.5_y1.6-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1.root
+mv Mass_FixedFitResult_pt4.5-6.5_y1.6-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1_62501.root   Mass_FixedFitResult_pt4.5-6.5_y1.6-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1.root
+mv Mass_FixedFitResult_pt6.5-7.5_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1_62501.root   Mass_FixedFitResult_pt6.5-7.5_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1.root
+mv Mass_FixedFitResult_pt6.5-9.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1_62501.root   Mass_FixedFitResult_pt6.5-9.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1.root
+mv Mass_FixedFitResult_pt7.5-9.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1_62501.root   Mass_FixedFitResult_pt7.5-9.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1.root
+mv Mass_FixedFitResult_pt9.0-12.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1_62501.root  Mass_FixedFitResult_pt9.0-12.0_y0.0-2.4_muPt0.0_centrality40-80_PRw_Effw1_Accw1_PtW1_TnP1.root
