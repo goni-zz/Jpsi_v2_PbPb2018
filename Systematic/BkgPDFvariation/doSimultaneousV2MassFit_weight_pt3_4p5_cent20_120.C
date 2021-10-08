@@ -57,6 +57,120 @@ struct GlobalChi2_width
 };
 
 //totalYield{{{
+//Double_t TotalYield(Double_t* x, Double_t* par)
+//{
+//  Double_t N1 = par[0]; //Number of Jpsi yield
+//  Double_t Nbkg = par[1]; //Nuber of Bkg
+//  Double_t mean = par[2]; //Crystall Ball mean
+//  Double_t sigma = par[3]; //Crystall Ball sigma
+//  Double_t alpha = par[4]; //crystall ball alpha
+//  Double_t n = par[5]; //Crystall ball n
+//  Double_t ratio = par[6]; //For fraction of Double Crystall ball
+//  Double_t frac = par[7]; //Crystall ball f
+//  Double_t Bkgp0 = par[8];
+//  Double_t Bkgp1 = par[9];
+//  Double_t Bkgp2 = par[10];
+//  Double_t sigma1_2 = sigma*ratio; //
+//
+//  //t2 > t1
+//  Double_t JPsi_t1 = (x[0]-mean)/sigma;
+//  Double_t JPsi_t2 = (x[0]-mean)/sigma1_2;
+//
+//  if (alpha < 0)
+//  {
+//
+//    cout << "ERROR ::: alpha variable negative!!!! " << endl;
+//    return -1;
+//  }
+//  //Crystall ball fucntion
+//  Double_t absAlpha = TMath::Abs(alpha);
+//  Double_t a = TMath::Power(n/absAlpha,n)*exp(-absAlpha*absAlpha/2.);
+//  Double_t b = n/absAlpha - absAlpha;
+//
+//  Double_t JPsi_1 = -1;
+//  Double_t JPsi_2 = -1;
+//
+//  if(JPsi_t1 > -alpha){
+//    JPsi_1 = exp(-JPsi_t1*JPsi_t1/2.);
+//  }
+//  if(JPsi_t1 <= -alpha){
+//    JPsi_1 = a*TMath::Power((b-JPsi_t1),-n);
+//  }
+//
+//  if(JPsi_t2 > -alpha){
+//    JPsi_2 = exp(-JPsi_t2*JPsi_t2/2.);
+//  }
+//  if(JPsi_t2 <= -alpha){
+//    JPsi_2 = a*TMath::Power((b-JPsi_t2),-n);
+//  }
+//
+//  Double_t fC = n/absAlpha*1/(n-1)*exp(-absAlpha*absAlpha/2);
+//  Double_t fD = TMath::Sqrt(TMath::Pi()/2)*(1+TMath::Erf(absAlpha/TMath::Sqrt(2)));
+//  Double_t fN1 = 1./(sigma*(fC+fD));
+//
+//  double shx = (10*x[0]-37)/3;
+//  return N1*(fN1*frac*JPsi_1 + (1-frac)*JPsi_2)
+//    //+ Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
+//    //+ Nbkg*(TMath::Exp(-x[0]/Bkgp0));
+//    //+ Nbkg*(ROOT::Math::Chebyshev2(x[0],Bkgp0,Bkgp1,Bkgp2));
+//    //+ Nbkg*(Bkgp0 + Bkgp1*x[0] + Bkgp2*(2.0*x[0]*x[0] - 1.0));
+//    //+ Nbkg*(1+Bkgp0*shx + Bkgp1*(2*shx*shx-1) + Bkgp2*(4*shx*shx*shx-3*shx));
+//    + Nbkg*(TMath::Exp(Bkgp1+x[0]*Bkgp0));
+//}
+
+//totalYieldSig{{{
+//Double_t TotalYieldSig(Double_t* x, Double_t* par)
+//{
+//  Double_t N1 = par[0];
+//  Double_t mean = par[1];
+//  Double_t sigma = par[2];
+//  Double_t alpha = par[3];
+//  Double_t n = par[4];
+//  Double_t ratio = par[5];
+//  Double_t frac = par[6];
+//  Double_t sigma1_2 = sigma*ratio;
+//
+//  //t2 > t1
+//  Double_t JPsi_t1 = (x[0]-mean)/sigma;
+//  Double_t JPsi_t2 = (x[0]-mean)/sigma1_2;
+//
+//  if (alpha < 0)
+//  {
+//
+//    cout << "ERROR ::: alpha variable negative!!!! " << endl;
+//    return -1;
+//  }
+//
+//  Double_t absAlpha = fabs((Double_t)alpha);
+//  Double_t a = TMath::Power(n/absAlpha,n)*exp(-absAlpha*absAlpha/2.);
+//  Double_t b = n/absAlpha - absAlpha;
+//
+//
+//  Double_t JPsi_1 = -1;
+//  Double_t JPsi_2 = -1;
+//
+//  if(JPsi_t1 > -alpha){
+//    JPsi_1 = exp(-JPsi_t1*JPsi_t1/2.);
+//  }
+//  else if(JPsi_t1 <= -alpha){
+//    JPsi_1 = a*TMath::Power((b-JPsi_t1),-n);
+//  }
+//
+//  if(JPsi_t2 > -alpha){
+//    JPsi_2 = exp(-JPsi_t2*JPsi_t2/2.);
+//  }
+//  else if(JPsi_t2 <= -alpha){
+//    JPsi_2 = a*TMath::Power((b-JPsi_t2),-n);
+//  }
+//
+//  Double_t fC = n/absAlpha*1/(n-1)*exp(-absAlpha*absAlpha/2);
+//  Double_t fD = TMath::Sqrt(TMath::Pi()/2)*(1+TMath::Erf(absAlpha/TMath::Sqrt(2)));
+//  Double_t fN1 = 1./(sigma*(fC+fD));
+//
+//  return N1*(fN1*frac*JPsi_1 + (1-frac)*JPsi_2);
+//}
+
+//totalYield{{{
 Double_t TotalYield(Double_t* x, Double_t* par)
 {
   Double_t N1 = par[0]; //Number of Jpsi yield
@@ -69,8 +183,9 @@ Double_t TotalYield(Double_t* x, Double_t* par)
   Double_t frac = par[7]; //Crystall ball f
   Double_t Bkgp0 = par[8];
   Double_t Bkgp1 = par[9];
-  Double_t Bkgp2 = par[10];
+  //Double_t Bkgp2 = par[10];
   Double_t sigma1_2 = sigma*ratio; //
+
 
   //t2 > t1
   Double_t JPsi_t1 = (x[0]-mean)/sigma;
@@ -86,6 +201,7 @@ Double_t TotalYield(Double_t* x, Double_t* par)
   Double_t absAlpha = TMath::Abs(alpha);
   Double_t a = TMath::Power(n/absAlpha,n)*exp(-absAlpha*absAlpha/2.);
   Double_t b = n/absAlpha - absAlpha;
+
 
   Double_t JPsi_1 = -1;
   Double_t JPsi_2 = -1;
@@ -104,21 +220,16 @@ Double_t TotalYield(Double_t* x, Double_t* par)
     JPsi_2 = a*TMath::Power((b-JPsi_t2),-n);
   }
 
-  Double_t fC = n/absAlpha*1/(n-1)*exp(-absAlpha*absAlpha/2);
-  Double_t fD = TMath::Sqrt(TMath::Pi()/2)*(1+TMath::Erf(absAlpha/TMath::Sqrt(2)));
-  Double_t fN1 = 1./(sigma*(fC+fD));
-
   double shx = (10*x[0]-37)/3;
-  return N1*(fN1*frac*JPsi_1 + (1-frac)*JPsi_2)
+  return N1*(frac*JPsi_1 + (1-frac)*JPsi_2)
     //+ Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
     //+ Nbkg*(TMath::Exp(-x[0]/Bkgp0));
+    + Nbkg*(TMath::Exp(Bkgp1+x[0]*Bkgp0));
     //+ Nbkg*(ROOT::Math::Chebyshev2(x[0],Bkgp0,Bkgp1,Bkgp2));
     //+ Nbkg*(Bkgp0 + Bkgp1*x[0] + Bkgp2*(2.0*x[0]*x[0] - 1.0));
     //+ Nbkg*(1+Bkgp0*shx + Bkgp1*(2*shx*shx-1) + Bkgp2*(4*shx*shx*shx-3*shx));
-    + Nbkg*(TMath::Exp(Bkgp1+x[0]*Bkgp0));
 }
 
-//totalYieldSig{{{
 Double_t TotalYieldSig(Double_t* x, Double_t* par)
 {
   Double_t N1 = par[0];
@@ -163,11 +274,7 @@ Double_t TotalYieldSig(Double_t* x, Double_t* par)
     JPsi_2 = a*TMath::Power((b-JPsi_t2),-n);
   }
 
-  Double_t fC = n/absAlpha*1/(n-1)*exp(-absAlpha*absAlpha/2);
-  Double_t fD = TMath::Sqrt(TMath::Pi()/2)*(1+TMath::Erf(absAlpha/TMath::Sqrt(2)));
-  Double_t fN1 = 1./(sigma*(fC+fD));
-
-  return N1*(fN1*frac*JPsi_1 + (1-frac)*JPsi_2);
+  return N1*(frac*JPsi_1 + (1-frac)*JPsi_2);
 }
 
 Double_t TotalYieldBkg(Double_t* x, Double_t* par)
@@ -196,7 +303,7 @@ Double_t Totalvnpol1JPsi(Double_t* x, Double_t* par)
   Double_t frac = par[7];
   Double_t Bkgp0 = par[8];
   Double_t Bkgp1 = par[9];
-  Double_t Bkgp2 = par[10];
+  //Double_t Bkgp2 = par[10];
   Double_t c = par[11];
   Double_t c1 = par[12];
   Double_t c2 = par[13];
@@ -275,7 +382,7 @@ Double_t Totalvnpol2JPsi(Double_t* x, Double_t* par)
   Double_t frac = par[7];
   Double_t Bkgp0 = par[8];
   Double_t Bkgp1 = par[9];
-  Double_t Bkgp2 = par[10];
+  //Double_t Bkgp2 = par[10];
   Double_t c = par[11];
   Double_t c1 = par[12];
   Double_t c2 = par[13];
@@ -539,10 +646,10 @@ Double_t pol3bkg(Double_t* x, Double_t* par)
 //}}}
 
 void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
-    float ptLow =  6.5, float ptHigh = 50,
-    float yLow = 0, float yHigh = 2.4,
-    int cLow = 20, int cHigh = 120,
     int ctauCut=-1,
+    float ptLow =  3, float ptHigh = 4.5,
+    float yLow = 1.6, float yHigh = 2.4,
+    int cLow = 20, int cHigh = 120,
     int weight_PR = 0, //PR : 0, NP : 1
     bool fEffW=true, bool fAccW=true, bool isPtW=true, bool isTnP=true,
     float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, 
@@ -593,15 +700,19 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   TString DATE = "10_60";
   //TString DATE = "210503";
   //TString DATE = "Corr";
-  TFile* fMass; TFile* fFinal;
+  TFile* fMass; TFile* fFinal; TFile* fMC;
   //Get yield distribution{{{
   //TFile* rf = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/upsilonV2/plots/MassV2_190506/Ups_%s.root",kineLabel.Data()),"read");
-  fMass = new TFile(Form("../../Macros/2021_04_22/roots/2DFit_%s/Mass/MassFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
-  fFinal = new TFile(Form("../../Macros/2021_04_22/roots/2DFit_%s/Final/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
+  fMass = new TFile(Form("../../Macros/2021_09_14/roots/2DFit_%s/Mass/Mass_FixedFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
+  fFinal = new TFile(Form("../../Macros/2021_09_14/roots/2DFit_%s/Final/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
+ fMC = new TFile(Form("../../Macros/2021_09_14/roots_MC_Root618_v2Final/Mass/MassFitResult_%s_PRw_Effw%d_Accw%d_PtW%d_TnP%d_test.root", kineLabel.Data(), fEffW, fAccW, isPtW, isTnP));
   RooDataSet *datasetMass = (RooDataSet*)fMass->Get("datasetMass");
   RooAddPdf  *pdfMASS_Tot = (RooAddPdf*)fMass->Get("pdfMASS_Tot");
   RooWorkspace *ws = new RooWorkspace("workspace");
   ws->import(*datasetMass);
+  RooWorkspace *wsmc = new RooWorkspace("workspaceMC");
+  RooDataSet *MC_dataset = (RooDataSet*)fMC->Get("datasetMass");
+  wsmc->import(*MC_dataset);
 
   TH1D *Fraction1 = (TH1D*)fFinal->Get("Fraction1");
   TH1D *Fraction2 = (TH1D*)fFinal->Get("Fraction2");
@@ -614,13 +725,13 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   double bfrac3=Fraction3->GetBinContent((double)Fraction3->FindFirstBinAbove(1e-3));
 
   TFile *rf;
-  if(ctauCut==0) rf = new TFile(Form("../../roots/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root",
+  if(ctauCut==0) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,ctauHigh,cutName.Data()),"read");
-  else if(ctauCut==-1) rf = new TFile(Form("../../roots/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
+  else if(ctauCut==-1) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,cutName.Data()),"read");
-  else if(ctauCut==1) rf = new TFile(Form("../../roots/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
+  else if(ctauCut==1) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauHigh,cutName.Data()),"read");
-  else if(ctauCut==2) rf = new TFile(Form("../../roots/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",
+  else if(ctauCut==2) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP),"read");
   //TFile* rf = new TFile("../../Outputs/makeV2Hist_RD/Jpsi_pt6.5-30.0_y0.0-2.4_muPt0.0_centrality20-120_m2.6-3.5_OS.root","read");
   TH1D* h_v2_SplusB = (TH1D*) rf->Get("h_v2_SplusB");  
@@ -668,20 +779,24 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   Double_t N1_; Double_t Nbkg_;//Par0, 1
   Double_t N1_min; Double_t Nbkg_min;//Par0, 1
   if(ctauCut==-1){
-    N1_min = ws->var("N_Jpsi")->getVal()*0; 
-    N1_ = 400000; 
+    N1_min = ws->var("N_Jpsi")->getVal()*0;
+    N1_ = 400000;
     Nbkg_min = ws->var("N_Bkg")->getVal()*0.01;//Par0, 1
     Nbkg_ = 400000;}//Par0, 1
   else if(ctauCut==0){
-    N1_min = 0; 
-    N1_ = 400000; 
+    N1_min = 0;
+    N1_ = 300000;
     Nbkg_min = 0;//Par0, 1
-    Nbkg_ = 200000;}//Par0, 1
+    Nbkg_ = 300000;}//Par0, 1
   else if(ctauCut==1){
-    N1_min = 0; 
-    N1_ = 370000; 
+    N1_min = 0;
+    N1_ = 161000;
     Nbkg_min = 0;//Par0, 1
-    Nbkg_ = 350000;}//Par0, 1
+    Nbkg_ = 35000;}//Par0, 1
+    //N1_min = 0;
+    //N1_ = 370000;
+    //Nbkg_min = 0;//Par0, 1
+    //Nbkg_ = 350000;}//Par0, 1
   Double_t mean_ = pdgMass.JPsi;//Par2
   Double_t alpha_; Double_t n_;//Par4, 5
   Double_t Bkgp0_;  Double_t Bkgp1_;  Double_t Bkgp2_;//par8, 9, 10
@@ -694,27 +809,27 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   Double_t ratio_ = 0.35;//par6
   Double_t frac_ = 0.45;//par7
   //if(ctauCut==-1){Bkgp0_=0.1;   Bkgp1_=0.1;   Bkgp2_=0.1;}//par8, 9, 10
-  if(ctauCut==-1){Bkgp0_=-0.064908;   Bkgp1_=-0.000670835;   Bkgp2_=0.00622086;}
-  else if(ctauCut==0){Bkgp0_=-0.064908;   Bkgp1_=-0.000670835;   Bkgp2_=0.00622086;}
-  else if(ctauCut==1){Bkgp0_=-0.064908;   Bkgp1_=-0.000670835;   Bkgp2_=0.00622086;}
+  if(ctauCut==-1){Bkgp0_=-0.064908;   Bkgp1_=-0.000670835;   }
+  else if(ctauCut==0){Bkgp0_=-0.064908;   Bkgp1_=-0.000670835;}
+  else if(ctauCut==1){Bkgp0_=-0.064908;   Bkgp1_=-0.000670835;}
   
   //if(ctauCut==-1){c_ = 0.05; c1_ = 0.1; c2_ = 0.1;}//par11, 12, 13
   if(ctauCut==-1){c_ = 0.1; c1_ = -0.01428; c2_ = 0.0284097;}
-  else if(ctauCut==0){c_ = 0.04; c1_ = -0.01428; c2_ = 0.0284097;}
+  else if(ctauCut==0){c_ = 0.06; c1_ = -0.01428; c2_ = 0.0284097;}
   else if(ctauCut==1){c_ = 0.07; c1_ = -0.01428; c2_ = 0.0284097;}
 
   Double_t par0[nParmV];
 
-  gSystem->mkdir(Form ("figs/SignalPDFvariation/%s",DATE.Data()), kTRUE);
-  gSystem->mkdir(Form("roots/SignalPDFvariation/%s",DATE.Data()), kTRUE);
+  gSystem->mkdir(Form ("figs/BkgPDFvariation/%s",DATE.Data()), kTRUE);
+  gSystem->mkdir(Form("roots/BkgPDFvariation/%s",DATE.Data()), kTRUE);
 
   par0[0] = ws->var("N_Jpsi")->getVal();
   par0[1] = ws->var("N_Bkg")->getVal();
   par0[2] = ws->var("m_{J/#Psi}")->getVal();
   par0[3] = ws->var("sigma_1_A")->getVal();
-  par0[4] = ws->var("alpha_1_A")->getVal()*0.95;
-  par0[5] = ws->var("n_1_A")->getVal()*0.95;
-  par0[6] = ws->var("x_A")->getVal();
+  par0[4] = wsmc->var("alpha_1_A")->getVal();
+  par0[5] = wsmc->var("n_1_A")->getVal();
+  par0[6] = wsmc->var("x_A")->getVal();
   par0[7] = ws->var("f")->getVal();
   par0[8] = ws->var("sl1")->getVal();
   par0[9] = ws->var("sl2")->getVal();
@@ -727,7 +842,7 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   Double_t parLimitLow[nParmV]  = {N1_min, Nbkg_min, mean_-0.1,  0.01,
     1.01, 0.4, 0,  0,  
     -30, -30, -30, 
-    0., -30, -30};
+    -0.2, -30, -30};
   //Double_t parLimitHigh[nParmV] = {par0[0]*0.5, par0[1]*0.31, mean_+0.1,  0.9,//Right
   //Double_t parLimitHigh[nParmV] = {par0[0], par0[1], mean_+0.1,  0.9,//Center
   Double_t parLimitHigh[nParmV] = {N1_, Nbkg_, mean_+0.1,  0.9,//Right
@@ -742,7 +857,8 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
     //  fitter.Config().ParSettings(ipar).SetLimits(par0[ipar],par0[ipar]);
     //}
     //else fitter.Config().ParSettings(ipar).SetLimits(parLimitLow[ipar],parLimitHigh[ipar]);
-    fitter.Config().ParSettings(ipar).SetLimits(parLimitLow[ipar],parLimitHigh[ipar]);
+    if(ipar==4||ipar==5||ipar==6) fitter.Config().ParSettings(ipar).Fix();
+    else fitter.Config().ParSettings(ipar).SetLimits(parLimitLow[ipar],parLimitHigh[ipar]);
   }
   fitter.Config().MinimizerOptions().SetPrintLevel(0);
   fitter.Config().SetMinimizer("Minuit2","Migrad");
@@ -764,16 +880,16 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
       fvn_simul->GetParameter(8)<<"+/-"<< (double)fvn_simul->GetParError(8)<<"	" << parLimitHigh[i] << endl;}
     if(i==9){cout << "bkgp1 [" << i << "]    : " << parLimitLow[i] <<"  "<< 
       fvn_simul->GetParameter(9)<<"+/-"<< (double)fvn_simul->GetParError(9)<<"	" << parLimitHigh[i] << endl;}
-    if(i==10){cout <<"bkgp2 [" << i << "]   : " << parLimitLow[i]<<"  "<< 
-      fvn_simul->GetParameter(10)<<"+/-"<< (double)fvn_simul->GetParError(10)<<"  " << parLimitHigh[i] << endl;}
+    //if(i==10){cout <<"bkgp2 [" << i << "]   : " << parLimitLow[i]<<"  "<< 
+    //  fvn_simul->GetParameter(10)<<"+/-"<< (double)fvn_simul->GetParError(10)<<"  " << parLimitHigh[i] << endl;}
     if(i>=11&&i<14){cout << "v2 par [" << i << "]  : "<< 
       parLimitLow[i] << "	" <<"	" << parLimitHigh[i] << endl;}
   }
   cout << " " << endl;
 
   /*
-     if (PR==2) {TString fitRestxt = Form("../roots/SignalPDFvariation/SimFitResult_%s_%s.txt",bCont.Data(),kineLabel.Data());}
-     else if (PR==0 || PR==1) {TString fitRestxt = Form("../roots/SignalPDFvariation/SimFitResult_%s_%s_ctau_%.2f.txt",bCont.Data(),kineLabel.Data(),ctauCut);}
+     if (PR==2) {TString fitRestxt = Form("../roots/BkgPDFvariation/SimFitResult_%s_%s.txt",bCont.Data(),kineLabel.Data());}
+     else if (PR==0 || PR==1) {TString fitRestxt = Form("../roots/BkgPDFvariation/SimFitResult_%s_%s_ctau_%.2f.txt",bCont.Data(),kineLabel.Data(),ctauCut);}
      ofstream outputFile(fitRestxt.Data());
      result.Print(outputFile);
      outputFile.close();*/
@@ -986,7 +1102,7 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   else if(ctauCut==0){
     drawText(Form("%.4f < #font[12]{l}_{J/#psi} < %.4f", ctauLow, ctauHigh),pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
     drawText(Form("NP J/#psi Frac. %.3f", bfrac3),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);}
-  else if(ctauCut==1){drawText(Form("#font[12]{l}_{J/#psi} > %.4f", ctauLow),pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
+  else if(ctauCut==1){drawText(Form("#font[12]{l}_{J/#psi} > %.4f", ctauHigh),pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
     drawText(Form("NP J/#psi Frac. %.3f", bfrac2),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);}
   else if(ctauCut==2){drawText(Form("#font[12]{l}_{J/#psi} Inclusive"),pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);}
   
@@ -1029,11 +1145,11 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   pad1->Draw();
   pad2->Draw();
   //c_mass_v2->Update();
-  if (ctauCut==0) c_mass_v2->SaveAs(Form("figs/SignalPDFvariation/%s/v2Mass_%s_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLow,ctauHigh,cutName.Data()));
-  else if(ctauCut==-1)c_mass_v2->SaveAs(Form("figs/SignalPDFvariation/%s/v2Mass_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLow,cutName.Data()));
-  else if(ctauCut==1)c_mass_v2->SaveAs(Form("figs/SignalPDFvariation/%s/v2Mass_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauHigh,cutName.Data()));
-  else if(ctauCut==2)c_mass_v2->SaveAs(Form("figs/SignalPDFvariation/%s/v2Mass_%s_Inc.pdf",DATE.Data(),kineLabel.Data()));
-  //if (PR==0||PR==1) {c_mass_v2->SaveAs(Form("../figs/SignalPDFvariation/v2Mass_%s_%s_ctau_%.2f.pdf",bCont.Data(), kineLabel.Data(),ctauCut));}
+  if (ctauCut==0) c_mass_v2->SaveAs(Form("figs/BkgPDFvariation/%s/v2Mass_%s_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLow,ctauHigh,cutName.Data()));
+  else if(ctauCut==-1)c_mass_v2->SaveAs(Form("figs/BkgPDFvariation/%s/v2Mass_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLow,cutName.Data()));
+  else if(ctauCut==1)c_mass_v2->SaveAs(Form("figs/BkgPDFvariation/%s/v2Mass_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauHigh,cutName.Data()));
+  else if(ctauCut==2)c_mass_v2->SaveAs(Form("figs/BkgPDFvariation/%s/v2Mass_%s_Inc.pdf",DATE.Data(),kineLabel.Data()));
+  //if (PR==0||PR==1) {c_mass_v2->SaveAs(Form("../figs/BkgPDFvariation/v2Mass_%s_%s_ctau_%.2f.pdf",bCont.Data(), kineLabel.Data(),ctauCut));}
   /*
      Double_t xmass[200];
      Double_t pullmass[200];
@@ -1129,10 +1245,10 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   //}}}
   */
   TFile *wf;
-  if (ctauCut==0) {wf = new TFile(Form("roots/SignalPDFvariation/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root", DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,ctauHigh,cutName.Data()),"recreate"); wf->cd();}
-  else if(ctauCut==-1) {wf = new TFile(Form("roots/SignalPDFvariation/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root", DATE.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,cutName.Data()),"recreate"); wf->cd();}
-  else if(ctauCut==1) {wf = new TFile(Form("roots/SignalPDFvariation/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root", DATE.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHigh,cutName.Data()),"recreate"); wf->cd();}
-  //  else if (PR==0 || PR==1) {TFile *wf = new TFile(Form("../roots/SignalPDFvariation/SimFitResult_%s_%s_ctau_%.2f.root",bCont.Data(), kineLabel.Data(), ctauCut),"recreate"); wf->cd();}
+  if (ctauCut==0) {wf = new TFile(Form("roots/BkgPDFvariation/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root", DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,ctauHigh,cutName.Data()),"recreate"); wf->cd();}
+  else if(ctauCut==-1) {wf = new TFile(Form("roots/BkgPDFvariation/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root", DATE.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,cutName.Data()),"recreate"); wf->cd();}
+  else if(ctauCut==1) {wf = new TFile(Form("roots/BkgPDFvariation/%s/SimFitResult_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root", DATE.Data(), kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHigh,cutName.Data()),"recreate"); wf->cd();}
+  //  else if (PR==0 || PR==1) {TFile *wf = new TFile(Form("../roots/BkgPDFvariation/SimFitResult_%s_%s_ctau_%.2f.root",bCont.Data(), kineLabel.Data(), ctauCut),"recreate"); wf->cd();}
   //store individual function{{{
   fyieldtot = (TF1*) fmass_total->Clone();
   fyieldtot->SetName("massfit");

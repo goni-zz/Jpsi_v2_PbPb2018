@@ -10,20 +10,24 @@ TLegend *leg = new TLegend(0.55,0.2, 0.85,0.4,NULL,"brNDC");
 
 void mergeTwoInMax( TH1D* h0, TH1D* h1, TH1D* h2, const char* str);
 
-void mergeSys_EventSelection() { 
+void mergeSys_EventSelection(int nbin=1) { 
   
   TH1::SetDefaultSumw2();
 
   TH1D*h_Pt1_PR[10];
   TH1D*h_Pt1_NP[10];
  
+  TString bin;
+  if(nbin==1)bin="10_60";
+  else if(nbin==2)bin="20_40";
+  else if(nbin==3)bin="0_180";
   // 1 : Event Selection Up
-  TFile* f1 = new TFile("EventSelection_HFUp_sys.root");
+  TFile* f1 = new TFile(Form("EventSelection_HFUp_sys_%s.root",bin.Data()));
   h_Pt1_PR[1] = (TH1D*) f1->Get("hPtSys_PR");
   h_Pt1_NP[1] = (TH1D*) f1->Get("hPtSys_NP");
   
   // 2 : Event Selection Down
-  TFile* f2 = new TFile("EventSelection_HFDown_sys.root");
+  TFile* f2 = new TFile(Form("EventSelection_HFDw_sys_%s.root",bin.Data()));
   h_Pt1_PR[2] = (TH1D*) f2->Get("hPtSys_PR");
   h_Pt1_NP[2] = (TH1D*) f2->Get("hPtSys_NP");
 
@@ -42,7 +46,7 @@ void mergeSys_EventSelection() {
   mergeTwoInMax(h_Pt1_PR[0],h_Pt1_PR[1],h_Pt1_PR[2],str_ptPR[0]);
   mergeTwoInMax(h_Pt1_NP[0],h_Pt1_NP[1],h_Pt1_NP[2],str_ptNP[0]);
 
-  TFile* fout = new TFile("EventSelection_sys.root","recreate");
+  TFile* fout = new TFile(Form("EventSelection_sys_%s.root",bin.Data()),"recreate");
   fout->cd();
   h_Pt1_PR[0]->Write();
   h_Pt1_NP[0]->Write();

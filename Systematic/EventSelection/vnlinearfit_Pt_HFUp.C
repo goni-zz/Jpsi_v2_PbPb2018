@@ -34,7 +34,7 @@ void vnlinearfit_Pt_HFUp(
   TFile *fv2fit1;
   TFile *fv2fit2;
   TFile *fv2fit3;
-  fFinal = new TFile(Form("../../Macros/2021_04_22/roots/2DFit_%s/Final/nominal/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", SimFit.Data(), kineLabel.Data(), "PR", fEffW, fAccW, isPtW, isTnP));
+  fFinal = new TFile(Form("../../Macros/2021_09_14/roots/2DFit_%s/Final/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", SimFit.Data(), kineLabel.Data(), "PR", fEffW, fAccW, isPtW, isTnP));
   //if(ptLow==3&&ptHigh==6.5)fFinal = new TFile(Form("../../Macros/2021_04_22/roots/2DFit_%s/Final/nominal/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d_v2.root", SimFit.Data(), kineLabel.Data(), "PR", fEffW, fAccW, isPtW, isTnP));
   //else fFinal = new TFile(Form("../../Macros/2021_04_22/roots/2DFit_%s/Final/nominal/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", SimFit.Data(), kineLabel.Data(), "PR", fEffW, fAccW, isPtW, isTnP));
 

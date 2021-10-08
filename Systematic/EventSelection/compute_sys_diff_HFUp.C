@@ -27,7 +27,8 @@ void compute_sys_diff_HFUp()
   hPtSys_PR = new TH1D("hPtSys_PR",";p_{T};Uncertainty",nPtBinPR,PtBinArrPR);
   hPtSys_NP = new TH1D("hPtSys_NP",";p_{T};Uncertainty",nPtBinNP,PtBinArrNP);
   
-  TString dirNom = "/Users/goni/Documents/CMS/Analysis/Jpsi_Flow/Usercode/Jpsi_v2_PbPb2018/finalPlot/linearfit/";
+  //TString dirNom = "/Users/goni/Documents/CMS/Analysis/Jpsi_Flow/Usercode/Jpsi_v2_PbPb2018/finalPlot/linearfit/";
+  TString dirNom = "/Users/goni/Documents/CMS/Analysis/Jpsi_Flow/Usercode/Jpsi_v2_PbPb2018/finalPlot/finalPlot_210929/roots/";
   TString dirAlt = "/Users/goni/Documents/CMS/Analysis/Jpsi_Flow/Usercode/Jpsi_v2_PbPb2018/Systematic/EventSelection/";
 
   double v2_sys = 0;

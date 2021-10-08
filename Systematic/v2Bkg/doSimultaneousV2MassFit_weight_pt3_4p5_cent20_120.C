@@ -352,10 +352,10 @@ Double_t pol3bkg(Double_t* x, Double_t* par)
 //}}}
 
 void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
-    float ptLow =  7.5, float ptHigh = 9,
-    float yLow = 0, float yHigh = 2.4,
-    int cLow = 20, int cHigh = 120,
     int ctauCut=1,
+    float ptLow =  3, float ptHigh = 4.5,
+    float yLow = 1.6, float yHigh = 2.4,
+    int cLow = 20, int cHigh = 120,
     int weight_PR = 0, //PR : 0, NP : 1
     bool fEffW=true, bool fAccW=true, bool isPtW=true, bool isTnP=true,
     float SiMuPtCut = 0, float massLow = 2.6, float massHigh =3.5, bool dimusign=true, int ibkg_vn_sel = fpol2, int PR=2
@@ -403,15 +403,20 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   }
 
   TString DATE = "10_60";
-  TFile* fMass; TFile* fFinal;
+  TFile* fMass; TFile* fFinal; TFile* fMC;
   //Get yield distribution{{{
   //TFile* rf = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/upsilonV2/plots/MassV2_190506/Ups_%s.root",kineLabel.Data()),"read");
-  fMass = new TFile(Form("../../Macros/2021_04_22/roots/2DFit_%s/Mass/MassFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
-  fFinal = new TFile(Form("../../Macros/2021_04_22/roots/2DFit_%s/Final/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
+  fMass = new TFile(Form("../../Macros/2021_09_14/roots/2DFit_%s/Mass/Mass_FixedFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
+  fFinal = new TFile(Form("../../Macros/2021_09_14/roots/2DFit_%s/Final/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
+ fMC = new TFile(Form("../../Macros/2021_09_14/roots_MC_Root618_v2Final/Mass/MassFitResult_%s_PRw_Effw%d_Accw%d_PtW%d_TnP%d_test.root", kineLabel.Data(), fEffW, fAccW, isPtW, isTnP));
   RooDataSet *datasetMass = (RooDataSet*)fMass->Get("datasetMass");
   RooAddPdf  *pdfMASS_Tot = (RooAddPdf*)fMass->Get("pdfMASS_Tot");
   RooWorkspace *ws = new RooWorkspace("workspace");
   ws->import(*datasetMass);
+  RooWorkspace *wsmc = new RooWorkspace("workspaceMC");
+  RooDataSet *MC_dataset = (RooDataSet*)fMC->Get("datasetMass");
+  wsmc->import(*MC_dataset);
+
   TH1D *Fraction1 = (TH1D*)fFinal->Get("Fraction1");
   TH1D *Fraction2 = (TH1D*)fFinal->Get("Fraction2");
   TH1D *Fraction3 = (TH1D*)fFinal->Get("Fraction3");
@@ -422,13 +427,13 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   double bfrac3=Fraction3->GetBinContent((double)Fraction3->FindFirstBinAbove(1e-3));
 
   TFile *rf;
-  if(ctauCut==0) rf = new TFile(Form("../../roots/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root",
+  if(ctauCut==0) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,ctauHigh,cutName.Data()),"read");
-  else if(ctauCut==-1) rf = new TFile(Form("../../roots/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
+  else if(ctauCut==-1) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,cutName.Data()),"read");
-  else if(ctauCut==1) rf = new TFile(Form("../../roots/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
+  else if(ctauCut==1) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauHigh,cutName.Data()),"read");
-  else if(ctauCut==2) rf = new TFile(Form("../../roots/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",
+  else if(ctauCut==2) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP),"read");
   //TFile* rf = new TFile("../../Outputs/makeV2Hist_RD/Jpsi_pt6.5-30.0_y0.0-2.4_muPt0.0_centrality20-120_m2.6-3.5_OS.root","read");
   TH1D* h_v2_SplusB = (TH1D*) rf->Get("h_v2_SplusB");
@@ -506,7 +511,7 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
 
   //if(ctauCut==-1){c_ = 0.05; c1_ = 0.1; c2_ = 0.1;}//par11, 12, 13
   if(ctauCut==-1){c_ = 0.1; c1_ = -0.01428; c2_ = 0.0284097; c3_ = 0.05;}
-  else if(ctauCut==0){c_ = 0.04; c1_ = -0.01428; c2_ = 0.0284097; c3_ = 0.01;}
+  else if(ctauCut==0){c_ = 0.1; c1_ = -0.01428; c2_ = 0.0284097; c3_ = 0.01;}
   else if(ctauCut==1){c_ = 0.07; c1_ = -0.01428; c2_ = 0.0284097; c3_ = 0.01;}
 
   Double_t par0[nParmV];
@@ -514,13 +519,13 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   gSystem->mkdir(Form ("figs/v2mass_fit/%s",DATE.Data()), kTRUE);
   gSystem->mkdir(Form("roots/v2mass_fit/%s",DATE.Data()), kTRUE);
 
-  par0[0] = ws->var("N_Jpsi")->getVal();
-  par0[1] = ws->var("N_Bkg")->getVal();
+  par0[0] = N1_*0.5;
+  par0[1] = Nbkg_*0.5;
   par0[2] = ws->var("m_{J/#Psi}")->getVal();
   par0[3] = ws->var("sigma_1_A")->getVal();
-  par0[4] = ws->var("alpha_1_A")->getVal()*0.95;
-  par0[5] = ws->var("n_1_A")->getVal()*0.95;
-  par0[6] = ws->var("x_A")->getVal();
+  par0[4] = wsmc->var("alpha_1_A")->getVal();
+  par0[5] = wsmc->var("n_1_A")->getVal();
+  par0[6] = wsmc->var("x_A")->getVal();
   par0[7] = ws->var("f")->getVal();
   par0[8] = ws->var("sl1")->getVal();
   par0[9] = ws->var("sl2")->getVal();
@@ -534,7 +539,7 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   Double_t parLimitLow[nParmV]  = {N1_min, Nbkg_min, mean_-0.1,  0.01,
     1.01, 0.4, 0,  0,
     -30, -30, -30,
-    0., -30, -30, -30};
+    -0.2, -30, -30, -30};
   //Double_t parLimitHigh[nParmV] = {par0[0]*0.5, par0[1]*0.31, mean_+0.1,  0.9,//Right
   //Double_t parLimitHigh[nParmV] = {par0[0], par0[1], mean_+0.1,  0.9,//Center
   Double_t parLimitHigh[nParmV] = {N1_, Nbkg_, mean_+0.1,  0.9,//Right
@@ -545,7 +550,8 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
 
   fitter.Config().SetParamsSettings(nParmV_, par0);
   for(int ipar = 0; ipar<nParmV_; ipar++){
-    fitter.Config().ParSettings(ipar).SetLimits(parLimitLow[ipar],parLimitHigh[ipar]);
+    if(ipar==4||ipar==5||ipar==6) fitter.Config().ParSettings(ipar).Fix();
+    else fitter.Config().ParSettings(ipar).SetLimits(parLimitLow[ipar],parLimitHigh[ipar]);
   }
   fitter.Config().MinimizerOptions().SetPrintLevel(0);
   fitter.Config().SetMinimizer("Minuit2","Migrad");
