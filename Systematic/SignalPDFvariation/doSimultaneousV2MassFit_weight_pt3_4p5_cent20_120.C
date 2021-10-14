@@ -110,8 +110,10 @@ Double_t TotalYield(Double_t* x, Double_t* par)
   Double_t fD = TMath::Sqrt(TMath::Pi()/2)*(1+TMath::Erf(absAlpha/TMath::Sqrt(2)));
   Double_t fN1 = 1./(sigma*(fC+fD));
 
-  double shx = (10*x[0]-37)/3;
-  return N1*(fN1*frac*JPsi_1 + (1-frac)*JPsi_2)
+  //double shx = (10*x[0]-37)/3;
+  double shx = (20*x[0]-61)/9;
+  return N1*(frac*JPsi_1 + (1-frac)*JPsi_2)
+  //return N1*(fN1*frac*JPsi_1 + (1-frac)*JPsi_2)
     //+ Nbkg*(TMath::Exp(-x[0]/Bkgp0)*(TMath::Erf((x[0]-Bkgmean)/(TMath::Sqrt(2)*Bkgsigma))+1)/2.);
     //+ Nbkg*(TMath::Exp(-x[0]/Bkgp0));
     //+ Nbkg*(ROOT::Math::Chebyshev2(x[0],Bkgp0,Bkgp1,Bkgp2));
@@ -169,7 +171,8 @@ Double_t TotalYieldSig(Double_t* x, Double_t* par)
   Double_t fD = TMath::Sqrt(TMath::Pi()/2)*(1+TMath::Erf(absAlpha/TMath::Sqrt(2)));
   Double_t fN1 = 1./(sigma*(fC+fD));
 
-  return N1*(fN1*frac*JPsi_1 + (1-frac)*JPsi_2);
+  return N1*(frac*JPsi_1 + (1-frac)*JPsi_2);
+  //return N1*(fN1*frac*JPsi_1 + (1-frac)*JPsi_2);
 }
 
 Double_t TotalYieldBkg(Double_t* x, Double_t* par)
@@ -179,7 +182,8 @@ Double_t TotalYieldBkg(Double_t* x, Double_t* par)
   Double_t cheb1 = par[2];
   Double_t cheb2 = par[3];
 
-  double shx = (10*x[0]-37)/3;
+  //double shx = (10*x[0]-37)/3;
+  double shx = (20*x[0]-61)/9;
   Double_t BkgM = Nbkg*(1+cheb0*shx + cheb1*(2*shx*shx-1) + cheb2*(4*shx*shx*shx-3*shx));
 
   return BkgM;
@@ -241,7 +245,8 @@ Double_t Totalvnpol1JPsi(Double_t* x, Double_t* par)
   //Double_t BkgM = Nbkg*(TMath::Exp(-x[0]/Bkgp0));
   //Double_t BkgM = Nbkg*(ROOT::Math::Chebyshev2(x[0],Bkgp0,Bkgp1,Bkgp2));
   //Double_t BkgM = Nbkg*(Bkgp0 + Bkgp1*x[0] + Bkgp2*(2.0*x[0]*x[0] - 1.0));
-  double shx = (10*x[0]-37)/3;
+  //double shx = (10*x[0]-37)/3;
+  double shx = (20*x[0]-61)/9;
   Double_t BkgM = Nbkg*(1+Bkgp0*shx + Bkgp1*(2*shx*shx-1) + Bkgp2*(4*shx*shx*shx-3*shx));
   //return c*(SigM1s/(SigM+BkgM)) + (1 - SigM/(SigM+BkgM))*(c3 + c2*x[0] + c1*x[0]*x[0]);
   return c*(SigM/(SigM+BkgM)) + (1 - SigM/(SigM+BkgM))*(c2 + c1*x[0]);
@@ -438,7 +443,8 @@ Double_t alphaFunct(Double_t* x, Double_t* par)
   JPsi_2=1/(sigma1_2*TMath::Sqrt(2*TMath::Pi()))*exp(-0.5*JPsi_t2*JPsi_t2);
   Double_t SigM = N1*(frac*JPsi_1 + (1-frac)*JPsi_2);
   Double_t SigM1s = N1*(JPsi_1);
-  double shx = (10*x[0]-37)/3;
+  //double shx = (10*x[0]-37)/3;
+  double shx = (20*x[0]-61)/9;
   Double_t BkgM = Nbkg*(1+cheb0*shx + cheb1*(2*shx*shx-1) + cheb2*(4*shx*shx*shx-3*shx));
 
   return (SigM/(SigM+BkgM));
@@ -500,7 +506,8 @@ Double_t vnPol1BkgAlpha(Double_t* x, Double_t* par)
   Double_t fN_2 = 1./(sigma1_2*(fC+fD));
   Double_t SigM = N1*(fN_1*frac*JPsi_1 + fN_2*(1-frac)*JPsi_2);
 
-  double shx = (10*x[0]-37)/3;
+  //double shx = (10*x[0]-37)/3;
+  double shx = (20*x[0]-61)/9;
   Double_t BkgM = Nbkg*(1+cheb0*shx + cheb1*(2*shx*shx-1) + cheb2*(4*shx*shx*shx-3*shx));
 
   return (1 - SigM/(SigM+BkgM))*(c2 + c1*x[0]);
@@ -595,7 +602,7 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   //Get yield distribution{{{
   //TFile* rf = new TFile(Form("/home/deathold/work/CMS/analysis/Upsilon_v2/upsilonV2/plots/MassV2_190506/Ups_%s.root",kineLabel.Data()),"read");
   fMass = new TFile(Form("../../Macros/2021_09_14/roots/2DFit_%s/Mass_CBGauss/Mass_FixedFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
-  fFinal = new TFile(Form("../../Macros/2021_09_14/roots/2DFit_%s/Final/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
+  fFinal = new TFile(Form("../../Macros/2021_09_14/roots/2DFit_%s/CtauRes_Sys/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", fEffW, fAccW, 1, 1));
   fMC = new TFile(Form("../../Macros/2021_09_14/roots_MC_Root618_v2Final/Mass_CBGauss/MassFitResult_%s_PRw_Effw%d_Accw%d_PtW%d_TnP%d_test.root", kineLabel.Data(), fEffW, fAccW, isPtW, isTnP));
   RooDataSet *datasetMass = (RooDataSet*)fMass->Get("datasetMass");
   RooAddPdf  *pdfMASS_Tot = (RooAddPdf*)fMass->Get("pdfMASS_Tot");
@@ -616,13 +623,13 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   double bfrac3=Fraction3->GetBinContent((double)Fraction3->FindFirstBinAbove(1e-3));
 
   TFile *rf;
-  if(ctauCut==0) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root",
+  if(ctauCut==0) rf = new TFile(Form("../../roots/nominal_211013/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,ctauHigh,cutName.Data()),"read");
-  else if(ctauCut==-1) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
+  else if(ctauCut==-1) rf = new TFile(Form("../../roots/nominal_211013/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauLow,cutName.Data()),"read");
-  else if(ctauCut==1) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
+  else if(ctauCut==1) rf = new TFile(Form("../../roots/nominal_211013/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP,ctauHigh,cutName.Data()),"read");
-  else if(ctauCut==2) rf = new TFile(Form("../../roots/nominal_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",
+  else if(ctauCut==2) rf = new TFile(Form("../../roots/nominal_211013/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",
         DATE.Data(),kineLabelTot.Data(),fEffW,fAccW,isPtW,isTnP),"read");
   //TFile* rf = new TFile("../../Outputs/makeV2Hist_RD/Jpsi_pt6.5-30.0_y0.0-2.4_muPt0.0_centrality20-120_m2.6-3.5_OS.root","read");
   TH1D* h_v2_SplusB = (TH1D*) rf->Get("h_v2_SplusB");  
@@ -787,7 +794,6 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
   fmass_total->SetRange(massrange().first, massrange().second);
   g_mass->GetListOfFunctions()->Add(fmass_total);
 
-  int nprm_alpha     = 11;
   //TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*( TMath::Exp(-x/[3])*(TMath::Erf((x-[1])/(TMath::Sqrt(2)*[2]))+1)/2. )", massLow, massHigh);
   //  TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*(TMath::Exp(-x/[1]))", massLow, massHigh);
   //TF1* fyield_bkg = new TF1("fyield_bkg", "[0]*([1]+[2]*x+[3]*(2.0*x*x-1.0))", massLow, massHigh);
@@ -823,8 +829,9 @@ void doSimultaneousV2MassFit_weight_pt3_4p5_cent20_120(
 
   //g_mass->GetListOfFunctions()->Add(fyield_sig);
   //
-  TF1* fAlpha = new TF1("fAlpha",alphaFunct,massLow,massHigh,nprm_alpha);
+  int nprm_alpha     = 11;
   int prmid_v2val    = 11;
+  TF1* fAlpha = new TF1("fAlpha",alphaFunct,massLow,massHigh,nprm_alpha);
   for(int iparm=0;iparm<nprm_alpha; iparm++){
     fAlpha->FixParameter(iparm,fvn_simul->GetParameter(iparm));
   }

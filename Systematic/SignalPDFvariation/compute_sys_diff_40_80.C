@@ -68,7 +68,7 @@ void compute_sys_diff_40_80()
     v2_sys=0;
   }
 
-  TFile *wf = new TFile("SignalPDFvariation_sys_40_80.root","recreate");
+  TFile *wf = new TFile("SignalPDFvariation_sys_20_40.root","recreate");
   wf->cd();
   hPtSys_PR->Write();
   hPtSys_NP->Write();
