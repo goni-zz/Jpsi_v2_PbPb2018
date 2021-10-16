@@ -26,7 +26,7 @@ double getEffWeight(TH1D* h = 0, double pt = 0);
 void GetHistSqrt(TH1D* h1 =0, TH1D* h2=0);
 void GetHistBkg(TH1D* h1 =0, TH1D* h2=0);
 
-void v2mass_hist_weight_TnPSysDw_210928(
+void v3mass_hist_weight_TnPSysDw_210928(
     double ptLow =  6.5, double ptHigh =  7.5,
     double yLow = 0, double yHigh = 2.4,
     int cLow = 20, int cHigh = 120,
@@ -53,11 +53,11 @@ void v2mass_hist_weight_TnPSysDw_210928(
   if(ptLow==6.5&&ptHigh==50) DATE=Form("%i_%i",0,180);
   else DATE=Form("%i_%i",cLow/2,cHigh/2);
   gStyle->SetEndErrorSize(0);
-  gSystem->mkdir(Form("figs/TnPSysDw_210928/v2mass_hist/%s",DATE.Data()), kTRUE);
+  gSystem->mkdir(Form("figs/TnPSysDw_210928/v3mass_hist/%s",DATE.Data()), kTRUE);
   gSystem->mkdir(Form("figs/TnPSysDw_210928/q_vector/%s",DATE.Data()), kTRUE);
   gSystem->mkdir(Form("figs/TnPSysDw_210928/mass_dist/%s",DATE.Data()), kTRUE);
   gSystem->mkdir(Form("figs/TnPSysDw_210928/decayL/%s",DATE.Data()), kTRUE);
-  gSystem->mkdir(Form("roots/TnPSysDw_210928/v2mass_hist/%s",DATE.Data()), kTRUE);
+  gSystem->mkdir(Form("roots/TnPSysDw_210928/v3mass_hist/%s",DATE.Data()), kTRUE);
   gStyle->SetOptStat(000000000);
   gROOT->ForceStyle();
   setTDRStyle();
@@ -81,7 +81,7 @@ void v2mass_hist_weight_TnPSysDw_210928(
 
   TChain *tree = new TChain("mmepevt");
   if(!isMC){
-    TString f1 = "skimmedFiles/OniaFlowSkim_JpsiTrig_DBAllPD_isMC0_HFNom_201127.root";
+    TString f1 = "skimmedFiles/OniaFlowSkim_JpsiTrig_DBAllPD_isMC0_HFNom_v3_210531.root";
     //TString f1 = "skimmedFiles/OniaFlowSkim_JpsiTrig_AllDBPD_isMC0_HFNom_210726.root";
     //TString f1 = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaFlowSkim_JpsiTrig_DBPD_isMC0_HFNom_AddEP_200217.root";
     //TString f2 = "/Users/goni/Downloads/ONIATREESKIMFILE/OniaFlowSkim_JpsiTrig_DBPeriPD_isMC0_HFNom_AddEP_Peri_200217.root";
@@ -97,13 +97,23 @@ void v2mass_hist_weight_TnPSysDw_210928(
     tree->Add(f1.Data());
     sample="MC_NP";}
 
-  TFile *fEff = new TFile(Form("./Eff_Acc/roots/mc_eff_vs_pt_cent_20_to_120_rap_%s_pbpb_Jpsi_PtW%d_tnp%d_210913_TnPSys.root",wName.Data(),isPtW,isTnP),"read");
+  TFile *fEff;
+
+  if(ptLow==6.5&&ptHigh==50) fEff= new TFile(Form("./Eff_Acc/roots/mc_eff_vs_pt_cent_0_to_180_rap_%s_pbpb_Jpsi_PtW%d_tnp%d_210913_TnPSys.root",wName.Data(),isPtW,isTnP),"read");
+  else fEff= new TFile(Form("./Eff_Acc/roots/mc_eff_vs_pt_cent_%i_to_%i_rap_%s_pbpb_Jpsi_PtW%d_tnp%d_210913_TnPSys.root",cLow,cHigh,wName.Data(),isPtW,isTnP),"read");
 
   TH1D* hEffPt[4];
-  hEffPt[0] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_20_to_120_absy0_1p2",isTnP,isPtW));
-  hEffPt[1] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_20_to_120_absy1p2_1p6",isTnP,isPtW));
-  hEffPt[2] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_20_to_120_absy1p6_1p8",isTnP,isPtW));
-  hEffPt[3] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_20_to_120_absy1p8_2p4",isTnP,isPtW));
+  if(ptLow==6.5&&ptHigh==50){
+    hEffPt[0] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_0_to_180_absy0_1p2",isTnP,isPtW));
+    hEffPt[1] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_0_to_180_absy1p2_1p6",isTnP,isPtW));
+    hEffPt[2] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_0_to_180_absy1p6_1p8",isTnP,isPtW));
+    hEffPt[3] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_0_to_180_absy1p8_2p4",isTnP,isPtW));}
+  else{
+    hEffPt[0] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_%i_to_%i_absy0_1p2",isTnP,isPtW,cLow,cHigh));
+    hEffPt[1] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_%i_to_%i_absy1p2_1p6",isTnP,isPtW,cLow,cHigh));
+    hEffPt[2] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_%i_to_%i_absy1p6_1p8",isTnP,isPtW,cLow,cHigh));
+    hEffPt[3] = (TH1D*) fEff -> Get(Form("hEff_sysDo_mc_eff_vs_pt_TnP%d_PtW%d_cent_%i_to_%i_absy1p8_2p4",isTnP,isPtW,cLow,cHigh));
+  cout<<"READ TnP File"<<endl;}
 
   TFile *fAcc = new TFile(Form("./Eff_Acc/roots/acceptance_Prompt_GenOnly_wgt%d_210915.root",1),"read");
   TH1D* hAccPt[3];
@@ -288,10 +298,10 @@ void v2mass_hist_weight_TnPSysDw_210928(
   TString fSB[nMass_div] = {"SB1 (2.6<m<2.9)","SB2 (3.3<m<3.5)","S (2.9<m<3.3)"};
 
   //Define drawing histogram
-  TH1D* h_v2_1[nMass_div];
-  TH1D* h_v2_2[nMass_div];
-  TH1D* h_v2_3[nMass_div];
-  TH1D* h_v2_4[nMass_div];
+  TH1D* h_v3_1[nMass_div];
+  TH1D* h_v3_2[nMass_div];
+  TH1D* h_v3_3[nMass_div];
+  TH1D* h_v3_4[nMass_div];
   TH1D* h_ljpsi[nMass_div];
 
   double Q_avg_low = -6500;
@@ -299,17 +309,17 @@ void v2mass_hist_weight_TnPSysDw_210928(
   double Q_avg_low_dimu = -150;
   double Q_avg_high_dimu = 150;
   for(int imass=0; imass<nMass_div;imass++){
-    h_v2_1[imass] = new TH1D(Form("h_v2_1_%d",imass),";#LTQ_{2}Q_{2A}^{*}#GT;counts",nQBin,Q_avg_low_dimu,Q_avg_high_dimu);
-    h_v2_2[imass] = new TH1D(Form("h_v2_2_%d",imass),";#LTQ_{2A}Q_{2B}^{*}#GT;counts",nQBin,Q_avg_low,Q_avg_high);
-    h_v2_3[imass] = new TH1D(Form("h_v2_3_%d",imass),";#LTQ_{2A}Q_{2C}^{*}#GT;counts",nQBin,Q_avg_low,Q_avg_high);
-    h_v2_4[imass] = new TH1D(Form("h_v2_4_%d",imass),";#LTQ_{2B}Q_{2C}^{*}#GT;counts",nQBin,Q_avg_low,Q_avg_high);
+    h_v3_1[imass] = new TH1D(Form("h_v3_1_%d",imass),";#LTQ_{2}Q_{2A}^{*}#GT;counts",nQBin,Q_avg_low_dimu,Q_avg_high_dimu);
+    h_v3_2[imass] = new TH1D(Form("h_v3_2_%d",imass),";#LTQ_{2A}Q_{2B}^{*}#GT;counts",nQBin,Q_avg_low,Q_avg_high);
+    h_v3_3[imass] = new TH1D(Form("h_v3_3_%d",imass),";#LTQ_{2A}Q_{2C}^{*}#GT;counts",nQBin,Q_avg_low,Q_avg_high);
+    h_v3_4[imass] = new TH1D(Form("h_v3_4_%d",imass),";#LTQ_{2B}Q_{2C}^{*}#GT;counts",nQBin,Q_avg_low,Q_avg_high);
     h_ljpsi[imass] = new TH1D(Form("h_ljBkg_%d",imass),";l_{J/#psi(mm)};Counts/(0.03 mm)",1050,-1.5,2);
   }
 
-  TH1D* h_v2_num_q1 = new TH1D("h_v2_num_q1",";m_{#mu^{+}#mu^{-}};#LTQ_{2}Q_{2A}^{*}#GT" ,nMassBin,massBin);
-  TH1D* h_v2_den_q2 = new TH1D("h_v2_num_q2",";m_{#mu^{+}#mu^{-}};#LTQ_{2A}Q_{2B}^{*}#GT",nMassBin,massBin);
-  TH1D* h_v2_den_q3 = new TH1D("h_v2_num_q3",";m_{#mu^{+}#mu^{-}};#LTQ_{2A}Q_{2C}^{*}#GT",nMassBin,massBin);
-  TH1D* h_v2_den_q4 = new TH1D("h_v2_num_q4",";m_{#mu^{+}#mu^{-}};#LTQ_{2B}Q_{2C}^{*}#GT",nMassBin,massBin);
+  TH1D* h_v3_num_q1 = new TH1D("h_v3_num_q1",";m_{#mu^{+}#mu^{-}};#LTQ_{2}Q_{2A}^{*}#GT" ,nMassBin,massBin);
+  TH1D* h_v3_den_q2 = new TH1D("h_v3_num_q2",";m_{#mu^{+}#mu^{-}};#LTQ_{2A}Q_{2B}^{*}#GT",nMassBin,massBin);
+  TH1D* h_v3_den_q3 = new TH1D("h_v3_num_q3",";m_{#mu^{+}#mu^{-}};#LTQ_{2A}Q_{2C}^{*}#GT",nMassBin,massBin);
+  TH1D* h_v3_den_q4 = new TH1D("h_v3_num_q4",";m_{#mu^{+}#mu^{-}};#LTQ_{2B}Q_{2C}^{*}#GT",nMassBin,massBin);
 
   TH1D* h_mass = new TH1D("h_mass",";m_{#mu^{+}#mu^{-}};Counts/(0.025 GeV)",36,massLow,massHigh);
   TH1D* h_decayL = new TH1D("h_decayL",";l_{J/#psi(mm)};Counts/(0.1 mm)",100,-4,6);
@@ -323,20 +333,20 @@ void v2mass_hist_weight_TnPSysDw_210928(
   RooDataSet* dataSet = new RooDataSet("dataset","a dataset",*argSet); 
 
   const static int countMax = 1000000;
-  vector<vector<double>> v2_1(nMassBin,vector<double> (countMax,0));
-  vector<vector<double>> v2_2(nMassBin,vector<double> (countMax,0));
-  vector<vector<double>> v2_3(nMassBin,vector<double> (countMax,0));
-  vector<vector<double>> v2_4(nMassBin,vector<double> (countMax,0));
-  vector<vector<double>> v2_1_raw(nMassBin,vector<double> (countMax,0));
-  vector<vector<double>> v2_2_raw(nMassBin,vector<double> (countMax,0));
-  vector<vector<double>> v2_3_raw(nMassBin,vector<double> (countMax,0));
-  vector<vector<double>> v2_4_raw(nMassBin,vector<double> (countMax,0));
+  vector<vector<double>> v3_1(nMassBin,vector<double> (countMax,0));
+  vector<vector<double>> v3_2(nMassBin,vector<double> (countMax,0));
+  vector<vector<double>> v3_3(nMassBin,vector<double> (countMax,0));
+  vector<vector<double>> v3_4(nMassBin,vector<double> (countMax,0));
+  vector<vector<double>> v3_1_raw(nMassBin,vector<double> (countMax,0));
+  vector<vector<double>> v3_2_raw(nMassBin,vector<double> (countMax,0));
+  vector<vector<double>> v3_3_raw(nMassBin,vector<double> (countMax,0));
+  vector<vector<double>> v3_4_raw(nMassBin,vector<double> (countMax,0));
   vector<vector<double>> weight_dimu(nMassBin,vector<double> (countMax,0));
 
-  vector<double> v2_1_avg(nMassBin,0);
-  vector<double> v2_2_avg(nMassBin,0);
-  vector<double> v2_3_avg(nMassBin,0);
-  vector<double> v2_4_avg(nMassBin,0);
+  vector<double> v3_1_avg(nMassBin,0);
+  vector<double> v3_2_avg(nMassBin,0);
+  vector<double> v3_3_avg(nMassBin,0);
+  vector<double> v3_4_avg(nMassBin,0);
 
   int dbcount=0;
   vector<unsigned int> count(nMassBin,0);
@@ -391,20 +401,20 @@ void v2mass_hist_weight_TnPSysDw_210928(
             double weight_ = weight * weight_eff * weight_acc;
             for(int imbin=0; imbin<nMassBin; imbin++){
               if(mass[j]>=massBin[imbin] && mass[j]<massBin[imbin+1]){
-                v2_1[imbin][count[imbin]] = (qxa[j]*qxdimu[j] + qya[j]*qydimu[j])*weight_;
-                v2_2[imbin][count[imbin]] = (qxa[j]*qxb[j] + qya[j]*qyb[j])*weight_;
-                v2_3[imbin][count[imbin]] = (qxa[j]*qxc[j] + qya[j]*qyc[j])*weight_;
-                v2_4[imbin][count[imbin]] = (qxb[j]*qxc[j] + qyb[j]*qyc[j])*weight_;
+                v3_1[imbin][count[imbin]] = (qxa[j]*qxdimu[j] + qya[j]*qydimu[j])*weight_;
+                v3_2[imbin][count[imbin]] = (qxa[j]*qxb[j] + qya[j]*qyb[j])*weight_;
+                v3_3[imbin][count[imbin]] = (qxa[j]*qxc[j] + qya[j]*qyc[j])*weight_;
+                v3_4[imbin][count[imbin]] = (qxb[j]*qxc[j] + qyb[j]*qyc[j])*weight_;
               
-                v2_1_raw[imbin][count[imbin]] = (qxa[j]*qxdimu[j] + qya[j]*qydimu[j]);
-                v2_2_raw[imbin][count[imbin]] = (qxa[j]*qxb[j] + qya[j]*qyb[j]);
-                v2_3_raw[imbin][count[imbin]] = (qxa[j]*qxc[j] + qya[j]*qyc[j]);
-                v2_4_raw[imbin][count[imbin]] = (qxb[j]*qxc[j] + qyb[j]*qyc[j]);
+                v3_1_raw[imbin][count[imbin]] = (qxa[j]*qxdimu[j] + qya[j]*qydimu[j]);
+                v3_2_raw[imbin][count[imbin]] = (qxa[j]*qxb[j] + qya[j]*qyb[j]);
+                v3_3_raw[imbin][count[imbin]] = (qxa[j]*qxc[j] + qya[j]*qyc[j]);
+                v3_4_raw[imbin][count[imbin]] = (qxb[j]*qxc[j] + qyb[j]*qyc[j]);
 
-                v2_1_avg[imbin] += v2_1[imbin][count[imbin]];
-                v2_2_avg[imbin] += v2_2[imbin][count[imbin]];
-                v2_3_avg[imbin] += v2_3[imbin][count[imbin]];
-                v2_4_avg[imbin] += v2_4[imbin][count[imbin]];
+                v3_1_avg[imbin] += v3_1[imbin][count[imbin]];
+                v3_2_avg[imbin] += v3_2[imbin][count[imbin]];
+                v3_3_avg[imbin] += v3_3[imbin][count[imbin]];
+                v3_4_avg[imbin] += v3_4[imbin][count[imbin]];
 
                 weight_dimu[imbin][count[imbin]] = weight_;
 
@@ -413,24 +423,24 @@ void v2mass_hist_weight_TnPSysDw_210928(
               }
             }
             if(mass[j]>=mass_low_SB1 && mass[j]<mass_high_SB1){
-              h_v2_1[0]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
-              h_v2_2[0]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
-              h_v2_3[0]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
-              h_v2_4[0]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
+              h_v3_1[0]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
+              h_v3_2[0]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
+              h_v3_3[0]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
+              h_v3_4[0]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
               h_ljpsi[0]->Fill(ctau3D[j],weight_);
             }
             else if(mass[j]>=mass_low_SB2 && mass[j]<mass_high_SB2){
-              h_v2_1[1]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
-              h_v2_2[1]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
-              h_v2_3[1]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
-              h_v2_4[1]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
+              h_v3_1[1]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
+              h_v3_2[1]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
+              h_v3_3[1]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
+              h_v3_4[1]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
               h_ljpsi[1]->Fill(ctau3D[j],weight_);
             }
             else if(mass[j]>=mass_low_SB && mass[j]<mass_high_SB){
-              h_v2_1[2]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
-              h_v2_2[2]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
-              h_v2_3[2]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
-              h_v2_4[2]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
+              h_v3_1[2]->Fill(qxa[j]*qxdimu[j] + qya[j]*qydimu[j], weight_);
+              h_v3_2[2]->Fill(qxa[j]*qxb[j] + qya[j]*qyb[j], weight_);
+              h_v3_3[2]->Fill(qxa[j]*qxc[j] + qya[j]*qyc[j], weight_);
+              h_v3_4[2]->Fill(qxb[j]*qxc[j] + qyb[j]*qyc[j], weight_);
               h_ljpsi[2]->Fill(ctau3D[j],weight_);
             }
             massVar->setVal((double)mass[j]);
@@ -479,61 +489,61 @@ void v2mass_hist_weight_TnPSysDw_210928(
 
   TF1* fitmc1;
 
-  vector<double> v2_1_err(nMassBin,0);
-  vector<double> v2_2_err(nMassBin,0);
-  vector<double> v2_3_err(nMassBin,0);
-  vector<double> v2_4_err(nMassBin,0);
+  vector<double> v3_1_err(nMassBin,0);
+  vector<double> v3_2_err(nMassBin,0);
+  vector<double> v3_3_err(nMassBin,0);
+  vector<double> v3_4_err(nMassBin,0);
 
   for(int ibin=0; ibin<nMassBin; ibin++){
-    v2_1_avg[ibin] = v2_1_avg[ibin]/weight_s[ibin];
-    v2_2_avg[ibin] = v2_2_avg[ibin]/weight_s[ibin];
-    v2_3_avg[ibin] = v2_3_avg[ibin]/weight_s[ibin];
-    v2_4_avg[ibin] = v2_4_avg[ibin]/weight_s[ibin];
+    v3_1_avg[ibin] = v3_1_avg[ibin]/weight_s[ibin];
+    v3_2_avg[ibin] = v3_2_avg[ibin]/weight_s[ibin];
+    v3_3_avg[ibin] = v3_3_avg[ibin]/weight_s[ibin];
+    v3_4_avg[ibin] = v3_4_avg[ibin]/weight_s[ibin];
 
     for(int icount=0; icount<count[ibin]; icount++){
-      v2_1_err[ibin] += (v2_1_raw[ibin][icount]-v2_1_avg[ibin])*(v2_1_raw[ibin][icount]-v2_1_avg[ibin]) * weight_dimu[ibin][icount] * weight_dimu[ibin][icount];
-      v2_2_err[ibin] += (v2_2_raw[ibin][icount]-v2_2_avg[ibin])*(v2_2_raw[ibin][icount]-v2_2_avg[ibin]) * weight_dimu[ibin][icount] * weight_dimu[ibin][icount];
-      v2_3_err[ibin] += (v2_3_raw[ibin][icount]-v2_3_avg[ibin])*(v2_3_raw[ibin][icount]-v2_3_avg[ibin]) * weight_dimu[ibin][icount] * weight_dimu[ibin][icount];
-      v2_4_err[ibin] += (v2_4_raw[ibin][icount]-v2_4_avg[ibin])*(v2_4_raw[ibin][icount]-v2_4_avg[ibin]) * weight_dimu[ibin][icount] * weight_dimu[ibin][icount];
+      v3_1_err[ibin] += (v3_1_raw[ibin][icount]-v3_1_avg[ibin])*(v3_1_raw[ibin][icount]-v3_1_avg[ibin]) * weight_dimu[ibin][icount] * weight_dimu[ibin][icount];
+      v3_2_err[ibin] += (v3_2_raw[ibin][icount]-v3_2_avg[ibin])*(v3_2_raw[ibin][icount]-v3_2_avg[ibin]) * weight_dimu[ibin][icount] * weight_dimu[ibin][icount];
+      v3_3_err[ibin] += (v3_3_raw[ibin][icount]-v3_3_avg[ibin])*(v3_3_raw[ibin][icount]-v3_3_avg[ibin]) * weight_dimu[ibin][icount] * weight_dimu[ibin][icount];
+      v3_4_err[ibin] += (v3_4_raw[ibin][icount]-v3_4_avg[ibin])*(v3_4_raw[ibin][icount]-v3_4_avg[ibin]) * weight_dimu[ibin][icount] * weight_dimu[ibin][icount];
     }
 
-    v2_1_err[ibin] = TMath::Sqrt(v2_1_err[ibin])/weight_s[ibin];
-    v2_2_err[ibin] = TMath::Sqrt(v2_2_err[ibin])/weight_s[ibin];
-    v2_3_err[ibin] = TMath::Sqrt(v2_3_err[ibin])/weight_s[ibin];
-    v2_4_err[ibin] = TMath::Sqrt(v2_4_err[ibin])/weight_s[ibin];
+    v3_1_err[ibin] = TMath::Sqrt(v3_1_err[ibin])/weight_s[ibin];
+    v3_2_err[ibin] = TMath::Sqrt(v3_2_err[ibin])/weight_s[ibin];
+    v3_3_err[ibin] = TMath::Sqrt(v3_3_err[ibin])/weight_s[ibin];
+    v3_4_err[ibin] = TMath::Sqrt(v3_4_err[ibin])/weight_s[ibin];
 
-    h_v2_num_q1->SetBinContent(ibin+1,v2_1_avg[ibin]);
-    h_v2_num_q1->SetBinError(ibin+1,v2_1_err[ibin]);
-    h_v2_den_q2->SetBinContent(ibin+1,v2_2_avg[ibin]);
-    h_v2_den_q2->SetBinError(ibin+1,v2_2_err[ibin]);
-    h_v2_den_q3->SetBinContent(ibin+1,v2_3_avg[ibin]);
-    h_v2_den_q3->SetBinError(ibin+1,v2_3_err[ibin]);
-    h_v2_den_q4->SetBinContent(ibin+1,v2_4_avg[ibin]);
-    h_v2_den_q4->SetBinError(ibin+1,v2_4_err[ibin]);
+    h_v3_num_q1->SetBinContent(ibin+1,v3_1_avg[ibin]);
+    h_v3_num_q1->SetBinError(ibin+1,v3_1_err[ibin]);
+    h_v3_den_q2->SetBinContent(ibin+1,v3_2_avg[ibin]);
+    h_v3_den_q2->SetBinError(ibin+1,v3_2_err[ibin]);
+    h_v3_den_q3->SetBinContent(ibin+1,v3_3_avg[ibin]);
+    h_v3_den_q3->SetBinError(ibin+1,v3_3_err[ibin]);
+    h_v3_den_q4->SetBinContent(ibin+1,v3_4_avg[ibin]);
+    h_v3_den_q4->SetBinError(ibin+1,v3_4_err[ibin]);
 
     cout << ibin << "th Bin : " << count[ibin] << ",  weight sum  : " << weight_s[ibin] << endl;
-    cout << "v2_1_avg " << ibin << " : " << v2_1_avg[ibin] << endl;
-    cout << "v2_2_avg " << ibin << " : " << v2_2_avg[ibin] << endl;
-    cout << "v2_3_avg " << ibin << " : " << v2_3_avg[ibin] << endl;
-    cout << "v2_4_avg " << ibin << " : " << v2_4_avg[ibin] << endl;
+    cout << "v3_1_avg " << ibin << " : " << v3_1_avg[ibin] << endl;
+    cout << "v3_2_avg " << ibin << " : " << v3_2_avg[ibin] << endl;
+    cout << "v3_3_avg " << ibin << " : " << v3_3_avg[ibin] << endl;
+    cout << "v3_4_avg " << ibin << " : " << v3_4_avg[ibin] << endl;
 
-    cout << "h_v2_num_q1 " << ibin << ", val : " << h_v2_num_q1->GetBinContent(ibin+1) << " err : " << h_v2_num_q1->GetBinError(ibin+1) << endl;
-    cout << "h_v2_den_q2 " << ibin << ", val : " << h_v2_den_q2->GetBinContent(ibin+1) << " err : " << h_v2_den_q2->GetBinError(ibin+1) << endl;
-    cout << "h_v2_den_q3 " << ibin << ", val : " << h_v2_den_q3->GetBinContent(ibin+1) << " err : " << h_v2_den_q3->GetBinError(ibin+1) << endl;
-    cout << "h_v2_den_q4 " << ibin << ", val : " << h_v2_den_q4->GetBinContent(ibin+1) << " err : " << h_v2_den_q4->GetBinError(ibin+1) << endl;
+    cout << "h_v3_num_q1 " << ibin << ", val : " << h_v3_num_q1->GetBinContent(ibin+1) << " err : " << h_v3_num_q1->GetBinError(ibin+1) << endl;
+    cout << "h_v3_den_q2 " << ibin << ", val : " << h_v3_den_q2->GetBinContent(ibin+1) << " err : " << h_v3_den_q2->GetBinError(ibin+1) << endl;
+    cout << "h_v3_den_q3 " << ibin << ", val : " << h_v3_den_q3->GetBinContent(ibin+1) << " err : " << h_v3_den_q3->GetBinError(ibin+1) << endl;
+    cout << "h_v3_den_q4 " << ibin << ", val : " << h_v3_den_q4->GetBinContent(ibin+1) << " err : " << h_v3_den_q4->GetBinError(ibin+1) << endl;
   }
 
-  TH1D* h_v2_den_ = (TH1D*)h_v2_den_q2->Clone("h_v2_den_");
-  h_v2_den_->Multiply(h_v2_den_q3);
-  h_v2_den_->Divide(h_v2_den_q4);
+  TH1D* h_v3_den_ = (TH1D*)h_v3_den_q2->Clone("h_v3_den_");
+  h_v3_den_->Multiply(h_v3_den_q3);
+  h_v3_den_->Divide(h_v3_den_q4);
 
-  TH1D* h_v2_den = (TH1D*) h_v2_den_->Clone("h_v2_den"); //h_v2_den->Reset();
-  GetHistSqrt(h_v2_den_,h_v2_den);
+  TH1D* h_v3_den = (TH1D*) h_v3_den_->Clone("h_v3_den"); //h_v3_den->Reset();
+  GetHistSqrt(h_v3_den_,h_v3_den);
 
-  TH1D* h_v2_final = (TH1D*) h_v2_num_q1 -> Clone("h_v2_SplusB");
-  h_v2_final->Divide(h_v2_den);
+  TH1D* h_v3_final = (TH1D*) h_v3_num_q1 -> Clone("h_v3_SplusB");
+  h_v3_final->Divide(h_v3_den);
 
-  SetHistStyle(h_v2_final,0,0);
+  SetHistStyle(h_v3_final,0,0);
   SetGraphStyle2(g_mass,0,0);
   //g_mass->GetYaxis()->SetLimits(0,10000);
   //g_mass->GetYaxis()->SetRangeUser(0,);
@@ -545,16 +555,16 @@ void v2mass_hist_weight_TnPSysDw_210928(
   g_mass->GetYaxis()->SetTitleOffset(1.7);
   g_mass->GetXaxis()->SetTitleSize(0.065);
 
-  h_v2_final->GetYaxis()->SetRangeUser(-0.05,0.26);
-  h_v2_final->GetYaxis()->SetTitle("v_{2}^{S+B}");
-  h_v2_final->GetXaxis()->SetTitle("m_{#mu^{+}#mu^{-}} (GeV/c^{2})");
-  h_v2_final->GetYaxis()->SetLabelSize(0.055);
-  h_v2_final->GetXaxis()->SetLabelSize(0.055);
-  h_v2_final->GetXaxis()->SetTitleSize(0.07);
-  h_v2_final->GetYaxis()->SetTitleSize(0.07);
-  h_v2_final->GetYaxis()->SetTitleOffset(1.2);
-  h_v2_final->GetXaxis()->SetTitleOffset(1.0);
-  h_v2_final->GetXaxis()->SetLabelOffset(0.011);
+  h_v3_final->GetYaxis()->SetRangeUser(-0.05,0.26);
+  h_v3_final->GetYaxis()->SetTitle("v_{2}^{S+B}");
+  h_v3_final->GetXaxis()->SetTitle("m_{#mu^{+}#mu^{-}} (GeV/c^{2})");
+  h_v3_final->GetYaxis()->SetLabelSize(0.055);
+  h_v3_final->GetXaxis()->SetLabelSize(0.055);
+  h_v3_final->GetXaxis()->SetTitleSize(0.07);
+  h_v3_final->GetYaxis()->SetTitleSize(0.07);
+  h_v3_final->GetYaxis()->SetTitleOffset(1.2);
+  h_v3_final->GetXaxis()->SetTitleOffset(1.0);
+  h_v3_final->GetXaxis()->SetLabelOffset(0.011);
   TLine *l=new TLine(2.6, 0, 3.5, 0);
   l->SetLineColor(kBlack);
 
@@ -567,10 +577,10 @@ void v2mass_hist_weight_TnPSysDw_210928(
   TString perc = "%";
 
   //TGaxis::SetMaxDigits(2);
-  TCanvas* c_mass_v2 = new TCanvas("c_mass_v2","",1300,0,590,750);
+  TCanvas* c_mass_v3 = new TCanvas("c_mass_v3","",1300,0,590,750);
   TPad* pad1 = new TPad("pad1","pad1",0,0.5,1.0,1.0);
   TPad* pad2 = new TPad("pad2","pad2",0,0.0,1.0,0.5);
-  c_mass_v2->cd();
+  c_mass_v3->cd();
   pad1->SetTicks(1,1);
   pad1->SetBottomMargin(0);
   pad1->SetLeftMargin(0.19);
@@ -621,21 +631,23 @@ void v2mass_hist_weight_TnPSysDw_210928(
   pad2->cd();
   ////////////pad2//////////
   jumSun(massLow,0,massHigh,0,1,1);
-  h_v2_final->Draw("P");
+  h_v3_final->Draw("P");
   l->Draw("same");
 
-  //CMS_lumi_v2mass(pad1,iPeriod,iPos,1);  
-  CMS_lumi_v2mass(pad1,iPeriod,iPos);  
+  //
+//CMS_lumi_v2mass(pad1,iPeriod,iPos,1);  
+  
+CMS_lumi_v2mass(pad1,iPeriod,iPos);  
   pad1->Update();
   pad2->Update();
-  c_mass_v2->cd();
+  c_mass_v3->cd();
   pad1->Draw();
   pad2->Draw();
   //gSystem->mkdir(Form("figs/TnPSysDw_210928/q_vector",sample.Data()),1);
-  if(ctauCut==0) c_mass_v2->SaveAs(Form("figs/TnPSysDw_210928/v2mass_hist/%s/v2Mass_%s_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLo,ctauHi,cutName.Data()));
-  else if(ctauCut==-1)c_mass_v2->SaveAs(Form("figs/TnPSysDw_210928/v2mass_hist/%s/v2Mass_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLo,cutName.Data()));
-  else if(ctauCut== 1)c_mass_v2->SaveAs(Form("figs/TnPSysDw_210928/v2mass_hist/%s/v2Mass_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauHi,cutName.Data()));
-  else c_mass_v2->SaveAs(Form("figs/TnPSysDw_210928/v2mass_hist/%s/v2Mass_%s_Inc.pdf",DATE.Data(),kineLabel.Data()));
+  if(ctauCut==0) c_mass_v3->SaveAs(Form("figs/TnPSysDw_210928/v3mass_hist/%s/v3Mass_%s_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLo,ctauHi,cutName.Data()));
+  else if(ctauCut==-1)c_mass_v3->SaveAs(Form("figs/TnPSysDw_210928/v3mass_hist/%s/v3Mass_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLo,cutName.Data()));
+  else if(ctauCut== 1)c_mass_v3->SaveAs(Form("figs/TnPSysDw_210928/v3mass_hist/%s/v3Mass_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauHi,cutName.Data()));
+  else c_mass_v3->SaveAs(Form("figs/TnPSysDw_210928/v3mass_hist/%s/v3Mass_%s_Inc.pdf",DATE.Data(),kineLabel.Data()));
 
   TCanvas* c_pt = new TCanvas("c_pt","",0,500,600,600);
   //c_pt->SetLogy();
@@ -679,59 +691,60 @@ void v2mass_hist_weight_TnPSysDw_210928(
   else if(yLow!=0) drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh ), pos_x_mass,pos_y-pos_y_diff,text_color,text_size);
   drawText("|#eta^{#mu}| < 2.4", pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
   drawText(Form("Centrality %d-%d%s",cLow/2,cHigh/2,perc.Data()),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);
-  CMS_lumi_v2mass(c_mass,iPeriod,iPos);
+  
+CMS_lumi_v2mass(c_mass,iPeriod,iPos);
   c_mass->Update();
   if(ctauCut==0)c_mass->SaveAs(Form("figs/TnPSysDw_210928/mass_dist/%s/MassDist_%s_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLo,ctauHi,cutName.Data()));
   else if(ctauCut==-1)c_mass->SaveAs(Form("figs/TnPSysDw_210928/mass_dist/%s/MassDist_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLo,cutName.Data()));
   else if(ctauCut==1)c_mass->SaveAs(Form("figs/TnPSysDw_210928/mass_dist/%s/MassDist_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauHi,cutName.Data()));
   else c_mass->SaveAs(Form("figs/TnPSysDw_210928/mass_dist/%s/MassDist_%s_Inc.pdf",DATE.Data(),kineLabel.Data()));
 
-  TLegend *leg_v2_1 = new TLegend(0.38,0.64,0.77,0.9);
-  TLegend *leg_v2_2 = new TLegend(0.38,0.64,0.77,0.9);
-  TLegend *leg_v2_3 = new TLegend(0.38,0.64,0.77,0.9);
-  TLegend *leg_v2_4 = new TLegend(0.38,0.64,0.77,0.9);
-  SetLegendStyle(leg_v2_1);
-  SetLegendStyle(leg_v2_2);
-  SetLegendStyle(leg_v2_3);
-  SetLegendStyle(leg_v2_4);
+  TLegend *leg_v3_1 = new TLegend(0.38,0.64,0.77,0.9);
+  TLegend *leg_v3_2 = new TLegend(0.38,0.64,0.77,0.9);
+  TLegend *leg_v3_3 = new TLegend(0.38,0.64,0.77,0.9);
+  TLegend *leg_v3_4 = new TLegend(0.38,0.64,0.77,0.9);
+  SetLegendStyle(leg_v3_1);
+  SetLegendStyle(leg_v3_2);
+  SetLegendStyle(leg_v3_3);
+  SetLegendStyle(leg_v3_4);
 
-  double mean_v2_1[nMass_div];
-  double mean_v2_2[nMass_div];
-  double mean_v2_3[nMass_div];
-  double mean_v2_4[nMass_div];
+  double mean_v3_1[nMass_div];
+  double mean_v3_2[nMass_div];
+  double mean_v3_3[nMass_div];
+  double mean_v3_4[nMass_div];
 
-  double mean_err_v2_1[nMass_div];
-  double mean_err_v2_2[nMass_div];
-  double mean_err_v2_3[nMass_div];
-  double mean_err_v2_4[nMass_div];
+  double mean_err_v3_1[nMass_div];
+  double mean_err_v3_2[nMass_div];
+  double mean_err_v3_3[nMass_div];
+  double mean_err_v3_4[nMass_div];
 
   for(int i=0;i<nMass_div;i++){
-    SetHistStyle(h_v2_1[i],i,i);
-    SetHistStyle(h_v2_2[i],i,i);
-    SetHistStyle(h_v2_3[i],i,i);
-    SetHistStyle(h_v2_4[i],i,i);
+    SetHistStyle(h_v3_1[i],i,i);
+    SetHistStyle(h_v3_2[i],i,i);
+    SetHistStyle(h_v3_3[i],i,i);
+    SetHistStyle(h_v3_4[i],i,i);
 
-    scaleInt(h_v2_1[i]);
-    scaleInt(h_v2_2[i]);
-    scaleInt(h_v2_3[i]);
-    scaleInt(h_v2_4[i]);
+    scaleInt(h_v3_1[i]);
+    scaleInt(h_v3_2[i]);
+    scaleInt(h_v3_3[i]);
+    scaleInt(h_v3_4[i]);
 
-    mean_v2_1[i] = h_v2_1[i]->GetMean();
-    mean_v2_2[i] = h_v2_2[i]->GetMean();
-    mean_v2_3[i] = h_v2_3[i]->GetMean();
-    mean_v2_4[i] = h_v2_4[i]->GetMean();
+    mean_v3_1[i] = h_v3_1[i]->GetMean();
+    mean_v3_2[i] = h_v3_2[i]->GetMean();
+    mean_v3_3[i] = h_v3_3[i]->GetMean();
+    mean_v3_4[i] = h_v3_4[i]->GetMean();
 
-    mean_err_v2_1[i] = h_v2_1[i]->GetMeanError();
-    mean_err_v2_2[i] = h_v2_2[i]->GetMeanError();
-    mean_err_v2_3[i] = h_v2_3[i]->GetMeanError();
-    mean_err_v2_4[i] = h_v2_4[i]->GetMeanError();
+    mean_err_v3_1[i] = h_v3_1[i]->GetMeanError();
+    mean_err_v3_2[i] = h_v3_2[i]->GetMeanError();
+    mean_err_v3_3[i] = h_v3_3[i]->GetMeanError();
+    mean_err_v3_4[i] = h_v3_4[i]->GetMeanError();
 
-    leg_v2_1->AddEntry(h_v2_1[i],(fSB[i]+Form(" mean:%.2f",mean_v2_1[i])+Form(" err:%.2f",mean_err_v2_1[i])).Data(),"l");
-    leg_v2_2->AddEntry(h_v2_2[i],(fSB[i]+Form(" mean:%.2f",mean_v2_2[i])+Form(" err:%.2f",mean_err_v2_2[i])).Data(),"l");
-    leg_v2_3->AddEntry(h_v2_3[i],(fSB[i]+Form(" mean:%.2f",mean_v2_3[i])+Form(" err:%.2f",mean_err_v2_3[i])).Data(),"l");
-    leg_v2_4->AddEntry(h_v2_4[i],(fSB[i]+Form(" mean:%.2f",mean_v2_4[i])+Form(" err:%.2f",mean_err_v2_4[i])).Data(),"l");
+    leg_v3_1->AddEntry(h_v3_1[i],(fSB[i]+Form(" mean:%.2f",mean_v3_1[i])+Form(" err:%.2f",mean_err_v3_1[i])).Data(),"l");
+    leg_v3_2->AddEntry(h_v3_2[i],(fSB[i]+Form(" mean:%.2f",mean_v3_2[i])+Form(" err:%.2f",mean_err_v3_2[i])).Data(),"l");
+    leg_v3_3->AddEntry(h_v3_3[i],(fSB[i]+Form(" mean:%.2f",mean_v3_3[i])+Form(" err:%.2f",mean_err_v3_3[i])).Data(),"l");
+    leg_v3_4->AddEntry(h_v3_4[i],(fSB[i]+Form(" mean:%.2f",mean_v3_4[i])+Form(" err:%.2f",mean_err_v3_4[i])).Data(),"l");
   }
-  //cout<<"what?? : "<<h_v2_1[0]->GetEntries()<<endl;
+  //cout<<"what?? : "<<h_v3_1[0]->GetEntries()<<endl;
 
   //TCanvas *c_ljBkg = new TCanvas("c_ljBkg","",600,600);
   //c_ljBkg->cd();
@@ -750,11 +763,11 @@ void v2mass_hist_weight_TnPSysDw_210928(
 
   TCanvas *c_qq_1 = new TCanvas("c_qqa","",700,0,600,600);
   c_qq_1->cd();
-  h_v2_1[2]->Draw("hist");
-  h_v2_1[1]->Draw("hist same");
-  h_v2_1[0]->Draw("hist same");
-  leg_v2_1->Draw("same");
-  leg_v2_1->SetFillStyle(0);
+  h_v3_1[2]->Draw("hist");
+  h_v3_1[1]->Draw("hist same");
+  h_v3_1[0]->Draw("hist same");
+  leg_v3_1->Draw("same");
+  leg_v3_1->SetFillStyle(0);
   if(ctauCut==0) c_qq_1->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qqa_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,ctauHi,cutName.Data()));
   else if(ctauCut==-1)c_qq_1->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qqa_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,cutName.Data()));
   else if(ctauCut==1)c_qq_1->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qqa_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHi,cutName.Data()));
@@ -762,10 +775,10 @@ void v2mass_hist_weight_TnPSysDw_210928(
 
   TCanvas *c_qq_2 = new TCanvas("c_qaqb","",700,500,600,600);
   c_qq_2->cd();
-  h_v2_2[2]->Draw("hist");
-  h_v2_2[1]->Draw("hist same");
-  h_v2_2[0]->Draw("hist same");
-  leg_v2_2->Draw("same");
+  h_v3_2[2]->Draw("hist");
+  h_v3_2[1]->Draw("hist same");
+  h_v3_2[0]->Draw("hist same");
+  leg_v3_2->Draw("same");
   if(ctauCut==0) c_qq_2->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qaqb_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,ctauHi,cutName.Data()));
   else if(ctauCut==-1)c_qq_2->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qaqb_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,cutName.Data()));
   else if(ctauCut==1)c_qq_2->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qaqb_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHi,cutName.Data()));
@@ -773,10 +786,10 @@ void v2mass_hist_weight_TnPSysDw_210928(
 
   TCanvas *c_qq_3 = new TCanvas("c_qaqc","",400,0,600,600);
   c_qq_3->cd();
-  h_v2_3[2]->Draw("hist");
-  h_v2_3[1]->Draw("hist same");
-  h_v2_3[0]->Draw("hist same");
-  leg_v2_3->Draw("same");
+  h_v3_3[2]->Draw("hist");
+  h_v3_3[1]->Draw("hist same");
+  h_v3_3[0]->Draw("hist same");
+  leg_v3_3->Draw("same");
   if(ctauCut==0) c_qq_3->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qaqc_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,ctauHi,cutName.Data()));
   else if(ctauCut==-1)c_qq_3->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qaqc_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,cutName.Data()));
   else if(ctauCut== 1)c_qq_3->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qaqc_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHi,cutName.Data()));
@@ -784,22 +797,22 @@ void v2mass_hist_weight_TnPSysDw_210928(
 
   TCanvas *c_qq_4 = new TCanvas("c_qbqc","",400,500,600,600);
   c_qq_4->cd();
-  h_v2_4[2]->Draw("hist");
-  h_v2_4[1]->Draw("hist same");
-  h_v2_4[0]->Draw("hist same");
-  leg_v2_4->Draw("same");
+  h_v3_4[2]->Draw("hist");
+  h_v3_4[1]->Draw("hist same");
+  h_v3_4[0]->Draw("hist same");
+  leg_v3_4->Draw("same");
   if(ctauCut==0) c_qq_4->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qbqc_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,ctauHi,cutName.Data()));
   else if(ctauCut==-1)c_qq_4->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qbqc_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,cutName.Data()));
   else if(ctauCut==1)c_qq_4->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qbqc_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHi,cutName.Data()));
   else c_qq_4->SaveAs(Form("figs/TnPSysDw_210928/q_vector/%s/c_qbqc_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.pdf",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP));
 
   TFile *wf; 
-  if(ctauCut==0) wf = new TFile(Form("roots/TnPSysDw_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,ctauHi,cutName.Data()),"recreate");
-  else if(ctauCut==-1) wf = new TFile(Form("roots/TnPSysDw_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,cutName.Data()),"recreate");
-  else if(ctauCut==1) wf = new TFile(Form("roots/TnPSysDw_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHi,cutName.Data()),"recreate");
-  else wf = new TFile(Form("roots/TnPSysDw_210928/v2mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP),"recreate");
+  if(ctauCut==0) wf = new TFile(Form("roots/TnPSysDw_210928/v3mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%.5f_%s.root",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,ctauHi,cutName.Data()),"recreate");
+  else if(ctauCut==-1) wf = new TFile(Form("roots/TnPSysDw_210928/v3mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauLo,cutName.Data()),"recreate");
+  else if(ctauCut==1) wf = new TFile(Form("roots/TnPSysDw_210928/v3mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_ctau_%.5f_%s.root",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,ctauHi,cutName.Data()),"recreate");
+  else wf = new TFile(Form("roots/TnPSysDw_210928/v3mass_hist/%s/Jpsi_%s_Eff%d_Acc%d_PtW%d_TnP%d_Inc.root",DATE.Data(),kineLabel.Data(),fEffW,fAccW,isPtW,isTnP),"recreate");
   wf->cd();
-  h_v2_final->Write();
+  h_v3_final->Write();
   h_decayL->Write();
   g_mass->Write();
   h_mass->Write();

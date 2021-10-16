@@ -136,8 +136,8 @@ void v3mass_hist_weight_nominal_211012(
 
   //if(ctauCut!=2){
   fCErr = new TFile(Form("Macros/2021_09_14/roots/2DFit_%s/CtauErr/CtauErrResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", 1, 1, 1, 1));
-  if(ptLow==3&&ptHigh==6.5)fFinal = new TFile(Form("Macros/2021_09_14/roots/2DFit_%s/Final/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", 1, 1, 1, 1));
-  else fFinal = new TFile(Form("Macros/2021_09_14/roots/2DFit_%s/Final/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", 1, 1, 1, 1));
+  if(ptLow==3&&ptHigh==6.5)fFinal = new TFile(Form("Macros/2021_09_14/roots/2DFit_%s/CtauRes_Sys/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", 1, 1, 1, 1));
+  else fFinal = new TFile(Form("Macros/2021_09_14/roots/2DFit_%s/CtauRes_Sys/2DFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d.root", DATE.Data(), kineLabel.Data(), "PR", 1, 1, 1, 1));
   RooDataSet *dataw_Bkg = (RooDataSet*)fCErr->Get("dataw_Bkg");
   RooWorkspace *ws = new RooWorkspace("workspace");
   ws->import(*dataw_Bkg);
@@ -621,8 +621,10 @@ void v3mass_hist_weight_nominal_211012(
   h_v3_final->Draw("P");
   l->Draw("same");
 
-  //CMS_lumi_v3mass(pad1,iPeriod,iPos,1);  
-  CMS_lumi_v2mass(pad1,iPeriod,iPos);  
+  //
+//CMS_lumi_v2mass(pad1,iPeriod,iPos,1);  
+  
+CMS_lumi_v2mass(pad1,iPeriod,iPos);  
   pad1->Update();
   pad2->Update();
   c_mass_v3->cd();
@@ -676,7 +678,8 @@ void v3mass_hist_weight_nominal_211012(
   else if(yLow!=0) drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh ), pos_x_mass,pos_y-pos_y_diff,text_color,text_size);
   drawText("|#eta^{#mu}| < 2.4", pos_x_mass,pos_y-pos_y_diff*3,text_color,text_size);
   drawText(Form("Centrality %d-%d%s",cLow/2,cHigh/2,perc.Data()),pos_x_mass,pos_y-pos_y_diff*4,text_color,text_size);
-  CMS_lumi_v2mass(c_mass,iPeriod,iPos);
+  
+CMS_lumi_v2mass(c_mass,iPeriod,iPos);
   c_mass->Update();
   if(ctauCut==0)c_mass->SaveAs(Form("figs/nominal_210928/v3mass_dist/%s/MassDist_%s_ctau_%.5f_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLo,ctauHi,cutName.Data()));
   else if(ctauCut==-1)c_mass->SaveAs(Form("figs/nominal_210928/v3mass_dist/%s/MassDist_%s_ctau_%.5f_%s.pdf",DATE.Data(),kineLabel.Data(),ctauLo,cutName.Data()));
