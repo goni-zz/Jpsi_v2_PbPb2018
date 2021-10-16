@@ -140,22 +140,8 @@ void v3mass_hist_weight_TnPSysDw_210928(
   RooDataSet *dataw_Bkg = (RooDataSet*)fCErr->Get("dataw_Bkg");
   RooWorkspace *ws = new RooWorkspace("workspace");
   ws->import(*dataw_Bkg);
-  if (ptLow==3 && ptHigh==6.5 && cLow==40){
-    ctauErrMin = 0.02;//0.0143889
-    ctauErrMax = 0.16;}
-  else if (ptLow==7.5 && cLow==40){
-    ctauErrMin = 0.015;//0.0143889
-    ctauErrMax = 0.09;}
-  else if (ptLow==9 && cLow==40){
-    ctauErrMin = 0.015;//0.0143889
-    ctauErrMax = 0.08;}//0.124872
-  else if (ptLow==12 && cLow==40){
-    ctauErrMin = 0.01;//0.0143889
-    ctauErrMax = 0.05;}//0.124872
-  else if (ptLow==6.5 && cLow==40 && cHigh==60){
-    ctauErrMin = ws->var("ctau3DErr")->getMin();
-    ctauErrMax = 0.112428;}//0.124872
-  else {ctauErrMin = ws->var("ctau3DErr")->getMin();  ctauErrMax = ws->var("ctau3DErr")->getMax();}
+
+  ctauErrMin = ws->var("ctau3DErr")->getMin();  ctauErrMax = ws->var("ctau3DErr")->getMax();
   cout<<"CtauErr Min: "<<ctauErrMin<<", Max: "<<ctauErrMax<<endl;
 
   TH1D *Fraction1 = (TH1D*)fFinal->Get("Fraction1");
