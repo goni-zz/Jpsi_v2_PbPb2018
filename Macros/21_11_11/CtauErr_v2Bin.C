@@ -61,7 +61,7 @@ void CtauErr_v2Bin(
   TString BkgCut;
   TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
 
-  f1 = new TFile(Form("../../skimmedFiles/vnCut/OniaRooDataSet_isMC0_JPsi_%s_m2.6-3.5_OS_Effw%d_Accw%d_PtW%d_TnP%d_0_180_211217.root",kineLabel.Data(),fEffW,fAccW,isPtW,isTnP));
+  f1 = new TFile(Form("../../skimmedFiles/vnCut/OniaRooDataSet_isMC0_JPsi_%s_m2.6-3.5_OS_Effw%d_Accw%d_PtW%d_TnP%d_%s_211217.root",kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,DATE.Data()));
   fMass = new TFile(Form("roots/2DFit_%s/Mass_v2Bins/Mass_FixedFitResult_%s_%sw_Effw%d_Accw%d_PtW%d_TnP%d_v2_%.2f.root", DATE.Data(), kineLabel.Data(), fname.Data(), fEffW, fAccW, isPtW, isTnP, v2));
   kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5 && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
   v2Cut = Form("&& v2>%.2f && v2<%.2f", v2, v2+0.3);

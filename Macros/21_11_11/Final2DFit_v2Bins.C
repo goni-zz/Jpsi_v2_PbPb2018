@@ -90,6 +90,9 @@ void Final2DFit_v2Bins(
   double ctauErrMin;
   double ctauErrMax;
   ctauErrMin = ws->var("ctau3DErr")->getMin();  ctauErrMax = ws->var("ctau3DErr")->getMax();
+  if (cLow==100 && cHigh==180){
+  ctauErrMin = 0.014;//0.0143889
+  ctauErrMax = 0.06;}//0.124872
   //if (ptLow==7.5 && cLow==40){
   //ctauErrMin = 0.015;//0.0143889
   //ctauErrMax = 0.09;}//0.124872
@@ -164,11 +167,16 @@ void Final2DFit_v2Bins(
   //double lambda2 = ws->var("lambdaDSS2")->getVal();
   //ws->var("b_Bkg")->setConstant(kTRUE);//
   //make jpsi pdf
-  ws->factory(Form("lambdaDSS_test1[%.4f, %.4f, %.4f]", lambda, 1e-8, lambda*2));
-  ws->factory(Form("lambdaDSS_test2[%.4f, %.4f, %.4f]", lambda1, 1e-8, lambda1*2));
-  ws->factory(Form("lambdaDSS_test3[%.4f, %.4f, %.4f]", lambda2, 1e-8, lambda2*2));
-  ws->factory(Form("fDSS1_test[%.4f, %.4f, %.4f]", fdss, 1e-8, 1.));
-  ws->factory(Form("fDSS2_test[%.4f, %.4f, %.4f]", fdss1, 1e-8, 1.));
+  //ws->factory(Form("lambdaDSS_test1[%.4f, %.4f, %.4f]", lambda, 1e-8, lambda*2));
+  //ws->factory(Form("lambdaDSS_test2[%.4f, %.4f, %.4f]", lambda1, 1e-8, lambda1*2));
+  //ws->factory(Form("lambdaDSS_test3[%.4f, %.4f, %.4f]", lambda2, 1e-8, lambda2*2));
+  //ws->factory(Form("fDSS1_test[%.4f, %.4f, %.4f]", fdss, 1e-8, 1.));
+  //ws->factory(Form("fDSS2_test[%.4f, %.4f, %.4f]", fdss1, 1e-8, 1.));
+  ws->factory(Form("lambdaDSS_test1[%.4f]", lambda));
+  ws->factory(Form("lambdaDSS_test2[%.4f]", lambda1));
+  ws->factory(Form("lambdaDSS_test3[%.4f]", lambda2));
+  ws->factory(Form("fDSS1_test[%.4f]", fdss));
+  ws->factory(Form("fDSS2_test[%.4f]", fdss1));
 
   ws->var("lambdaDSS_test1")->setConstant();
   ws->var("lambdaDSS_test2")->setConstant();
@@ -369,6 +377,7 @@ void Final2DFit_v2Bins(
   if(yLow==0)drawText(Form("|y^{#mu#mu}| < %.1f",yHigh), text_x,text_y-y_diff,text_color,text_size);
   else if(yLow!=0)drawText(Form("%.1f < |y^{#mu#mu}| < %.1f",yLow, yHigh), text_x,text_y-y_diff,text_color,text_size);
   drawText(Form("Cent. %d - %d%s", cLow/2, cHigh/2, "%"),text_x,text_y-y_diff*2,text_color,text_size);
+  drawText(Form("v2 %d - %d", v2, v2+0.3),text_x,text_y-y_diff*3,text_color,text_size);
   drawText(Form("N_{J/#psi} = %.f #pm %.f",ws->var("N_Jpsi")->getVal(), ws->var("N_Jpsi")->getError()),text_x+0.5,text_y+0.05-y_diff,text_color,text_size);
   drawText(Form("N_{Bkg} = %.f #pm %.f",ws->var("N_Bkg")->getVal(), ws->var("N_Bkg")->getError() ),text_x+0.5,text_y+0.05-y_diff*2,text_color,text_size);
   drawText(Form("b_{J/#psi} = %.4f #pm %.4f",ws->var("b_Jpsi")->getVal(),ws->var("b_Jpsi")->getError()),text_x+0.5,text_y+0.05-y_diff*3,text_color,text_size);

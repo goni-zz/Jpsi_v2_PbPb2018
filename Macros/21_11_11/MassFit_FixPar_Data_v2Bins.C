@@ -59,7 +59,7 @@ void MassFit_FixPar_Data_v2Bins(
   TString kineCut;
   TString v2Cut;
 
-  f1 = new TFile(Form("../../skimmedFiles/vnCut/OniaRooDataSet_isMC0_JPsi_%s_m2.6-3.5_OS_Effw%d_Accw%d_PtW%d_TnP%d_0_180_211217.root",kineLabel.Data(),fEffW,fAccW,isPtW,isTnP));
+  f1 = new TFile(Form("../../skimmedFiles/vnCut/OniaRooDataSet_isMC0_JPsi_%s_m2.6-3.5_OS_Effw%d_Accw%d_PtW%d_TnP%d_%s_211217.root",kineLabel.Data(),fEffW,fAccW,isPtW,isTnP,DATE.Data()));
 
   kineCut = Form("pt>%.2f && pt<%.2f && abs(y)>%.2f && abs(y)<%.2f && mass>2.6 && mass<3.5 && cBin>%d && cBin<%d",ptLow, ptHigh, yLow, yHigh, cLow, cHigh);
   v2Cut = Form("&& v2>%.2f && v2<%.2f", v2, v2+0.3);
@@ -79,8 +79,8 @@ void MassFit_FixPar_Data_v2Bins(
   ws->data("dataset")->Print();
   cout << "pt: "<<ptLow<<"-"<<ptHigh<<", y: "<<yLow<<"-"<<yHigh<<", Cent: "<<cLow<<"-"<<cHigh<<"%"<<endl;
   cout << "####################################" << endl;
-  //RooDataSet *datasetW = new RooDataSet("datasetW","A sample",*dataset->get(),Import(*dataset),WeightVar(*ws->var("weight")));
-  RooDataSet *datasetW = new RooDataSet("datasetW","A sample",*dataset->get(),Import(*dataset));
+  RooDataSet *datasetW = new RooDataSet("datasetW","A sample",*dataset->get(),Import(*dataset),WeightVar(*ws->var("weight")));
+  //RooDataSet *datasetW = new RooDataSet("datasetW","A sample",*dataset->get(),Import(*dataset));
   RooDataSet *dsAB = (RooDataSet*)datasetW->reduce(RooArgSet(*(ws->var("ctau3DRes")),*(ws->var("ctau3D")), *(ws->var("ctau3DErr")), *(ws->var("mass")), *(ws->var("pt")), *(ws->var("y")), *(ws->var("v2"))), kineCut.Data() );
   cout << "******** New Combined Dataset ***********" << endl;
   dsAB->SetName("dsAB");
