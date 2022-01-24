@@ -22,18 +22,19 @@ void dndpt(int PR=0, int WRITE=1) {
 
   //// modify by hand according to the pt range of the sample
   const int nPtBins=9;
-  double ptBin[nPtBins+1]    ={3.0,4.0,5.0,6.0,7.0,8.0,10.0,12.0,20.0,50.0};
+  double ptBin[nPtBins+1]    ={3.0,4.0,5.0,6.5,7.5,8.0,9,10.0,11,12.0};
   const int nPtBinsMC=9;
-  double ptBinMC[nPtBinsMC+1]={3.0,4.0,5.0,6.0,7.0,8.0,10.0,12.0,20.0,50.0};
+  double ptBinMC[nPtBinsMC+1]={3.0,4.0,5.0,6.5,7.0,8.0,10.0,12.0,20.0,50.0};
   const int nYBins=6;
   double yBin[nYBins+1]={0.0,0.4,0.8,1.2,1.6,2.0,2.4};
   double frac[nPtBins];
   double fracErr[nPtBins];
-      for(int ipt=0;ipt<nPtBins;ipt++) {
-          frac[ipt]=getFrac(ptBin[ipt],ptBin[ipt+1],1.6,2.4,20,120);
-          fracErr[ipt]=getFracErr(ptBin[ipt],ptBin[ipt+1],1.6,2.4,20,120);
-          cout << ptBin[ipt] << " - " << ptBin[ipt+1] << " frac : " << frac[ipt] <<" +/- "<<fracErr[ipt]<< endl;
-      }
+
+  for(int ipt=0;ipt<nPtBins;ipt++) {
+    frac[ipt]=getFrac(ptBin[ipt],ptBin[ipt+1],1.6,2.4,20,120);
+    fracErr[ipt]=getFracErr(ptBin[ipt],ptBin[ipt+1],1.6,2.4,20,120);
+    cout << ptBin[ipt] << " - " << ptBin[ipt+1] << " frac : " << frac[ipt] <<" +/- "<<fracErr[ipt]<< endl;
+  }
 
   // Get MC :
   float massLow = 2.6; float massHigh = 3.5;
@@ -67,7 +68,7 @@ void dndpt(int PR=0, int WRITE=1) {
   TChain *tree = new TChain("mmepevt");
   TString f1;
   //if(PR==0)  f1 ="../../skimmedFiles/OniaFlowSkim_Jpsi_MC_Prompt_210107.root";
-  if(PR==0)  f1 ="../../skimmedFiles/OniaFlowSkim_Jpsi_MC_Prompt_210107.root";
+  if(PR==0)  f1 ="../../skimmedFiles/OniaFlowSkim_PRJPsi_JpsiTrig_Prompt_isMC1_HFNom_211208.root";
   else if(PR==1) f1 ="../../skimmedFiles/OniaFlowSkim_Jpsi_MC_NonPrompt_210107.root";
   tree->Add(f1.Data());
 
@@ -94,7 +95,7 @@ void dndpt(int PR=0, int WRITE=1) {
   float eta1[nMaxDimu];
   float eta2[nMaxDimu];
   float ctau3D[nMaxDimu];
-  float weight[nMaxDimu];
+  double weight[nMaxDimu];
   Int_t cBin;
   Int_t event;
   Int_t nDimu;
@@ -159,8 +160,8 @@ void dndpt(int PR=0, int WRITE=1) {
     tree->GetEntry(i);
 
     for(int j=0; j<nDimu; j++){
-      if ( !((fabs(eta1[j])>1.6) && (fabs(eta2[j])>1.6)))
-        continue;
+      //if ( !((fabs(eta1[j])>1.6) && (fabs(eta2[j])>1.6)))
+      //  continue;
       if (  !( (mass[j] > massLow)
             && (mass[j] < massHigh)
             && ( pt[j] > ptMin)
@@ -171,34 +172,38 @@ void dndpt(int PR=0, int WRITE=1) {
             && cBin<120 )
          )
         continue;
-      hptMC->Fill      ( pt[j] );
-      hptMC1->Fill     ( pt[j] );
-      hptMC2->Fill     ( pt[j] );
+      //cout<<"weight: "<<weight[j]<<endl;
+      hptMC->Fill      ( pt[j], weight[j] );
+      hptMC1->Fill     ( pt[j], weight[j] );
+      hptMC2->Fill     ( pt[j], weight[j] );
     }
     //hptMC3->Fill     ( pt[i] );
     //hptMC6->Fill     ( pt[i] );
   }
+  for(int i=0; i<9; i++){
+    cout<<hptMC->GetBinContent(i+1);
+  }
 
   //------------------------------------------ Get Data :
   //FROM FINAL RESULTS
-  for(int ipt=1;ipt<=nPtBins;ipt++)
+  for(int ipt=0;ipt<nPtBins;ipt++)
   {
     valErr yieldAA;
-    yieldAA = getYield(ptBin[ipt-1],ptBin[ipt],1.6,2.4,20,120);
+    yieldAA = getYield(ptBin[ipt],ptBin[ipt+1],1.6,2.4,20,120);
     //yieldAA = getYield(8.0,12.0,0,2.4,20,120);
     if(PR==0){
-    hptData->SetBinContent(ipt,yieldAA.val*(1-frac[ipt-1]));
-    hptData->SetBinError(ipt,yieldAA.err);
-    hptData1->SetBinContent(ipt,yieldAA.val*(1-frac[ipt-1]));
-    hptData1->SetBinError(ipt,yieldAA.err);
-    hfracData->SetBinContent(ipt,frac[ipt-1]);
-    hfracData->SetBinError(ipt,fracErr[ipt-1]);
+      hptData->SetBinContent(ipt+1,yieldAA.val*(1-frac[ipt]));
+      hptData->SetBinError(ipt+1,yieldAA.err);
+      hptData1->SetBinContent(ipt+1,yieldAA.val*(1-frac[ipt]));
+      hptData1->SetBinError(ipt+1,yieldAA.err);
+      hfracData->SetBinContent(ipt+1,frac[ipt]);
+      hfracData->SetBinError(ipt+1,fracErr[ipt]);
     }
     if(PR==1){
-    hptData->SetBinContent(ipt,yieldAA.val*frac[ipt]);
-    hptData->SetBinError(ipt,yieldAA.err);
-    hptData1->SetBinContent(ipt,yieldAA.val*frac[ipt]);
-    hptData1->SetBinError(ipt,yieldAA.err);
+      hptData->SetBinContent(ipt,yieldAA.val*frac[ipt]);
+      hptData->SetBinError(ipt,yieldAA.err);
+      hptData1->SetBinContent(ipt,yieldAA.val*frac[ipt]);
+      hptData1->SetBinError(ipt,yieldAA.err);
     }
     //hptData2->SetBinContent(ipt,(yieldAA.val)+(yieldAA.err));
     //hptData3->SetBinContent(ipt,(yieldAA.val)-(yieldAA.err));
@@ -244,8 +249,9 @@ void dndpt(int PR=0, int WRITE=1) {
   fitmc1 = new TF1("fitmc1","[2]*(([0]-1)*([0]-2)/([0]*[1]*([0]*[1] + ([0]-2)*[0])) * x * TMath::Power(( 1+ (TMath::Sqrt(89.4916 + x*x))/([0]*[1])),-[0]))",0,30);
   fitdata1 = new TF1("fitdata1","[2]*(([0]-1)*([0]-2)/([0]*[1]*([0]*[1] + ([0]-2)*[0])) * x * TMath::Power(( 1+ (TMath::Sqrt(89.4916 + x*x))/([0]*[1])),-[0]))",0,30);
   //fitRatio1 = new TF1("fitRatio1","(([0]-1)*([0]-2)/([0]*[1]*([0]*[1] + ([0]-2)*[0])) * x * TMath::Power(( 1+ (TMath::Sqrt(89.4916 + x*x))/([0]*[1])),-[0]))/([2]-1)*([3]-2)/([2]*[3]*([2]*[3] + ([2]-2)*[2])) * x * TMath::Power(( 1+ (TMath::Sqrt(89.4916 + x*x))/([2]*[3])),-[2])",0,30);
-  fitRatio1 = new TF1("fitRatio1","( [0] + [1]*x + [2]*x*x +[4]*x*x*x ) / (  (x-[3])*(x-[3])*(x-[3])  )",3.0,50);
-  //fitRatio1 = new TF1("fitRatio1","TMath::Exp(-x/[0])*[1]",3.5,50);
+  fitRatio1 = new TF1("fitRatio1","( [0]*x + [1]*x*x +[3]*x*x*x ) / (  (x-[2])*(x-[2])*(x-[2])  )",3.0,12);
+  //fitRatio1 = new TF1("fitRatio1","( [0] + [1]*x + [2]*x*x +[4]*x*x*x ) / (  (x-[3])*(x-[3])*(x-[3])  )",3.0,50);
+  //fitRatio1 = new TF1("fitRatio1","[0]*exp([1]*x+[2])",3,20);
   //fitRatio1->SetParameters(0.0005,4.5);
   //fitRatio1->SetParameters(0, 10);
   //fitRatio1->SetParameters(1, 10);
@@ -470,24 +476,24 @@ void dndpt(int PR=0, int WRITE=1) {
   c_3->SaveAs("WeightedFcN_fit/fraction_vs_pt_y1.6-2.4.pdf");
 
   if(WRITE==1&&PR==0){
-	  TFile *fJpsipb = new TFile("WeightedFcN_fit/ratioDataMC_AA_Jpsi_DATA_Forward_y_210903.root","RECREATE");
-	  fJpsipb->cd();
-	  hptData1->SetName("WeightFactor");
-	  hptData1->Write();
-	  fitRatio1->SetName("dataMC_Ratio1");
-	  fitRatio1->Write();
+    TFile *fJpsipb = new TFile("WeightedFcN_fit/ratioDataMC_AA_Jpsi_DATA_Forward_y_211208.root","RECREATE");
+    fJpsipb->cd();
+    hptData1->SetName("WeightFactor");
+    hptData1->Write();
+    fitRatio1->SetName("dataMC_Ratio1");
+    fitRatio1->Write();
   }
   else if(WRITE==1&&PR==1){
-	  TFile *fJpsipb = new TFile("WeightedFcN_fit/ratioDataMC_AA_BtoJpsi_DATA_Forward_y_210903.root","RECREATE");
-	  fJpsipb->cd();
-	  hptData1->SetName("WeightFactor");
-	  hptData1->Write();
-	  fitRatio1->SetName("dataMC_Ratio1");
-	  fitRatio1->Write();
+    TFile *fJpsipb = new TFile("WeightedFcN_fit/ratioDataMC_AA_BtoJpsi_DATA_Forward_y_211208.root","RECREATE");
+    fJpsipb->cd();
+    hptData1->SetName("WeightFactor");
+    hptData1->Write();
+    fitRatio1->SetName("dataMC_Ratio1");
+    fitRatio1->Write();
   }
   if(WRITE==1){
-	  c_A->SaveAs(Form("WeightedFcN_fit/dNdpt_plot_%s_Forward_y.pdf",fname.Data()));
-	  c_A->SaveAs(Form("WeightedFcN_fit/dNdpt_plot_%s_Forward_y.png",fname.Data()));
+    c_A->SaveAs(Form("WeightedFcN_fit/dNdpt_plot_%s_Forward_y_211208.pdf",fname.Data()));
+    c_A->SaveAs(Form("WeightedFcN_fit/dNdpt_plot_%s_Forward_y_211208.png",fname.Data()));
   }
 }
 
@@ -507,7 +513,7 @@ valErr getYield(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, in
   return ret;
 }
 double getFrac(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, int cHigh) {
-	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
+  TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
   //TFile* inf = new TFile(Form("../roots/2DFit_210915/Final/2DFitResult_Inclusive_%s.root", kineLabel.Data()));
   TFile* inf = new TFile(Form("../../Macros/2021_06_04/roots/2DFit_10_60/Final/2DFitResult_%s_PRw_Effw0_Accw0_PtW0_TnP0.root", kineLabel.Data()));
   TH1D* fitResults = (TH1D*)inf->Get("2DfitResults");
@@ -516,7 +522,7 @@ double getFrac(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, int
   return frac;
 }
 double getFracErr(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, int cHigh) {
-	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
+  TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
   //TFile* inf = new TFile(Form("../roots/2DFit_210915/Final/2DFitResult_Inclusive_%s.root", kineLabel.Data()));
   TFile* inf = new TFile(Form("../../Macros/2021_06_04/roots/2DFit_10_60/Final/2DFitResult_%s_PRw_Effw0_Accw0_PtW0_TnP0.root", kineLabel.Data()));
   TH1D* fitResults = (TH1D*)inf->Get("2DfitResults");

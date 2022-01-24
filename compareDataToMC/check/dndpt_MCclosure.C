@@ -9,7 +9,8 @@ using namespace std;
 valErr getYield(float ptLow=0, float ptHigh=0, float yLow=0, float yHigh=0, int cLow=0, int cHigh=0);
 double getFrac(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, int cHigh);
 double getFracErr(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, int cHigh);
-void dndpt_ally(int PR=0, int WRITE=1) {
+double getAccWeight(TH1D* h = 0, double pt = 0);
+void dndpt_MCclosure(int PR=0, int WRITE=1) {
 
   TString fname;
   if(PR==0) fname = "Prompt";
@@ -21,19 +22,30 @@ void dndpt_ally(int PR=0, int WRITE=1) {
   TH1::SetDefaultSumw2();
 
   //// modify by hand according to the pt range of the sample
-  const int nPtBins=8;
-  double ptBin[nPtBins+1]={6.5,7,7.5,8,9.0,10.0,12.0,20.0,50.0};
-  const int nPtBinsMC=8;
-  double ptBinMC[nPtBinsMC+1]={6.5,7,7.5,8,9.0,10.0,12.0,20.0,50.0};
+  const int nPtBins=11;
+  double ptBin[nPtBins+1]={3.0,4.0,5.0,6.5,7,7.5,8,9.0,10.0,12.0,20.0,50.0};
+  const int nPtBinsMC=11;
+  double ptBinMC[nPtBinsMC+1]={3.0,4.0,5.0,6.5,7,7.5,8,9.0,10.0,12.0,20.0,50.0};
   const int nYBins=6;
   double yBin[nYBins+1]={0.0,0.4,0.8,1.2,1.6,2.0,2.4};
   double frac[nPtBins];
   double fracErr[nPtBins];
-      for(int ipt=0;ipt<nPtBins;ipt++) {
-          frac[ipt]=getFrac(ptBin[ipt],ptBin[ipt+1],0,2.4,20,120);
-          fracErr[ipt]=getFracErr(ptBin[ipt],ptBin[ipt+1],0,2.4,20,120);
-          cout << ptBin[ipt] << " - " << ptBin[ipt+1] << " frac : " << frac[ipt] << " +/- " << fracErr[ipt]<< endl;
-      }
+  for(int ipt=0;ipt<nPtBins;ipt++) {
+    if(ipt<3){
+    frac[ipt]=getFrac(ptBin[ipt],ptBin[ipt+1],1.6,2.4,20,120);
+    fracErr[ipt]=getFracErr(ptBin[ipt],ptBin[ipt+1],1.6,2.4,20,120);}
+    if(ipt>=3){
+    frac[ipt]=getFrac(ptBin[ipt],ptBin[ipt+1],0,2.4,20,120);
+    fracErr[ipt]=getFracErr(ptBin[ipt],ptBin[ipt+1],0,2.4,20,120);}
+    cout << ptBin[ipt] << " - " << ptBin[ipt+1] << " frac : " << frac[ipt] << " +/- " << fracErr[ipt]<< endl;
+  }
+  // pT reweighting function
+  TFile *fPtW1 = new TFile("WeightedFcN_fit/ratioDataMC_AA_Jpsi_DATA_Forward_y_211217.root","read");
+  TFile *fPtW2 = new TFile("WeightedFcN_fit/ratioDataMC_AA_Jpsi_DATA_All_y_211217.root","read");
+  TF1* fptw1 = (TF1*) fPtW1->Get("dataMC_Ratio1");
+  TF1* fptw2 = (TF1*) fPtW2->Get("dataMC_Ratio1");
+  TH1D* hptw1 = (TH1D*) fPtW1->Get("WeightFactor");
+  TH1D* hptw2 = (TH1D*) fPtW2->Get("WeightFactor");
 
   // Get MC :
   float massLow = 2.6; float massHigh = 3.5;
@@ -52,25 +64,26 @@ void dndpt_ally(int PR=0, int WRITE=1) {
 
   TH1D *DataFit1 = new TH1D("DataFit1","; p_{T} (GeV/c) ; ", nPtBins, ptBin);
 
-  TH1D *WeightFactor = new TH1D("WeightFactor","; p_{T} (GeV/c) ; ", nPtBinsMC, ptBinMC);
+  //TH1D *WeightFactor = new TH1D("WeightFactor","; p_{T} (GeV/c) ; ", nPtBins, ptBin);
 
   TH1D *hptMC  = new TH1D("hptMC","; p_{T} (GeV/c) ; ", nPtBins, ptBin);
   TH1D *hptMC1 = new TH1D("hptMC1","; p_{T} (GeV/c) ; ", nPtBins, ptBin);
-  TH1D *hptMC2 = new TH1D("hptMC2","; p_{T} (GeV/c) ; ", nPtBins, ptBin);
+  TH1D *hptMC2 = new TH1D("hptMC2","; p_{T} (GeV/c) ; ", 100, 0, 50 );
   TH1D *hptMC3 = new TH1D("hptMC3","; p_{T} (GeV/c) ; ", nPtBins, ptBin);
   TH1D *hptMC4 = new TH1D("hptMC4","; p_{T} (GeV/c) ; ", nPtBins, ptBin);
   TH1D *hptMC5 = new TH1D("hptMC5","; p_{T} (GeV/c) ; ", nPtBins, ptBin);
   TH1D *hptMC6 = new TH1D("hptMC6","; p_{T} (GeV/c) ; ",nPtBins,ptBin);
   cout << "HERE" << endl;
-//  TH1D *hptMC7 = new TH1D("hptMC7","; |y| ; ", nYBins, yBin);
+  //  TH1D *hptMC7 = new TH1D("hptMC7","; |y| ; ", nYBins, yBin);
   cout << "HERE1" << endl;
-  TH1D *MCfit  = new TH1D("MCfit","; p_{T} (GeV/c) ; ", nPtBinsMC, ptBinMC);
+  TH1D *MCfit  = new TH1D("MCfit","; p_{T} (GeV/c) ; ", nPtBins, ptBin);
 
   TChain *tree = new TChain("mmepevt");
   TString f1;
-  //if(PR==0)  f1 ="../../skimmedFiles/OniaFlowSkim_Jpsi_MC_Prompt_210107.root";
+  //if(PR==0)  f1 ="/work2/Oniatree/JPsi/skimmed_file/OniaFlowSkim_Jpsi_MC_Prompt_210107.root";
+  //if(PR==0)  f1 ="../../skimmedFiles/OniaFlowSkim_PRJPsi_JpsiTrig_Prompt_isMC1_isPtW1_HFNom_211217.root";
   if(PR==0)  f1 ="../../skimmedFiles/OniaFlowSkim_PRJPsi_JpsiTrig_Prompt_isMC1_HFNom_211208.root";
-  else if(PR==1) f1 ="../../skimmedFiles/OniaFlowSkim_Jpsi_MC_NonPrompt_210107.root";
+  else if(PR==1) f1 ="/work2/Oniatree/JPsi/skimmed_file/OniaFlowSkim_Jpsi_MC_NonPrompt_210107.root";
   tree->Add(f1.Data());
 
   //SetBranchAddress
@@ -96,12 +109,12 @@ void dndpt_ally(int PR=0, int WRITE=1) {
   float eta1[nMaxDimu];
   float eta2[nMaxDimu];
   float ctau3D[nMaxDimu];
+  double weight[nMaxDimu];
   Int_t cBin;
   Int_t event;
   Int_t nDimu;
   float vz;
   int recoQQsign[nMaxDimu];
-  double weight[nMaxDimu];
 
   TBranch *b_event;
   TBranch *b_cBin;
@@ -161,42 +174,63 @@ void dndpt_ally(int PR=0, int WRITE=1) {
     tree->GetEntry(i);
 
     for(int j=0; j<nDimu; j++){
-      if (  !( (mass[j] > massLow)
+      if (  ( (mass[j] > massLow)
             && (mass[j] < massHigh)
-            && ( pt[j] > ptMin)
-            && ( pt[j] < ptMax)
+            //&& ( pt[j] > 3)
+            && ( pt[j] < 6.5)
+            && ( fabs(y[j]) > 1.6) 
             && ( fabs(y[j]) < 2.4) 
             && cBin>20
             && cBin<120 )
-         )
-        continue;
+         ){
 
-      hptMC->Fill      ( pt[j], weight[j] );
-      hptMC1->Fill     ( pt[j], weight[j] );
-      hptMC2->Fill     ( pt[j], weight[j] );
+      double wt1 = 1.0;
+      wt1 = fptw1->Eval(pt[j]);
+      //wt1 = getAccWeight(hptw1, pt[j]);
+      hptMC->Fill      ( pt[j], weight[j]*wt1 );
+      hptMC1->Fill     ( pt[j], weight[j]*wt1 );
+      hptMC2->Fill     ( pt[j], weight[j]*wt1 );
+      }
+      if (  ( (mass[j] > massLow)
+            && (mass[j] < massHigh)
+            && ( pt[j] > 6.5)
+            //&& ( pt[j] < 50)
+            && ( fabs(y[j]) > 0) 
+            && ( fabs(y[j]) < 2.4) 
+            && cBin>20
+            && cBin<120 )
+         ){
+      double wt2 = 1.0;
+      wt2 = fptw2->Eval(pt[j]);
+      //wt2 = getAccWeight(hptw2, pt[j]); 
+      hptMC->Fill      ( pt[j], weight[j]*wt2 );
+      hptMC1->Fill     ( pt[j], weight[j]*wt2 );
+      hptMC2->Fill     ( pt[j], weight[j]*wt2 );
+      }
     }
   }
 
   //------------------------------------------ Get Data :
   //FROM FINAL RESULTS
-  for(int ipt=1;ipt<=nPtBins;ipt++)
+  for(int ipt=0;ipt<nPtBins;ipt++)
   {
     valErr yieldAA;
-    yieldAA = getYield(ptBin[ipt-1],ptBin[ipt],0,2.4,20,120);
+    if(ipt<3) yieldAA = getYield(ptBin[ipt],ptBin[ipt+1],1.6,2.4,20,120);
+    if(ipt>=3) yieldAA = getYield(ptBin[ipt],ptBin[ipt+1],0,2.4,20,120);
     //yieldAA = getYield(8.0,12.0,0,2.4,20,120);
     if(PR==0){
-    hptData->SetBinContent(ipt,yieldAA.val*(1-frac[ipt-1]));
-    hptData->SetBinError(ipt,yieldAA.err);
-    hptData1->SetBinContent(ipt,yieldAA.val*(1-frac[ipt-1]));
-    hptData1->SetBinError(ipt,yieldAA.err);
-    hfracData->SetBinContent(ipt,frac[ipt-1]);
-    hfracData->SetBinError(ipt,fracErr[ipt-1]);
+      hptData->SetBinContent(ipt+1,yieldAA.val*(1-frac[ipt]));
+      hptData->SetBinError(ipt+1,yieldAA.err);
+      hptData1->SetBinContent(ipt+1,yieldAA.val*(1-frac[ipt]));
+      hptData1->SetBinError(ipt+1,yieldAA.err);
+      hfracData->SetBinContent(ipt+1,frac[ipt]);
+      hfracData->SetBinError(ipt+1,fracErr[ipt]);
     }
     if(PR==1){
-    hptData->SetBinContent(ipt,yieldAA.val*frac[ipt]);
-    hptData->SetBinError(ipt,yieldAA.err);
-    hptData1->SetBinContent(ipt,yieldAA.val*frac[ipt]);
-    hptData1->SetBinError(ipt,yieldAA.err);
+      hptData->SetBinContent(ipt,yieldAA.val*frac[ipt]);
+      hptData->SetBinError(ipt,yieldAA.err);
+      hptData1->SetBinContent(ipt,yieldAA.val*frac[ipt]);
+      hptData1->SetBinError(ipt,yieldAA.err);
     }
     //hptData2->SetBinContent(ipt,(yieldAA.val)+(yieldAA.err));
     //hptData3->SetBinContent(ipt,(yieldAA.val)-(yieldAA.err));
@@ -242,7 +276,7 @@ void dndpt_ally(int PR=0, int WRITE=1) {
   fitmc1 = new TF1("fitmc1","[2]*(([0]-1)*([0]-2)/([0]*[1]*([0]*[1] + ([0]-2)*[0])) * x * TMath::Power(( 1+ (TMath::Sqrt(89.4916 + x*x))/([0]*[1])),-[0]))",0,30);
   fitdata1 = new TF1("fitdata1","[2]*(([0]-1)*([0]-2)/([0]*[1]*([0]*[1] + ([0]-2)*[0])) * x * TMath::Power(( 1+ (TMath::Sqrt(89.4916 + x*x))/([0]*[1])),-[0]))",0,30);
   //fitRatio1 = new TF1("fitRatio1","(([0]-1)*([0]-2)/([0]*[1]*([0]*[1] + ([0]-2)*[0])) * x * TMath::Power(( 1+ (TMath::Sqrt(89.4916 + x*x))/([0]*[1])),-[0]))/([2]-1)*([3]-2)/([2]*[3]*([2]*[3] + ([2]-2)*[2])) * x * TMath::Power(( 1+ (TMath::Sqrt(89.4916 + x*x))/([2]*[3])),-[2])",0,30);
-  fitRatio1 = new TF1("fitRatio1","( [0]*x + [1]*x*x +[3]*x*x*x ) / (  (x-[2])*(x-[2])*(x-[2])  )",6.5,50);
+  fitRatio1 = new TF1("fitRatio1","( [0] + [1]*x + [2]*x*x +[4]*x*x*x ) / (  (x-[3])*(x-[3])*(x-[3])  )",6.5,50);
   //fitRatio1 = new TF1("fitRatio1","TMath::Exp(-x/[0])*[1]+[2]",6.5,50);
   //fitRatio1->SetParameters(0.0005,4.5);
   //fitRatio1->SetParameters(0, 10);
@@ -278,6 +312,7 @@ void dndpt_ally(int PR=0, int WRITE=1) {
   hptData->GetYaxis()->SetTitleSize(0.04);
   hptData->GetYaxis()->SetTitleOffset(1.00);
   hptData->GetYaxis()->SetTitle("dN/dp_{T}");
+  drawText("1.6 < |y| < 2.4", 0.65, 0.7, 1, 13);
   //TPad *pad_A_2 = new TPad("pad_A_2", "pad_A_2",0,0.09,0.98,0.23);
   TPad *pad_A_2 = new TPad("pad_A_2", "pad_A_2", 0, 0.006, 0.98, 0.227);
   c_A->cd();
@@ -328,24 +363,24 @@ void dndpt_ally(int PR=0, int WRITE=1) {
   hptData1->GetYaxis()->SetLabelSize(0.15) ;
   hptData1->GetYaxis()->SetTickSize(0.04);
   hptData1->GetYaxis()->SetNdivisions(404);
-  //hptData2->SetLineColor(kGreen+2);
-  //hptData3->SetLineColor(kRed+2);
-  //fitRatio1->SetLineColor(kGreen+2);
-  //fitRatio2->SetLineColor(kRed+2);
-  //fitRatio3->SetLineColor(kBlue+2);
-  //fitRatio1->Draw("same");
-  //fitRatio2->Draw("same");
-  //fitRatio3->Draw("same");
-  hptData1->SetAxisRange(-1,4.,"Y");
-  hptData1->Fit(fitRatio1,"IE","",6.5,50);
-  TFitResultPtr r = hptData1->Fit(fitRatio1,"S","",6.5,50);
-  //TFitResultPtr r = hptData1->Fit("expo","S");
-  r.Get()->Print("V");
-  //leg2->Draw("same");
-  jumSun(6.5,1,ptMax,1);
+  hptData1->GetYaxis()->SetRangeUser(0.7,1.3);
+  TF1 * line;
+  line = new TF1("line", "1", 0, 50);
+  line->SetLineColor(kBlack);
+  line->SetLineWidth(1);
+  line->SetLineStyle(7);
+  line->Draw("same");
 
-  TCanvas* c2 =  new TCanvas("c2","",604, 0, 800, 600);
-  hptMC2->Draw("same hist");
+  c_A->SaveAs("MC_Closure_dndpt_Forward_y.pdf");
+  c_A->SaveAs("MC_Closure_dndpt_Forward_y.png");
+  //TFitResultPtr r = hptData1->Fit("expo","S");
+  //r.Get()->Print("V");
+  //leg2->Draw("same");
+  //jumSun(6.5,1,ptMax,1);
+
+  /*
+     TCanvas* c2 =  new TCanvas("c2","",604, 0, 800, 600);
+     hptMC2->Draw("same hist");
   ////fitRatio1->Draw();
   ////  TCanvas* c1 =  new TCanvas("c1","",1200, 800);
   ////  c1->Divide(3,2);
@@ -467,25 +502,25 @@ void dndpt_ally(int PR=0, int WRITE=1) {
   c_3->SaveAs("WeightedFcN_fit/fraction_vs_pt.pdf");
 
   if(WRITE==1&&PR==0){
-	  TFile *fJpsipb = new TFile("WeightedFcN_fit/ratioDataMC_AA_Jpsi_DATA_All_y_211208.root","RECREATE");
-	  fJpsipb->cd();
-	  hptData1->SetName("WeightFactor");
-	  hptData1->Write();
-	  fitRatio1->SetName("dataMC_Ratio1");
-	  fitRatio1->Write();
+    TFile *fJpsipb = new TFile("WeightedFcN_fit/ratioDataMC_AA_Jpsi_DATA_All_y_210604.root","RECREATE");
+    fJpsipb->cd();
+    hptData1->SetName("WeightFactor");
+    hptData1->Write();
+    fitRatio1->SetName("dataMC_Ratio1");
+    fitRatio1->Write();
   }
   else if(WRITE==1&&PR==1){
-	  TFile *fJpsipb = new TFile("WeightedFcN_fit/ratioDataMC_AA_BtoJpsi_DATA_All_y_211208.root","RECREATE");
-	  fJpsipb->cd();
-	  hptData1->SetName("WeightFactor");
-	  hptData1->Write();
-	  fitRatio1->SetName("dataMC_Ratio1");
-	  fitRatio1->Write();
+    TFile *fJpsipb = new TFile("WeightedFcN_fit/ratioDataMC_AA_BtoJpsi_DATA_All_y.root","RECREATE");
+    fJpsipb->cd();
+    hptData1->SetName("WeightFactor");
+    hptData1->Write();
+    fitRatio1->SetName("dataMC_Ratio1");
+    fitRatio1->Write();
   }
   if(WRITE==1){
-	  c_A->SaveAs(Form("WeightedFcN_fit/dNdpt_plot_%s_All_y_211208.pdf",fname.Data()));
-	  c_A->SaveAs(Form("WeightedFcN_fit/dNdpt_plot_%s_All_y_211208.png",fname.Data()));
-  }
+    c_A->SaveAs(Form("WeightedFcN_fit/dNdpt_plot_%s_All_y.pdf",fname.Data()));
+    c_A->SaveAs(Form("WeightedFcN_fit/dNdpt_plot_%s_All_y.png",fname.Data()));
+  }*/
 }
 
 //Get Yield
@@ -498,13 +533,13 @@ valErr getYield(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, in
   valErr ret;
   ret.val = fitResults->GetBinContent(1);
   ret.err = fitResults->GetBinError(1);
-  cout << Form("../..//Macros/2021_06_04/roots/2DFit_10_60/Mass/Mass_constraintFitResult_%s_PRw_Effw0_Accw0_PtW0_TnP0.root", kineLabel.Data()) << endl;
+  cout << Form("../../Macros/2021_06_04/roots/2DFit_10_60/Mass/Mass_constraintFitResult_%s_PRw_Effw0_Accw0_PtW0_TnP0.root", kineLabel.Data()) << endl;
   //cout << Form("../Macros/2021_04_22/roots/2DFit_210604/Mass/MassFitResult_%s_PRw_Effw0_Accw0_PtW0_TnP0.root", kineLabel.Data()) << endl;
   //cout << kineLabel << ": " << " & " << ret.val << " $\pm$ " << ret.err << " & " <<ws->var("nBkg")->getVal() << " $\pm$ "<< ws->var("nBkg")->getError() << "\\\\" << endl;
   return ret;
 }
 double getFrac(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, int cHigh) {
-	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
+  TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
   TFile* inf = new TFile(Form("../../Macros/2021_06_04/roots/2DFit_10_60/Final/2DFitResult_%s_PRw_Effw0_Accw0_PtW0_TnP0.root", kineLabel.Data()));
   //TFile* inf = new TFile(Form("../Macros/2021_04_22/roots/2DFit_210604/Final/2DFitResult_%s_PRw_Effw0_Accw0_PtW0_TnP0.root", kineLabel.Data()));
   TH1D* fitResults = (TH1D*)inf->Get("2DfitResults");
@@ -513,7 +548,7 @@ double getFrac(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, int
   return frac;
 }
 double getFracErr(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, int cHigh) {
-	TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
+  TString kineLabel = getKineLabel(ptLow, ptHigh, yLow, yHigh, 0.0, cLow, cHigh);
   TFile* inf = new TFile(Form("../../Macros/2021_06_04/roots/2DFit_10_60/Final/2DFitResult_%s_PRw_Effw0_Accw0_PtW0_TnP0.root", kineLabel.Data()));
   //TFile* inf = new TFile(Form("../Macros/2021_04_22/roots/2DFit_210604/Final/2DFitResult_%s_PRw_Effw0_Accw0_PtW0_TnP0.root", kineLabel.Data()));
   TH1D* fitResults = (TH1D*)inf->Get("2DfitResults");
@@ -522,3 +557,9 @@ double getFracErr(float ptLow, float ptHigh, float yLow, float yHigh, int cLow, 
   return frac;
 }
 
+double getAccWeight(TH1D* h, double pt){
+  //cout<<"pt: "<<pt<<endl;
+  double binN = h->FindBin(pt);
+  double weight_ = h->GetBinContent(binN);
+  return weight_;
+}
